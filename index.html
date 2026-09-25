@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d2c">
+  <title>V-Shape Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div><p class="eyebrow">KẾ HOẠCH 12 TUẦN</p><h1>V-Shape Tracker</h1></div>
+      <span class="local-badge">Lưu trên trình duyệt này</span>
+    </header>
+    <nav class="tabs" aria-label="Khu vực ứng dụng">
+      <button type="button" data-view="dashboard" aria-current="page">Tổng quan</button>
+      <button type="button" data-view="program">Lịch tập</button>
+      <button type="button" data-view="workout">Buổi tập</button>
+      <button type="button" data-view="history">Lịch sử</button>
+      <button type="button" data-view="nutrition">Dinh dưỡng</button>
+      <button type="button" data-view="checkins">Check-in</button>
+      <button type="button" data-view="settings">Cài đặt</button>
+    </nav>
+    <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+    <main id="main" tabindex="-1"></main>
+    <footer>Plan: <a href="MASTER_PLAN.md">MASTER_PLAN.md</a> · Dữ liệu riêng tư trong trình duyệt; hãy xuất bản sao lưu thường xuyên.</footer>
+  </div>
+</body>
+</html>

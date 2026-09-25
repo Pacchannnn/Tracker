@@ -1,0 +1,3 @@
+node_modules/
+vshape-backup-*.json
+.local/
