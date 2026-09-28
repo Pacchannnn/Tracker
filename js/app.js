@@ -1,9 +1,12 @@
-import { PROGRAM, setCount, targetRir, todayWorkout, weekGuidance } from './program.js';
+import { PROGRAM, programDay, setCount, targetRir, todayWorkout, weekGuidance } from './program.js';
 import { emptyData, loadData, saveData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, localDate, weekStart, validDate } from './data.js';
+import { navigationGroup } from './navigation.js';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
-const tabs = [...document.querySelectorAll('.tabs button')];
+const tabs = [...document.querySelectorAll('[data-view]')];
+const trainingNav = document.querySelector('#training-nav');
+const viewTitle = document.querySelector('#view-title');
 let data;
 let view = 'dashboard';
 let editingFood = null;
@@ -12,6 +15,7 @@ let editingCheckin = null;
 let editingSet = null;
 let foodDate = localDate();
 let backupUrl = null;
+let selectedProgram = 'A';
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -79,12 +83,24 @@ function mutate(change, success = 'Đã lưu.') {
 function show(next) {
   view = next;
   notice.hidden = true;
-  tabs.forEach(tab => tab.getAttribute('data-view') === view ? tab.setAttribute('aria-current', 'page') : tab.removeAttribute('aria-current'));
+  updateNavigation();
   render();
   main.focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 tabs.forEach(tab => tab.addEventListener('click', () => show(tab.getAttribute('data-view'))));
+
+function updateNavigation() {
+  const group = navigationGroup(view);
+  const titles = { today: 'Hôm nay', training: 'Tập luyện', food: 'Ăn uống', progress: 'Tiến độ', settings: 'Cài đặt' };
+  viewTitle.textContent = titles[group];
+  trainingNav.hidden = group !== 'training';
+  tabs.forEach(tab => {
+    const active = tab.dataset.group ? tab.dataset.group === group : tab.dataset.subview === view;
+    if (active) tab.setAttribute('aria-current', 'page');
+    else tab.removeAttribute('aria-current');
+  });
+}
 
 function render() {
   main.replaceChildren();
@@ -99,28 +115,43 @@ function dashboardView() {
   const weight = latestCheckin('weight');
   const waist = latestCheckin('waist');
   const latest = [...data.checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
-  const intro = panel(h2('Hôm nay'), p(today ? `${today} · ${PROGRAM[today].title}` : 'Ngày nghỉ theo lịch. Nếu lỡ buổi, tiếp tục thứ tự A → B → C → D.', 'summary'), p(weekGuidance(data.settings.week), 'hint'));
-  if (today) intro.append(button(`Mở buổi ${today}`, () => openWorkout(today), 'primary'));
-  const stats = div('stats',
-    stat('Tuần chương trình', String(data.settings.week)), stat('Buổi tuần này', `${currentWeekCount()} / 4`),
-    stat('Cân gần nhất', weight ? `${fmt(weight.weight)} kg` : 'Chưa có'), stat('Eo gần nhất', waist ? `${fmt(waist.waist)} cm` : 'Chưa có'));
-  const targets = panel(h2('Mục tiêu ăn uống'), p(`${fmt(data.settings.calories)} kcal · ${fmt(data.settings.protein)} g protein / ngày`, 'summary'), p('Carbs: DATA NOT DEFINED YET · Chất béo theo plan: 60–75 g/ngày. Mục tiêu ban đầu là mức thử và có thể sửa trong Cài đặt.', 'hint'));
-  const links = panel(h2('Lối tắt'), div('actions', button('Xem lịch A/B/C/D', () => show('program')), button('Ghi thức ăn', () => show('nutrition')), button('Check-in', () => show('checkins'))));
-  main.append(intro, stats, latest ? panel(h2('Check-in gần nhất'), p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm` : ''}`)) : panel(h2('Check-in gần nhất'), p('Chưa có dữ liệu. Có thể ghi cân nặng, vòng eo hoặc giấc ngủ.', 'empty')), targets, links);
+  const totals = dailyTotals(data.entries, localDate());
+  const intro = panel(p(today ? `BUỔI HÔM NAY · ${today}` : 'HÔM NAY · NGÀY NGHỈ', 'eyebrow'), h2(today ? PROGRAM[today].title : 'Ngày nghỉ theo lịch'), p(today ? `${PROGRAM[today].exercises.length} bài tập · theo đúng chương trình của bạn` : 'Nếu lỡ buổi, tiếp tục thứ tự A → B → C → D.', 'summary'));
+  intro.classList.add('hero-panel');
+  intro.append(button(today ? `Bắt đầu buổi ${today} →` : 'Xem chương trình →', () => today ? openWorkout(today) : show('program'), 'primary'));
+  const nutrition = panel(div('row', h2('Dinh dưỡng hôm nay'), button('Mở nhật ký', () => show('nutrition'))), div('stat-pair',
+    div('', node('strong', { text: `${fmt(totals.calories)} / ${fmt(data.settings.calories)}` }), node('small', { text: 'kcal đã ghi / mục tiêu' })),
+    div('', node('strong', { text: `${fmt(totals.protein)} / ${fmt(data.settings.protein)}` }), node('small', { text: 'g protein đã ghi / mục tiêu' }))));
+  if (!data.entries.some(item => item.date === localDate())) nutrition.append(p('Chưa ghi món ăn nào hôm nay.', 'hint'));
+  const week = panel(p('TUẦN CHƯƠNG TRÌNH', 'eyebrow'), h2(`${data.settings.week} / 12`), p(weekGuidance(data.settings.week), 'hint'), div('stat-pair',
+    div('', node('strong', { text: `${currentWeekCount()} / 4` }), node('small', { text: 'buổi tuần này' })),
+    div('', node('strong', { text: weight ? `${fmt(weight.weight)} kg` : '—' }), node('small', { text: 'cân gần nhất' }))));
+  const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => show('checkins')));
+  main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Đi nhanh đến'), div('quick-links',
+    quickLink('Chương trình A/B/C/D', 'Bài, số hiệp, RIR', () => show('program')),
+    quickLink('Thêm món ăn', 'Nhật ký theo ngày', () => show('nutrition')),
+    quickLink('Xem lịch sử', 'Buổi tập đã lưu', () => show('history'))));
 }
 function stat(label, value) { return div('stat', node('small', { text: label }), node('strong', { text: value })); }
+function quickLink(label, detail, action) {
+  const link = button(label, action);
+  link.append(node('small', { text: detail }));
+  return link;
+}
 
 function programView() {
-  main.append(panel(h2('Chương trình A / B / C / D'), p('Thứ Hai A · Thứ Ba B · Thứ Năm C · Thứ Bảy D. Nếu lỡ buổi, tiếp tục thứ tự; không nhồi hai buổi trong một ngày.', 'summary'), p(weekGuidance(data.settings.week), 'warning'), p('Buổi chân chỉ áp dụng theo điều kiện gối trong MASTER_PLAN.md. Ứng dụng không tự ra quyết định tăng tải hoặc giảm tải.', 'hint')));
-  const cards = div('grid');
+  const days = div('program-days');
   for (const [key, workout] of Object.entries(PROGRAM)) {
-    const card = div('card program-card', h3(`${key} · ${workout.title}`), p(workout.day, 'muted'));
-    workout.exercises.forEach((item, index) => card.append(p(`${index + 1}. ${item.name} · ${setCount(item, data.settings.week)} × ${item.reps} · nghỉ ${item.rest} · RIR ${targetRir(item, data.settings.week)}`, 'summary')));
-    card.append(button(`Mở buổi ${key}`, () => openWorkout(key), 'primary'));
-    cards.append(card);
+    const choice = node('button', { type: 'button', 'aria-label': `Buổi ${key}: ${workout.day} · ${workout.title}`, 'aria-pressed': key === selectedProgram ? 'true' : 'false', onClick: () => { selectedProgram = key; render(); } }, [node('strong', { text: key }), node('span', { text: `${workout.day} · ${workout.title.split(' · ')[0]}` })]);
+    days.append(choice);
   }
-  main.append(cards);
-  main.append(panel(h2('Ghi chú từ kế hoạch'), p('Gối: nếu đau nhói, kẹt, lỏng/khuỵu khi tập, dừng bài. Theo dõi sưng hoặc đau tăng sau buổi và sáng hôm sau. Ứng dụng chỉ ghi chép, không đánh giá an toàn y khoa.', 'warning'), p('Cardio: bắt đầu 2 lần/tuần, 15–20 phút đi bộ phẳng hoặc xe đạp tại chỗ nếu gối dung nạp; chi tiết trong MASTER_PLAN.md.', 'hint')));
+  const chosen = programDay(selectedProgram, data.settings.week);
+  const details = panel(div('row', div('', p(`BUỔI ${selectedProgram}`, 'eyebrow'), h2(chosen.title)), button('Bắt đầu buổi →', () => openWorkout(selectedProgram), 'primary')), p(`${chosen.day} · Tuần ${data.settings.week}`, 'hint'));
+  chosen.exercises.forEach((item, index) => details.append(div('program-line', node('strong', { text: `${index + 1}. ${item.name}` }), node('span', { text: `${item.sets} × ${item.reps} · nghỉ ${item.rest} · RIR ${item.rir}` }), item.note ? p(item.note, 'hint') : document.createTextNode(''))));
+  const guidance = panel(h2('Nguyên tắc buổi tập'), p(weekGuidance(data.settings.week), 'warning'), p('Nếu lỡ buổi, tiếp tục thứ tự A → B → C → D; không nhồi hai buổi trong một ngày.', 'hint'), p('Ứng dụng chỉ ghi chép, không tự quyết định tăng hoặc giảm tải.', 'hint'));
+  if (selectedProgram === 'B' || selectedProgram === 'D') guidance.append(p('Gối: nếu đau nhói, kẹt, lỏng/khuỵu khi tập, dừng bài. Theo dõi sưng hoặc đau tăng sau buổi và sáng hôm sau. Xem MASTER_PLAN.md.', 'warning'));
+  guidance.append(p('Cardio: bắt đầu 2 lần/tuần, 15–20 phút đi bộ phẳng hoặc xe đạp tại chỗ nếu gối dung nạp; chi tiết trong MASTER_PLAN.md.', 'hint'));
+  main.append(days, div('program-detail', details, guidance));
 }
 
 function openWorkout(key) {
@@ -161,16 +192,17 @@ function workoutView() {
   header.append(details);
   main.append(header);
   const group = panel(h2('Ghi từng hiệp'));
-  workout.exercises.forEach((item, index) => group.append(exerciseBlock(item, index, draft)));
+  const nextExercise = workout.exercises.findIndex((item, index) => draft.sets.filter(set => set.exerciseIndex === index).length < setCount(item, draft.week));
+  workout.exercises.forEach((item, index) => group.append(exerciseBlock(item, index, draft, index === nextExercise)));
   main.append(group);
   const end = panel(h2('Hoàn thành buổi tập'), p('Các hiệp đã ghi được lưu trong lịch sử. Bạn có thể mở lại để sửa sau.', 'hint'), div('actions', button('Hoàn thành & lưu buổi', completeWorkout, 'primary'), button('Bỏ bản nháp', () => confirmAction('Xóa bản nháp buổi tập hiện tại?', () => mutate(next => { next.draft = null; }, 'Đã bỏ bản nháp.')), 'danger')));
   main.append(end);
 }
 
-function exerciseBlock(item, index, draft) {
+function exerciseBlock(item, index, draft, isNext = false) {
   const saved = draft.sets.filter(set => set.exerciseIndex === index).sort((a, b) => a.setNumber - b.setNumber);
   const previous = previousSets(draft.workout, index, draft.id);
-  const wrapper = div('exercise', h3(`${index + 1}. ${item.name}`), p(`${setCount(item, draft.week)} hiệp × ${item.reps} · Nghỉ ${item.rest} · RIR mục tiêu ${targetRir(item, draft.week)}`, 'exercise-meta'));
+  const wrapper = div(`exercise${isNext ? ' is-next' : ''}`, h3(`${index + 1}. ${item.name}`), p(`${setCount(item, draft.week)} hiệp × ${item.reps} · Nghỉ ${item.rest} · RIR mục tiêu ${targetRir(item, draft.week)}`, 'exercise-meta'));
   if (item.note) wrapper.append(p(item.note, 'hint'));
   if (previous.length) wrapper.append(p(`Lần trước: ${previous.map(set => `${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ')}`, 'hint'));
   const list = node('ul', { class: 'set-list' });
@@ -388,7 +420,7 @@ function exportData() {
     if (backupUrl) URL.revokeObjectURL(backupUrl);
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     backupUrl = URL.createObjectURL(blob);
-    const link = node('a', { href: backupUrl, download: `vshape-backup-${localDate()}.json`, class: 'primary', text: 'Tải file JSON' });
+    const link = node('a', { href: backupUrl, download: `tracker-backup-${localDate()}.json`, class: 'primary', text: 'Tải file JSON' });
     document.querySelector('#backup-link').replaceChildren(link);
     message('File đã sẵn sàng. Chọn “Tải file JSON” để lưu.');
   } catch (error) { message(`Không thể xuất dữ liệu: ${error.message}`, true); }
@@ -396,4 +428,5 @@ function exportData() {
 
 try { data = loadData(localStorage); }
 catch (error) { data = emptyData(); message(error.message, true); document.querySelectorAll('button').forEach(button => button.disabled = true); throw error; }
+updateNavigation();
 render();

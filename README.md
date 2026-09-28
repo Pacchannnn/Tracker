@@ -1,4 +1,4 @@
-# V-Shape Tracker
+# Tracker
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -15,10 +15,10 @@ Mở `http://127.0.0.1:8765/` trên **cùng máy**. Dùng cùng địa chỉ, c�
 ## Dùng nhanh
 
 1. Vào **Cài đặt** chọn tuần chương trình (mặc định tuần 1) và sửa mục tiêu ăn nếu cần.
-2. Vào **Buổi tập**, chọn A/B/C/D, nhập tạ, số lần, RIR rồi chọn **Lưu hiệp**. Bản nháp lưu sau mỗi hiệp.
-3. Chọn **Hoàn thành & lưu buổi**. Vào **Lịch sử** để xem hoặc mở lại sửa.
-4. Tạo món từ nhãn thực phẩm ở **Dinh dưỡng**, rồi thêm vào nhật ký theo ngày và số khẩu phần.
-5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Check-in**.
+2. Vào **Tập luyện → Chương trình**, chọn A/B/C/D rồi bắt đầu buổi. Nhập tạ, số lần, RIR và chọn **Lưu hiệp**; bản nháp lưu sau mỗi hiệp.
+3. Chọn **Hoàn thành & lưu buổi**. Vào **Tập luyện → Lịch sử** để xem hoặc mở lại sửa.
+4. Tạo món từ nhãn thực phẩm ở **Ăn uống**, rồi thêm vào nhật ký theo ngày và số khẩu phần.
+5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
 6. Vào **Cài đặt → Chuẩn bị file JSON → Tải file JSON** để sao lưu. Nếu browser không tải file, dùng **Sao chép JSON** và lưu văn bản vào một file `.json` riêng tư. Xác nhận file thực sự tồn tại trước khi xóa dữ liệu browser.
 
 ## Giới hạn hiện tại
@@ -28,6 +28,7 @@ Mở `http://127.0.0.1:8765/` trên **cùng máy**. Dùng cùng địa chỉ, c�
 - Tuần chương trình được chọn thủ công. Mỗi hiệp chọn tải `kg` hoặc `lb`; cân nặng dùng `kg` và eo dùng `cm`, chưa có chuyển đổi tự động. Ghi tên máy trong ghi chú buổi; DB ghi mỗi tay và barbell tính cả thanh theo plan.
 - Mục tiêu carbs không được plan định nghĩa. Fat 60–75 g/ngày là phạm vi tham khảo trong plan; app chỉ tính tổng thực phẩm do bạn nhập, không có cơ sở dữ liệu thực phẩm mặc định.
 - Buổi tập có thể hoàn thành sau ít nhất một hiệp; điều này cho phép ghi buổi dở dang, không phải xác nhận đã làm đủ bài.
+- Tên hiển thị đã đổi thành Tracker. Khóa `localStorage` cũ vẫn được giữ để không làm mất dữ liệu đã lưu. Font Patrick Hand được đóng gói trong `assets/fonts/` theo giấy phép OFL.
 
 ## Kiểm tra tự động
 

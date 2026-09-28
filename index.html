@@ -3,29 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102d2c">
-  <title>V-Shape Tracker</title>
+  <meta name="theme-color" content="#fdfbf7">
+  <title>Tracker</title>
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
   <div class="shell">
-    <header class="topbar">
-      <div><p class="eyebrow">KẾ HOẠCH 12 TUẦN</p><h1>V-Shape Tracker</h1></div>
-      <span class="local-badge">Lưu trên trình duyệt này</span>
-    </header>
-    <nav class="tabs" aria-label="Khu vực ứng dụng">
-      <button type="button" data-view="dashboard" aria-current="page">Tổng quan</button>
-      <button type="button" data-view="program">Lịch tập</button>
-      <button type="button" data-view="workout">Buổi tập</button>
-      <button type="button" data-view="history">Lịch sử</button>
-      <button type="button" data-view="nutrition">Dinh dưỡng</button>
-      <button type="button" data-view="checkins">Check-in</button>
-      <button type="button" data-view="settings">Cài đặt</button>
-    </nav>
-    <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
-    <main id="main" tabindex="-1"></main>
-    <footer>Plan: <a href="MASTER_PLAN.md">MASTER_PLAN.md</a> · Dữ liệu riêng tư trong trình duyệt; hãy xuất bản sao lưu thường xuyên.</footer>
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">T</span><strong>Tracker</strong></div>
+      <nav class="primary-nav" aria-label="Điều hướng chính">
+        <button type="button" data-view="dashboard" data-group="today" aria-current="page">Hôm nay</button>
+        <button type="button" data-view="program" data-group="training">Tập luyện</button>
+        <button type="button" data-view="nutrition" data-group="food">Ăn uống</button>
+        <button type="button" data-view="checkins" data-group="progress">Tiến độ</button>
+        <button type="button" data-view="settings" data-group="settings">Cài đặt</button>
+      </nav>
+      <p class="sidebar-note">Dữ liệu lưu trên trình duyệt này.<br>Hãy xuất bản sao lưu định kỳ.</p>
+    </aside>
+    <div class="app-content">
+      <header class="topbar">
+        <div><p class="eyebrow">TRACKER · KẾ HOẠCH 12 TUẦN</p><h1 id="view-title">Hôm nay</h1></div>
+        <span class="local-badge">Dữ liệu trên thiết bị</span>
+      </header>
+      <nav id="training-nav" class="subtabs" aria-label="Mục tập luyện" hidden>
+        <button type="button" data-view="program" data-subview="program">Chương trình</button>
+        <button type="button" data-view="workout" data-subview="workout">Buổi đang tập</button>
+        <button type="button" data-view="history" data-subview="history">Lịch sử</button>
+      </nav>
+      <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+      <main id="main" tabindex="-1"></main>
+      <footer>Kế hoạch tập gốc: tài liệu riêng · Dữ liệu lưu trong trình duyệt; hãy xuất bản sao lưu thường xuyên.</footer>
+      <nav class="mobile-nav" aria-label="Điều hướng mobile">
+        <button type="button" data-view="dashboard" data-group="today" aria-current="page"><span aria-hidden="true">⌂</span>Hôm nay</button>
+        <button type="button" data-view="program" data-group="training"><span aria-hidden="true">▰</span>Tập luyện</button>
+        <button type="button" data-view="nutrition" data-group="food"><span aria-hidden="true">◉</span>Ăn uống</button>
+        <button type="button" data-view="checkins" data-group="progress"><span aria-hidden="true">↗</span>Tiến độ</button>
+        <button type="button" data-view="settings" data-group="settings"><span aria-hidden="true">⚙</span>Cài đặt</button>
+      </nav>
+    </div>
   </div>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PROGRAM, setCount, todayWorkout, targetRir, weekGuidance } from '../js/program.js';
+import { PROGRAM, programDay, setCount, todayWorkout, targetRir, weekGuidance } from '../js/program.js';
 import { emptyData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, loadData, saveData } from '../js/data.js';
 
 test('program preserves plan order and first two weeks reduce three-set exercises', () => {
@@ -13,6 +13,16 @@ test('program preserves plan order and first two weeks reduce three-set exercise
   assert.equal(todayWorkout(new Date('2026-09-30T12:00:00')), null);
   assert.equal(targetRir(PROGRAM.B.exercises[5], 3), 'DATA NOT DEFINED YET');
   assert.match(weekGuidance(7), /giảm tải/);
+});
+
+test('selected program day shows plan-derived sets and RIR for the current week', () => {
+  const firstWeek = programDay('A', 1);
+  assert.equal(firstWeek.title, 'Thân trên · ưu tiên xô');
+  assert.equal(firstWeek.exercises[0].sets, 2);
+  assert.equal(firstWeek.exercises[0].reps, '8–12');
+  assert.equal(firstWeek.exercises[0].rir, '3–4');
+  assert.equal(programDay('B', 3).exercises[0].rir, '2–3');
+  assert.throws(() => programDay('Z', 1));
 });
 
 test('set validation rejects missing and invalid numbers', () => {

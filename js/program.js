@@ -48,6 +48,22 @@ export const PROGRAM = {
 
 export function setCount(item, week) { return week <= 2 && item.sets === 3 ? 2 : item.sets; }
 export function targetRir(item, week) { return week <= 2 ? '3–4' : item.core ? 'DATA NOT DEFINED YET' : item.lower ? '2–3' : '1–3'; }
+export function programDay(key, week) {
+  const workout = PROGRAM[key];
+  if (!workout) throw new Error('Buổi tập không tồn tại.');
+  return {
+    title: workout.title,
+    day: workout.day,
+    exercises: workout.exercises.map(item => ({
+      name: item.name,
+      sets: setCount(item, week),
+      reps: item.reps,
+      rest: item.rest,
+      rir: targetRir(item, week),
+      note: item.note
+    }))
+  };
+}
 export function todayWorkout(date = new Date()) { return ({ 1: 'A', 2: 'B', 4: 'C', 6: 'D' })[date.getDay()] ?? null; }
 export function weekGuidance(week) {
   if (week <= 2) return 'Tuần 1–2: học kỹ thuật, 2 hiệp/bài, RIR 3–4; hiệu chỉnh mức ăn và ghi gối hôm sau.';
