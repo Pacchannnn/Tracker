@@ -65,6 +65,14 @@ export function programDay(key, week) {
   };
 }
 export function todayWorkout(date = new Date()) { return ({ 1: 'A', 2: 'B', 4: 'C', 6: 'D' })[date.getDay()] ?? null; }
+export function nextWorkout(sessions, draft = null) {
+  const order = Object.keys(PROGRAM);
+  if (order.includes(draft?.workout)) return draft.workout;
+  const latest = [...sessions].filter(item => order.includes(item.workout)).sort((a, b) =>
+    a.date.localeCompare(b.date) || String(a.updatedAt || '').localeCompare(String(b.updatedAt || ''))
+  ).at(-1);
+  return latest ? order[(order.indexOf(latest.workout) + 1) % order.length] : order[0];
+}
 export function weekGuidance(week) {
   if (week <= 2) return 'Tuần 1–2: học kỹ thuật, 2 hiệp/bài, RIR 3–4; hiệu chỉnh mức ăn và ghi gối hôm sau.';
   if (week <= 6) return 'Tuần 3–6: lên số hiệp trong bảng nếu phục hồi tốt; tăng số lần trước rồi mới tăng tạ.';

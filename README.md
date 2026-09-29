@@ -22,11 +22,14 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 4. Tạo món từ nhãn thực phẩm ở **Ăn uống**, rồi thêm vào nhật ký theo ngày và số khẩu phần.
 5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
 6. Vào **Cài đặt → Chuẩn bị file JSON → Tải file JSON** để sao lưu. Nếu browser không tải file, dùng **Sao chép JSON** và lưu văn bản vào một file `.json` riêng tư. Xác nhận file thực sự tồn tại trước khi xóa dữ liệu browser.
+7. Để khôi phục, chọn file JSON trong **Cài đặt**, xem trước số lượng dữ liệu, tải và giữ bản sao của dữ liệu hiện tại, rồi xác nhận khôi phục. Việc khôi phục thay thế dữ liệu hiện có trong origin này.
 
 ## Giới hạn hiện tại
 
 - Dữ liệu chỉ ở browser profile hiện tại. Xóa site data, đổi origin/profile hoặc cài lại trình duyệt có thể làm mất dữ liệu; xuất backup đều đặn.
-- Chưa hỗ trợ import, đồng bộ, tài khoản, ảnh, công thức nấu, rest timer hay Flask/SQLite.
+- Chưa hỗ trợ đồng bộ, tài khoản, ảnh, công thức nấu, rest timer hay Flask/SQLite. Bản JSON chỉ bao gồm dữ liệu cấu trúc; không bao gồm ảnh trong tương lai.
+- Nếu đã mở Tracker trong nhiều tab trước khi cập nhật phiên bản này, tải lại tất cả tab để chúng dùng cùng cách lưu an toàn mới. Trình duyệt cần hỗ trợ Web Locks; nếu không, ứng dụng từ chối ghi dữ liệu thay vì ghi đè thiếu an toàn.
+- Dashboard gợi ý **buổi kế tiếp** theo buổi hoàn thành gần nhất (A→B→C→D), không tự quyết định ngày nào bạn phải tập.
 - Tuần chương trình được chọn thủ công. Mỗi hiệp chọn tải `kg` hoặc `lb`; cân nặng dùng `kg` và eo dùng `cm`, chưa có chuyển đổi tự động. Ghi tên máy trong ghi chú buổi; DB ghi mỗi tay và barbell tính cả thanh theo plan.
 - Mục tiêu carbs không được plan định nghĩa. Fat 60–75 g/ngày là phạm vi tham khảo trong plan; app chỉ tính tổng thực phẩm do bạn nhập, không có cơ sở dữ liệu thực phẩm mặc định.
 - Buổi tập có thể hoàn thành sau ít nhất một hiệp; điều này cho phép ghi buổi dở dang, không phải xác nhận đã làm đủ bài.

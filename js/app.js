@@ -1,5 +1,5 @@
-import { PROGRAM, programDay, setCount, targetRir, todayWorkout, weekGuidance } from './program.js';
-import { emptyData, loadData, saveData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, localDate, weekStart, validDate } from './data.js';
+import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js';
 import { navigationGroup } from './navigation.js';
 
 const main = document.querySelector('#main');
@@ -13,8 +13,10 @@ let editingFood = null;
 let editingEntry = null;
 let editingCheckin = null;
 let editingSet = null;
-let foodDate = localDate();
+let foodDateSelection = { mode: 'today', date: localDate() };
 let backupUrl = null;
+let restoreSafetyUrl = null;
+let restorePreview = null;
 let selectedProgram = 'A';
 
 function node(tag, options = {}, children = []) {
@@ -68,12 +70,9 @@ function confirmAction(question, accept) {
   cancel.focus();
 }
 
-function mutate(change, success = 'Đã lưu.') {
+async function mutate(change, success = 'Đã lưu.') {
   try {
-    const next = structuredClone(data);
-    change(next);
-    saveData(localStorage, next);
-    data = next;
+    data = await updateData(localStorage, navigator.locks, change);
     render();
     message(success);
     return true;
@@ -81,6 +80,8 @@ function mutate(change, success = 'Đã lưu.') {
 }
 
 function show(next) {
+  try { data = loadData(localStorage); }
+  catch (error) { message(error.message, true); return; }
   view = next;
   notice.hidden = true;
   updateNavigation();
@@ -89,6 +90,18 @@ function show(next) {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 tabs.forEach(tab => tab.addEventListener('click', () => show(tab.getAttribute('data-view'))));
+window.addEventListener('storage', event => {
+  if (event.key !== 'vshape-tracker') return;
+  try { data = loadData(localStorage); message('Dữ liệu đã đổi ở tab khác. Mở lại mục hiện tại để xem bản mới nhất.'); }
+  catch (error) { message(error.message, true); }
+});
+function refreshTodayDiary() {
+  if (view !== 'nutrition' || foodDateSelection.mode !== 'today') return;
+  const shown = main.querySelector('input[name=date]');
+  if (shown && shown.value !== localDate()) render();
+}
+window.addEventListener('focus', refreshTodayDiary);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshTodayDiary(); });
 
 function updateNavigation() {
   const group = navigationGroup(view);
@@ -111,14 +124,14 @@ function latestCheckin(key) { return [...data.checkins].filter(item => item[key]
 function currentWeekCount() { const start = weekStart(); return data.sessions.filter(item => item.date >= start && item.date <= localDate()).length; }
 
 function dashboardView() {
-  const today = todayWorkout();
+  const today = nextWorkout(data.sessions, data.draft);
   const weight = latestCheckin('weight');
   const waist = latestCheckin('waist');
   const latest = [...data.checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
   const totals = dailyTotals(data.entries, localDate());
-  const intro = panel(p(today ? `BUỔI HÔM NAY · ${today}` : 'HÔM NAY · NGÀY NGHỈ', 'eyebrow'), h2(today ? PROGRAM[today].title : 'Ngày nghỉ theo lịch'), p(today ? `${PROGRAM[today].exercises.length} bài tập · theo đúng chương trình của bạn` : 'Nếu lỡ buổi, tiếp tục thứ tự A → B → C → D.', 'summary'));
+  const intro = panel(p(`BUỔI KẾ TIẾP · ${today}`, 'eyebrow'), h2(PROGRAM[today].title), p(`${PROGRAM[today].exercises.length} bài tập · tiếp tục thứ tự A → B → C → D khi lỡ buổi.`, 'summary'));
   intro.classList.add('hero-panel');
-  intro.append(button(today ? `Bắt đầu buổi ${today} →` : 'Xem chương trình →', () => today ? openWorkout(today) : show('program'), 'primary'));
+  intro.append(button(data.draft ? `Tiếp tục buổi ${today} →` : `Bắt đầu buổi ${today} →`, () => openWorkout(today), 'primary'));
   const nutrition = panel(div('row', h2('Dinh dưỡng hôm nay'), button('Mở nhật ký', () => show('nutrition'))), div('stat-pair',
     div('', node('strong', { text: `${fmt(totals.calories)} / ${fmt(data.settings.calories)}` }), node('small', { text: 'kcal đã ghi / mục tiêu' })),
     div('', node('strong', { text: `${fmt(totals.protein)} / ${fmt(data.settings.protein)}` }), node('small', { text: 'g protein đã ghi / mục tiêu' }))));
@@ -154,15 +167,23 @@ function programView() {
   main.append(days, div('program-detail', details, guidance));
 }
 
-function openWorkout(key) {
+async function openWorkout(key) {
+  data = loadData(localStorage);
   if (data.draft && data.draft.workout !== key) {
-    confirmAction('Đổi buổi sẽ bỏ bản nháp hiện tại. Tiếp tục?', () => {
-      if (mutate(next => { next.draft = null; }, 'Đã bỏ bản nháp cũ.')) openWorkout(key);
+    const oldDraftId = data.draft.id;
+    confirmAction('Đổi buổi sẽ bỏ bản nháp hiện tại. Tiếp tục?', async () => {
+      if (await mutate(next => {
+        if (next.draft?.id !== oldDraftId) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại buổi tập.');
+        next.draft = null;
+      }, 'Đã bỏ bản nháp cũ.')) openWorkout(key);
     });
     return;
   }
   if (!data.draft || data.draft.workout !== key) {
-    if (!mutate(next => { next.draft = { id: id(), workout: key, date: localDate(), week: next.settings.week, sets: [], notes: '' }; }, `Đã mở buổi ${key}.`)) return;
+    if (!await mutate(next => {
+      if (next.draft) throw new Error('Một tab khác đã mở buổi tập. Hãy mở lại mục Tập luyện.');
+      next.draft = { id: id(), workout: key, date: localDate(), week: next.settings.week, sets: [], notes: '' };
+    }, `Đã mở buổi ${key}.`)) return;
   }
   show('workout');
 }
@@ -225,12 +246,17 @@ function exerciseBlock(item, index, draft, isNext = false) {
       node('button', { type: 'submit', class: 'primary', text: edit ? 'Lưu thay đổi hiệp' : 'Lưu hiệp' })
     ]);
     if (edit) form.append(button('Hủy sửa', () => { editingSet = null; render(); }));
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       const values = Object.fromEntries(new FormData(form));
-      const done = mutate(next => {
+      const done = await mutate(next => {
         const set = validateSet(values);
-        if (edit) Object.assign(next.draft.sets.find(item => item.id === edit.id), set);
+        if (next.draft?.id !== draft.id) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại buổi tập.');
+        if (edit) {
+          const current = next.draft.sets.find(item => item.id === edit.id);
+          ensureUnchanged(current, edit);
+          Object.assign(current, set);
+        }
         else next.draft.sets.push({ id: id(), exerciseIndex: index, exerciseName: item.name, setNumber, ...set });
       }, `Đã lưu hiệp ${setNumber}.`);
       if (done && edit) { editingSet = null; render(); }
@@ -240,9 +266,11 @@ function exerciseBlock(item, index, draft, isNext = false) {
   return wrapper;
 }
 
-function completeWorkout() {
+async function completeWorkout() {
   if (!data.draft?.sets.length) { message('Hãy ghi ít nhất một hiệp trước khi hoàn thành.', true); return; }
-  const saved = mutate(next => {
+  const draftId = data.draft.id;
+  const saved = await mutate(next => {
+    if (next.draft?.id !== draftId || !next.draft.sets.length) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại buổi tập.');
     const session = { ...next.draft, updatedAt: new Date().toISOString() };
     const index = next.sessions.findIndex(item => item.id === session.id);
     if (index >= 0) next.sessions[index] = session;
@@ -261,7 +289,14 @@ function historyView() {
     const list = node('ul', { class: 'history-list' });
     for (const set of session.sets) list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }));
     box.append(list, div('actions', button('Mở để sửa', () => {
-      const open = () => { if (mutate(next => { next.draft = structuredClone(session); }, 'Đã mở buổi để sửa.')) show('workout'); };
+      const expectedDraft = data.draft ? structuredClone(data.draft) : null;
+      const open = async () => { if (await mutate(next => {
+        if (expectedDraft) ensureUnchanged(next.draft, expectedDraft);
+        else if (next.draft) throw new Error('Một tab khác đang có bản nháp. Hãy kiểm tra trước khi mở buổi cũ.');
+        const current = next.sessions.find(item => item.id === session.id);
+        ensureUnchanged(current, session);
+        next.draft = structuredClone(current);
+      }, 'Đã mở buổi để sửa.')) show('workout'); };
       if (data.draft) confirmAction('Mở buổi cũ sẽ thay bản nháp đang có. Tiếp tục?', open);
       else open();
     }), button('Xóa buổi', () => confirmAction(`Xóa buổi ${session.workout} ngày ${session.date}?`, () => mutate(next => { next.sessions = next.sessions.filter(item => item.id !== session.id); }, 'Đã xóa buổi tập.')), 'danger')));
@@ -271,17 +306,23 @@ function historyView() {
 
 function nutritionView() {
   main.append(panel(h2('Dinh dưỡng'), p('Tự nhập thông tin từ nhãn hoặc nguồn bạn tin cậy. Ứng dụng không có dữ liệu macro mặc định.', 'hint')));
+  const foodDate = diaryDate(foodDateSelection);
   const dateField = field('Ngày', 'date', foodDate, { type: 'date' });
-  dateField.querySelector('input').addEventListener('change', event => { if (validDate(event.target.value)) { foodDate = event.target.value; render(); } else message('Ngày không hợp lệ.', true); });
+  dateField.querySelector('input').addEventListener('change', event => {
+    if (!validDate(event.target.value)) { message('Ngày không hợp lệ.', true); return; }
+    foodDateSelection = { mode: event.target.value === localDate() ? 'today' : 'selected', date: event.target.value };
+    render();
+  });
   const totals = dailyTotals(data.entries, foodDate);
   const summary = panel(h2('Tổng trong ngày'), dateField, div('stats',
     stat('Calories', `${fmt(totals.calories)} / ${fmt(data.settings.calories)} kcal`),
     stat('Protein', `${fmt(totals.protein)} / ${fmt(data.settings.protein)} g`),
     stat('Carbs', `${fmt(totals.carbs)} g`), stat('Fat', `${fmt(totals.fat)} g`)));
   summary.append(p('Mục tiêu carbs: DATA NOT DEFINED YET · Chất béo theo plan khoảng 60–75 g/ngày.', 'hint'));
+  summary.append(button('Về hôm nay', () => { foodDateSelection = { mode: 'today', date: localDate() }; render(); }));
   main.append(summary);
   renderFoodLibrary();
-  renderFoodEntries();
+  renderFoodEntries(foodDate);
 }
 
 function renderFoodLibrary() {
@@ -298,12 +339,16 @@ function renderFoodLibrary() {
   ]);
   form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi món' : 'Thêm món' }));
   if (editing) form.append(button('Hủy sửa', () => { editingFood = null; render(); }));
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(form));
-    const done = mutate(next => {
+    const done = await mutate(next => {
       const food = validateFood(raw);
-      if (editing) next.foods[next.foods.findIndex(item => item.id === editing.id)] = { ...editing, ...food };
+      if (editing) {
+        const index = next.foods.findIndex(item => item.id === editing.id);
+        ensureUnchanged(next.foods[index], editing);
+        next.foods[index] = { ...editing, ...food };
+      }
       else next.foods.push({ id: id(), ...food });
     }, editing ? 'Đã sửa món. Bữa cũ vẫn giữ macro đã ghi.' : 'Đã thêm món.');
     if (done) { editingFood = null; render(); }
@@ -318,7 +363,7 @@ function renderFoodLibrary() {
   main.append(box);
 }
 
-function renderFoodEntries() {
+function renderFoodEntries(foodDate) {
   const box = panel(h2('Nhật ký ăn trong ngày'));
   const editing = data.entries.find(item => item.id === editingEntry);
   if (data.foods.length || editing) {
@@ -333,14 +378,15 @@ function renderFoodEntries() {
     select.value = editing?.foodId || data.foods[0]?.id || '';
     form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi bữa' : 'Ghi bữa ăn' }));
     if (editing) form.append(button('Hủy sửa', () => { editingEntry = null; render(); }));
-    form.addEventListener('submit', event => {
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       const raw = Object.fromEntries(new FormData(form));
-      const done = mutate(next => {
-        const entry = validateEntry({ ...raw, date: foodDate });
-        const food = next.foods.find(item => item.id === raw.foodId) || (editing?.foodId === raw.foodId ? editing.food : null);
-        if (!food) throw new Error('Hãy chọn một món ăn.');
-        const record = { id: editing?.id || id(), foodId: raw.foodId, food: { name: food.name, serving: food.serving, calories: food.calories, protein: food.protein, carbs: food.carbs, fat: food.fat }, ...entry };
+      const done = await mutate(next => {
+        const entry = validateEntry({ ...raw, date: diaryDate(foodDateSelection) });
+        const current = editing ? next.entries.find(item => item.id === editing.id) : null;
+        if (editing) ensureUnchanged(current, editing);
+        const snapshot = foodSnapshotForEntry(current, raw.foodId, next.foods);
+        const record = { id: editing?.id || id(), foodId: raw.foodId, food: snapshot, ...entry };
         if (editing) next.entries[next.entries.findIndex(item => item.id === editing.id)] = record;
         else next.entries.push(record);
       }, 'Đã lưu bữa ăn.');
@@ -367,12 +413,16 @@ function checkinsView() {
   ]);
   form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu check-in' : 'Thêm check-in' }));
   if (editing) form.append(button('Hủy sửa', () => { editingCheckin = null; render(); }));
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(form));
-    const done = mutate(next => {
+    const done = await mutate(next => {
       const checkin = { id: editing?.id || id(), ...validateCheckin(raw) };
-      if (editing) next.checkins[next.checkins.findIndex(item => item.id === editing.id)] = checkin;
+      if (editing) {
+        const index = next.checkins.findIndex(item => item.id === editing.id);
+        ensureUnchanged(next.checkins[index], editing);
+        next.checkins[index] = checkin;
+      }
       else next.checkins.push(checkin);
     }, 'Đã lưu check-in.');
     if (done) { editingCheckin = null; render(); }
@@ -407,18 +457,65 @@ function settingsView() {
   });
   box.append(form);
   main.append(box);
-  main.append(panel(h2('Sao lưu dữ liệu'), p('Xuất toàn bộ buổi tập, món ăn, bữa ăn, check-in và cài đặt thành JSON. File chứa dữ liệu cá nhân; hãy giữ ở nơi riêng tư.', 'hint'), div('actions', button('Chuẩn bị file JSON', exportData, 'primary'), button('Sao chép JSON', copyData)), div('actions', node('span', { id: 'backup-link' })), p('Nếu trình duyệt không tải file, dùng Sao chép JSON và lưu nội dung vào file .json riêng tư.', 'hint'), p('Khôi phục từ JSON: DATA NOT DEFINED YET trong phiên bản này. Không xóa dữ liệu trình duyệt trước khi lưu bản xuất.', 'hint')));
+  const backup = panel(h2('Sao lưu dữ liệu'), p('Bản JSON chứa toàn bộ dữ liệu cấu trúc trên trình duyệt này. Hãy giữ file riêng tư. Ảnh (nếu có trong tương lai) chưa nằm trong bản JSON.', 'hint'), div('actions', button('Chuẩn bị file JSON', exportData, 'primary'), button('Sao chép JSON', copyData)), div('actions', node('span', { id: 'backup-link' })), p('Nếu trình duyệt không tải file, dùng Sao chép JSON và lưu nội dung vào file .json riêng tư.', 'hint'));
+  const fileField = field('Chọn file JSON để khôi phục', 'restoreFile', '', { type: 'file' });
+  fileField.querySelector('input').setAttribute('accept', '.json,application/json');
+  fileField.querySelector('input').addEventListener('change', previewRestore);
+  backup.append(h3('Khôi phục dữ liệu'), p('Kiểm tra file và xem trước trước khi thay thế dữ liệu hiện tại.', 'hint'), fileField, div('restore-preview'));
+  main.append(backup);
+  renderRestorePreview();
+}
+
+async function previewRestore(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 10_000_000) throw new Error('File JSON quá lớn (tối đa 10 MB).');
+    const parsed = parseBackup(await file.text());
+    restorePreview = { ...parsed, baseline: JSON.stringify(loadData(localStorage)) };
+    renderRestorePreview();
+    message('Đã kiểm tra file. Xem số lượng dữ liệu trước khi khôi phục.');
+  } catch (error) { restorePreview = null; renderRestorePreview(); message(error.message, true); }
+}
+
+function renderRestorePreview() {
+  const box = document.querySelector('.restore-preview');
+  if (!box) return;
+  box.replaceChildren();
+  if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
+  const counts = restorePreview.counts;
+  box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · có cài đặt`, 'summary'));
+  if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
+  restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
+  box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
+  const acknowledged = field('Tôi đã lưu bản sao dữ liệu hiện tại', 'savedBackup', '', { type: 'checkbox' });
+  const checkbox = acknowledged.querySelector('input');
+  const restoreButton = button('Khôi phục từ file', restoreData, 'danger');
+  restoreButton.disabled = true;
+  checkbox.addEventListener('change', () => { restoreButton.disabled = !checkbox.checked; });
+  box.append(acknowledged, div('actions', button('Hủy', () => { restorePreview = null; renderRestorePreview(); }), restoreButton));
+}
+
+async function restoreData() {
+  if (!restorePreview) return;
+  const selected = restorePreview;
+  const done = await mutate(next => {
+    if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
+    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft']) next[key] = structuredClone(selected.data[key] ?? null);
+  }, 'Đã khôi phục dữ liệu từ file.');
+  if (done) { restorePreview = null; renderRestorePreview(); }
 }
 
 async function copyData() {
-  try { await navigator.clipboard.writeText(JSON.stringify(data, null, 2)); message('Đã sao chép JSON. Dán vào file .json riêng tư để sao lưu.'); }
+  try { await navigator.clipboard.writeText(createBackup(loadData(localStorage))); message('Đã sao chép JSON. Dán vào file .json riêng tư để sao lưu.'); }
   catch { message('Trình duyệt không cho sao chép. Hãy dùng liên kết tải file.', true); }
 }
 
 function exportData() {
   try {
     if (backupUrl) URL.revokeObjectURL(backupUrl);
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([createBackup(loadData(localStorage))], { type: 'application/json' });
     backupUrl = URL.createObjectURL(blob);
     const link = node('a', { href: backupUrl, download: `tracker-backup-${localDate()}.json`, class: 'primary', text: 'Tải file JSON' });
     document.querySelector('#backup-link').replaceChildren(link);
