@@ -112,7 +112,7 @@ test('backup round trip includes timestamp and preview counts', () => {
   const text = createBackup(data, new Date('2026-09-30T12:00:00Z'));
   const parsed = parseBackup(text);
   assert.equal(parsed.exportedAt, '2026-09-30T12:00:00.000Z');
-  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0, cardio: 0, knee: 0, savedMeals: 0, recipes: 0 });
+  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0, cardio: 0, knee: 0, savedMeals: 0, recipes: 0, journal: 0 });
   assert.deepEqual(parsed.data, data);
 });
 
@@ -122,7 +122,7 @@ test('restore rejects corrupt and incompatible files without changing storage', 
   assert.throws(() => parseBackup(JSON.stringify({ schemaVersion: 1, exportedAt: '2026-09-30T12:00:00.000Z', data: emptyData() })), /khớp/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), sessions: [{ id: 'bad' }] })), /buổi tập/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), entries: [{ id: 'e1', date: '2026-09-30', meal: 'Lunch', servings: 1, foodId: 'f1', food: { calories: 'oops' } }] })), /bữa ăn/);
-  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 4);
+  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 5);
 });
 
 test('backup includes saved meals and recipes with stable snapshots', () => {
@@ -144,12 +144,13 @@ test('version 1 workout history migrates without deleting user data', () => {
   const memory = new Map([['vshape-tracker', JSON.stringify(old)]]);
   const storage = { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
   const loaded = loadData(storage);
-  assert.equal(loaded.schemaVersion, 4);
+  assert.equal(loaded.schemaVersion, 5);
   assert.deepEqual(loaded.exerciseNotes, {});
   assert.deepEqual(loaded.cardioEntries, []);
   assert.deepEqual(loaded.kneeEntries, []);
   assert.deepEqual(loaded.savedMeals, []);
   assert.deepEqual(loaded.recipes, []);
+  assert.deepEqual(loaded.journalEntries, []);
   assert.equal(loaded.sessions[0].id, 's1');
   assert.equal(JSON.parse(memory.get('vshape-tracker')).schemaVersion, 1);
   assert.equal(parseBackup(JSON.stringify(old)).data.sessions[0].id, 's1');
@@ -161,7 +162,7 @@ test('version 2 exercise notes migrate and remain intact', () => {
   delete old.kneeEntries;
   const storage = { getItem: () => JSON.stringify(old) };
   const next = loadData(storage);
-  assert.equal(next.schemaVersion, 4);
+  assert.equal(next.schemaVersion, 5);
   assert.equal(next.exerciseNotes['A:0'], 'Ghế số 3');
   assert.deepEqual(next.cardioEntries, []);
 });
@@ -171,10 +172,19 @@ test('version 3 cardio and knee data migrate into the nutrition schema', () => {
   delete old.savedMeals;
   delete old.recipes;
   const loaded = loadData({ getItem: () => JSON.stringify(old) });
-  assert.equal(loaded.schemaVersion, 4);
+  assert.equal(loaded.schemaVersion, 5);
   assert.equal(loaded.cardioEntries[0].id, 'c1');
   assert.deepEqual(loaded.savedMeals, []);
   assert.deepEqual(loaded.recipes, []);
+});
+
+test('version 4 nutrition data migrate to the journal schema', () => {
+  const old = { ...emptyData(), schemaVersion: 4, savedMeals: [{ id: 'm1', name: 'Meal', items: [{ foodId: 'f1', food: { name: 'Food', serving: '1', calories: 1, protein: 1, carbs: 1, fat: 1 }, servings: 1 }] }] };
+  delete old.journalEntries;
+  const next = loadData({ getItem: () => JSON.stringify(old) });
+  assert.equal(next.schemaVersion, 5);
+  assert.equal(next.savedMeals[0].id, 'm1');
+  assert.deepEqual(next.journalEntries, []);
 });
 
 test('cardio and knee logs accept records without inventing prescriptions or symptoms', () => {

@@ -5,6 +5,7 @@ const groups = {
   history: 'training',
   'gym-logs': 'training',
   nutrition: 'food',
+  journal: 'journal',
   checkins: 'progress',
   settings: 'settings'
 };

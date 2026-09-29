@@ -45,6 +45,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .app-content { min-width: 0; padding: 26px 28px 34px; }
 .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 22px; }
 .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .08em; }
+.home-link { min-height: 36px; margin: -5px 0 3px -8px; padding: 4px 8px; color: var(--muted); background: transparent; border: 2px solid transparent; border-radius: var(--wobbly-small); font-size: .76rem; font-weight: 700; letter-spacing: .08em; }
+.home-link:hover { color: var(--red-dark); border-color: var(--ink); background: var(--yellow); }
 h1, h2, h3 { line-height: 1.14; letter-spacing: -.02em; }
 h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.2rem); }
 h2 { margin: 0 0 12px; font-size: 1.5rem; }
@@ -95,7 +97,7 @@ a.primary { display: inline-flex; align-items: center; }
 .stat-pair div { padding-top: 9px; border-top: 2px dashed #b9b1a6; }
 .stat-pair strong { display: block; font-size: 1.4rem; line-height: 1; }
 .stat-pair small { color: var(--muted); }
-.quick-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-bottom: 22px; }
+.quick-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 22px; }
 .quick-links button { min-height: 72px; text-align: left; background: var(--white); border: 2px solid var(--ink); border-radius: var(--wobbly-small); box-shadow: 3px 3px 0 var(--ink); padding: 12px; }
 .quick-links button small { display: block; margin-top: 4px; color: var(--muted); }
 
@@ -143,6 +145,32 @@ a.primary { display: inline-flex; align-items: center; }
 .recipe-detail summary { cursor: pointer; font-size: 1.16rem; font-weight: 700; }
 .recipe-detail[open] summary { margin-bottom: 14px; }
 .recipe-detail .form-grid { margin-top: 18px; }
+.journal-form { display: grid; gap: 16px; }
+.journal-form > .primary { justify-self: start; }
+.mood-fieldset { min-width: 0; padding: 12px; border: 2px dashed var(--ink); border-radius: var(--wobbly-small); }
+.mood-fieldset legend { padding: 0 6px; font-weight: 700; }
+.mood-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mood-choice { display: flex; align-items: center; gap: 6px; min-height: 50px; padding: 5px 9px; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wobbly-small); cursor: pointer; }
+.mood-choice.is-selected { background: var(--yellow); box-shadow: 2px 2px 0 var(--ink); }
+.mood-choice input { width: 18px; height: 18px; flex: none; }
+.mood-mark { font-size: 1.3rem; line-height: 1; }
+.tag-suggestions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.tag-suggestions .hint { margin: 0 6px 0 0; }
+.tag-suggestions button { min-height: 40px; padding: 4px 10px; color: var(--ink); background: var(--yellow); border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
+.journal-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 15px; }
+.calendar-weekday { text-align: center; font-size: .82rem; }
+.calendar-day { min-width: 0; min-height: 48px; padding: 3px; color: var(--ink); background: var(--paper); border: 2px solid var(--old-paper); border-radius: var(--wobbly-small); }
+.calendar-day strong { display: block; line-height: 1; }
+.calendar-day.has-entry { background: var(--yellow); border-color: var(--ink); }
+.calendar-day.has-photo::after { content: '▣'; display: block; font-size: .7rem; line-height: 1; color: var(--red-dark); }
+.calendar-day:hover { border-color: var(--red-dark); }
+.photo-card { display: grid; grid-template-columns: minmax(130px, 180px) minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 2px dashed #b9b1a6; }
+.photo-card img { display: block; width: 100%; max-height: 180px; object-fit: cover; border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
+.photo-card .stack { min-width: 0; }
+.photo-card h3 { margin: 0 0 8px; }
+.photo-card .actions { flex-wrap: wrap; }
+.photo-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
+.photo-strip img { width: 88px; height: 88px; flex: none; object-fit: cover; border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
 
 footer { padding: 9px 0; color: var(--muted); font-size: .82rem; }
 dialog { max-width: min(500px, calc(100vw - 28px)); padding: 23px; color: var(--ink); background: var(--paper); border: 3px solid var(--ink); border-radius: var(--wobbly); box-shadow: 8px 8px 0 var(--ink); }
@@ -152,6 +180,7 @@ dialog::backdrop { background: #2d2d2db0; }
   .dashboard-layout, .program-detail { grid-template-columns: 1fr; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .program-days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 740px) {
   .shell { display: block; min-height: 100vh; border: 0; box-shadow: none; }
@@ -177,6 +206,9 @@ dialog::backdrop { background: #2d2d2db0; }
   .form-grid { grid-template-columns: 1fr; }
   .stats { gap: 9px; }
   .stat { padding: 10px; }
+  .mood-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .journal-calendar { gap: 2px; }
+  .photo-card { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .primary, .secondary, .danger, .quick-links button { transition: none; }

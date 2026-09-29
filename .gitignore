@@ -1,4 +1,5 @@
 node_modules/
 vshape-backup-*.json
 tracker-backup-*.json
+tracker-photos-*.json
 .local/

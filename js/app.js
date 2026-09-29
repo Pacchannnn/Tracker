@@ -1,9 +1,12 @@
 import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js';
 import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js';
-import { navigationGroup } from './navigation.js?v=2';
+import { navigationGroup } from './navigation.js?v=6';
 import { previousSetFor, nextIncompleteExercise, restSeconds } from './workout.js';
 import { weeklySummary, exerciseHistory } from './progress.js';
 import { recentFoods, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js';
+import { MOODS, validateJournal, monthDays } from './journal.js';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -20,6 +23,8 @@ let foodDateSelection = { mode: 'today', date: localDate() };
 let backupUrl = null;
 let restoreSafetyUrl = null;
 let restorePreview = null;
+let photoBackupUrl = null;
+let photoRestorePreview = null;
 let selectedProgram = 'A';
 let focusMode = false;
 let focusIndex = 0;
@@ -32,6 +37,13 @@ let selectedExercise = '';
 let nutritionSubView = 'daily';
 let editingSavedMeal = null;
 let editingRecipe = null;
+let journalDate = localDate();
+let journalSection = 'entry';
+let journalMonth = new Date().getMonth() + 1;
+let journalYear = new Date().getFullYear();
+let photoFilter = 'all';
+let editingPhoto = null;
+let photoUrls = [];
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -119,7 +131,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 
 function updateNavigation() {
   const group = navigationGroup(view);
-  const titles = { today: 'Hôm nay', training: 'Tập luyện', food: 'Ăn uống', progress: 'Tiến độ', settings: 'Cài đặt' };
+  const titles = { today: 'Hôm nay', training: 'Gym', food: 'Dinh dưỡng', journal: 'Nhật ký & Ảnh', progress: 'Tiến độ', settings: 'Cài đặt & sao lưu' };
   viewTitle.textContent = titles[group];
   trainingNav.hidden = group !== 'training';
   tabs.forEach(tab => {
@@ -130,8 +142,10 @@ function updateNavigation() {
 }
 
 function render() {
+  photoUrls.forEach(url => URL.revokeObjectURL(url));
+  photoUrls = [];
   main.replaceChildren();
-  ({ dashboard: dashboardView, program: programView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, checkins: checkinsView, settings: settingsView })[view]();
+  ({ dashboard: dashboardView, program: programView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
 }
 
 function latestCheckin(key) { return [...data.checkins].filter(item => item[key] !== null).sort((a, b) => b.date.localeCompare(a.date))[0]; }
@@ -154,10 +168,11 @@ function dashboardView() {
     div('', node('strong', { text: `${currentWeekCount()} / 4` }), node('small', { text: 'buổi tuần này' })),
     div('', node('strong', { text: weight ? `${fmt(weight.weight)} kg` : '—' }), node('small', { text: 'cân gần nhất' }))));
   const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => { progressSubView = 'checkins'; show('checkins'); }));
-  main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Đi nhanh đến'), div('quick-links',
-    quickLink('Chương trình A/B/C/D', 'Bài, số hiệp, RIR', () => show('program')),
-    quickLink('Thêm món ăn', 'Nhật ký theo ngày', () => show('nutrition')),
-    quickLink('Xem lịch sử', 'Buổi tập đã lưu', () => show('history'))));
+  main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Chọn việc cần làm'), div('quick-links',
+    quickLink('Gym', 'Bài tập và buổi đang tập', () => show('program')),
+    quickLink('Dinh dưỡng', 'Nhật ký và món ăn', () => show('nutrition')),
+    quickLink('Nhật ký & Ảnh', 'Ghi lại một ngày', () => show('journal')),
+    quickLink('Tiến độ', 'Xem lịch sử thật', () => show('checkins'))));
 }
 function stat(label, value) { return div('stat', node('small', { text: label }), node('strong', { text: value })); }
 function quickLink(label, detail, action) {
@@ -749,6 +764,199 @@ function renderNutritionSummary() {
   main.append(box);
 }
 
+function journalView() {
+  main.append(panel(h2('Nhật ký & Ảnh'), p('Một vài dấu mực, vài thẻ và một đoạn ghi chú là đủ để nhớ ngày của bạn.', 'hint')));
+  const nav = div('subtabs', ...[
+    ['entry', 'Ghi ngày'], ['calendar', 'Lịch & dòng thời gian'], ['photos', 'Ảnh']
+  ].map(([key, label]) => {
+    const item = button(label, () => { journalSection = key; render(); });
+    item.setAttribute('aria-pressed', String(journalSection === key));
+    return item;
+  }));
+  main.append(nav);
+  if (journalSection === 'calendar') { renderJournalCalendar(); return; }
+  if (journalSection === 'photos') { renderPhotos(); return; }
+  const existing = data.journalEntries.find(item => item.date === journalDate);
+  const box = panel(h2(existing ? `Ghi ngày ${journalDate}` : 'Ghi lại một ngày'));
+  const form = node('form', { class: 'journal-form' });
+  const dateField = field('Ngày', 'date', journalDate, { type: 'date', required: true });
+  dateField.querySelector('input').addEventListener('change', event => {
+    if (!validDate(event.target.value)) { message('Ngày không hợp lệ.', true); return; }
+    journalDate = event.target.value;
+    render();
+  });
+  const moods = node('fieldset', { class: 'mood-fieldset' }, [node('legend', { text: 'Dấu mực hôm nay (tùy chọn)' })]);
+  const moodChoices = div('mood-options');
+  for (const mood of [{ value: '', label: 'Bỏ chọn', mark: '○' }, ...MOODS]) {
+    const choice = node('label', { class: `mood-choice${(existing?.mood || '') === mood.value ? ' is-selected' : ''}` }, [node('input', { type: 'radio', name: 'mood', value: mood.value, checked: (existing?.mood || '') === mood.value ? '' : null }), node('span', { class: 'mood-mark', text: mood.mark }), node('span', { text: mood.label })]);
+    choice.querySelector('input').addEventListener('change', () => {
+      moodChoices.querySelectorAll('.mood-choice').forEach(item => item.classList.toggle('is-selected', item === choice));
+    });
+    moodChoices.append(choice);
+  }
+  moods.append(moodChoices);
+  const tags = field('Thẻ hoạt động (cách nhau bằng dấu phẩy)', 'tags', existing?.tags.join(', ') || '');
+  form.append(dateField, moods, tags);
+  const suggestions = [...new Set(data.journalEntries.flatMap(item => item.tags))].slice(0, 8);
+  if (suggestions.length) {
+    const chips = div('tag-suggestions', p('Thẻ đã dùng:', 'hint'));
+    for (const tag of suggestions) chips.append(button(tag, () => {
+      const input = tags.querySelector('input');
+      const values = input.value.split(',').map(value => value.trim()).filter(Boolean);
+      if (!values.some(value => value.toLocaleLowerCase('vi') === tag.toLocaleLowerCase('vi'))) input.value = [...values, tag].join(', ');
+      input.focus();
+    }));
+    form.append(chips);
+  }
+  form.append(field('Tiêu đề (tùy chọn)', 'title', existing?.title || ''), field('Ghi chú', 'note', existing?.note || '', { tag: 'textarea' }), node('button', { type: 'submit', class: 'primary', text: existing ? 'Lưu thay đổi' : 'Lưu nhật ký' }));
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const raw = Object.fromEntries(new FormData(form));
+    const saved = await mutate(next => {
+      const fields = validateJournal(raw);
+      const now = new Date().toISOString();
+      if (existing) {
+        const index = next.journalEntries.findIndex(item => item.id === existing.id);
+        ensureUnchanged(next.journalEntries[index], existing);
+        next.journalEntries[index] = { ...existing, ...fields, updatedAt: now };
+      } else {
+        if (next.journalEntries.some(item => item.date === fields.date)) throw new Error('Ngày này đã có nhật ký ở tab khác. Hãy mở lại.');
+        next.journalEntries.push({ id: id(), ...fields, createdAt: now, updatedAt: now });
+      }
+    }, 'Đã lưu nhật ký.');
+    if (saved) render();
+  });
+  box.append(form);
+  box.append(button('Thêm ảnh ngày này', () => { editingPhoto = null; journalSection = 'photos'; render(); }));
+  if (existing) box.append(button('Xóa nhật ký ngày này', () => confirmAction(`Xóa nhật ký ngày ${journalDate} và ảnh nhật ký gắn với ngày này?`, async () => {
+    const removed = await mutate(next => {
+      ensureUnchanged(next.journalEntries.find(item => item.id === existing.id), existing);
+      next.journalEntries = next.journalEntries.filter(item => item.id !== existing.id);
+    }, 'Đã xóa nhật ký.');
+    if (removed) try { await deleteDailyPhotos(existing.date); }
+    catch (error) { message(`Nhật ký đã xóa nhưng ảnh cùng ngày chưa dọn được: ${error.message}. Hãy xóa trong mục Ảnh.`, true); }
+  }), 'danger'));
+  const related = data.sessions.filter(item => item.date === journalDate);
+  if (related.length) box.append(p(`Buổi tập cùng ngày: ${related.map(item => item.workout).join(', ')}`, 'hint'));
+  const attached = div('journal-attached');
+  box.append(attached);
+  listPhotos().then(photos => {
+    if (!attached.isConnected) return;
+    const matches = photos.filter(item => item.category === 'daily' && item.date === journalDate);
+    if (!matches.length) return;
+    attached.append(h3(`Ảnh ngày này (${matches.length})`));
+    const strip = div('photo-strip');
+    for (const item of matches) {
+      const url = URL.createObjectURL(item.thumbnail || item.blob);
+      photoUrls.push(url);
+      strip.append(node('img', { src: url, alt: `Ảnh nhật ký ${item.date}`, loading: 'lazy' }));
+    }
+    attached.append(strip);
+  }).catch(() => {});
+  main.append(box);
+}
+
+function renderJournalCalendar() {
+  const month = panel(div('row', h2(`Tháng ${journalMonth}/${journalYear}`), div('actions',
+    button('← Tháng trước', () => { const previous = new Date(journalYear, journalMonth - 2, 1); journalMonth = previous.getMonth() + 1; journalYear = previous.getFullYear(); render(); }),
+    button('Tháng sau →', () => { const next = new Date(journalYear, journalMonth, 1); journalMonth = next.getMonth() + 1; journalYear = next.getFullYear(); render(); }))));
+  const grid = div('journal-calendar');
+  for (const label of ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']) grid.append(node('strong', { class: 'calendar-weekday', text: label }));
+  for (const date of monthDays(journalYear, journalMonth)) {
+    if (!date) { grid.append(div('calendar-blank')); continue; }
+    const entry = data.journalEntries.find(item => item.date === date);
+    const mood = MOODS.find(item => item.value === entry?.mood);
+    const day = node('button', { type: 'button', class: `calendar-day${entry ? ' has-entry' : ''}`, 'data-date': date, 'aria-label': `${date}${entry ? `, có nhật ký${mood ? `, ${mood.label}` : ''}` : ', chưa có nhật ký'}`, onClick: () => { journalDate = date; journalSection = 'entry'; render(); } }, [node('span', { text: String(Number(date.slice(-2))) }), node('strong', { text: mood?.mark || (entry ? '•' : '') })]);
+    grid.append(day);
+  }
+  month.append(grid);
+  main.append(month);
+  listPhotos().then(photos => {
+    if (!grid.isConnected) return;
+    const dates = new Set(photos.filter(item => item.category === 'daily').map(item => item.date));
+    grid.querySelectorAll('.calendar-day').forEach(day => {
+      const date = day.getAttribute('data-date');
+      if (dates.has(date)) { day.classList.add('has-photo'); day.setAttribute('aria-label', `${day.getAttribute('aria-label')}, có ảnh`); }
+    });
+  }).catch(() => {});
+  const timeline = panel(h2('Dòng thời gian'));
+  const entries = [...data.journalEntries].sort((a, b) => b.date.localeCompare(a.date));
+  if (!entries.length) timeline.append(p('Chưa có nhật ký. Ghi một ngày để bắt đầu.', 'empty'));
+  for (const entry of entries.slice(0, 30)) {
+    const mood = MOODS.find(item => item.value === entry.mood);
+    timeline.append(div('list-card', h3(`${entry.date}${mood ? ` · ${mood.mark} ${mood.label}` : ''}`),
+      entry.title ? p(entry.title, 'summary') : document.createTextNode(''),
+      entry.note ? p(entry.note.slice(0, 180), 'hint') : document.createTextNode(''),
+      entry.tags.length ? p(entry.tags.join(' · '), 'hint') : document.createTextNode(''),
+      button('Mở ngày', () => { journalDate = entry.date; journalSection = 'entry'; render(); })));
+  }
+  main.append(timeline);
+}
+
+function renderPhotos() {
+  const box = panel(h2(editingPhoto ? 'Sửa thông tin ảnh' : 'Thêm ảnh cục bộ'), p('Ảnh chỉ nằm trong trình duyệt này. Ảnh gốc trên thiết bị không bị sửa. Bản sao JSON ở Cài đặt không chứa ảnh.', 'hint'));
+  const form = node('form', { class: 'form-grid' });
+  const file = field('Ảnh JPG, PNG hoặc WebP (tối đa 20 MB)', 'image', '', { type: 'file' });
+  file.querySelector('input').setAttribute('accept', 'image/jpeg,image/png,image/webp');
+  if (editingPhoto) file.hidden = true;
+  const category = field('Loại ảnh', 'category', editingPhoto?.category || 'daily', { tag: 'select', choices: PHOTO_CATEGORIES });
+  const pose = field('Góc chụp (nếu theo dõi cơ thể)', 'pose', editingPhoto?.pose || '', { tag: 'select', choices: PHOTO_POSES });
+  const measurement = div('form-grid span-all', field('Cân nặng kg (tùy chọn)', 'weight', editingPhoto?.weight ?? '', { type: 'number', min: 0, step: .1 }), field('Vòng eo cm (tùy chọn)', 'waist', editingPhoto?.waist ?? '', { type: 'number', min: 0, step: .1 }));
+  form.append(file, field('Ngày', 'date', editingPhoto?.date || journalDate, { type: 'date', required: true }), category, pose, measurement, field('Ghi chú ảnh', 'note', editingPhoto?.note || '', { tag: 'textarea' }));
+  form.append(node('button', { type: 'submit', class: 'primary', text: editingPhoto ? 'Lưu thông tin' : 'Lưu ảnh' }));
+  if (editingPhoto) form.append(button('Hủy sửa', () => { editingPhoto = null; render(); }));
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    try {
+      const raw = Object.fromEntries(new FormData(form));
+      const meta = validatePhotoMeta(raw);
+      const now = new Date().toISOString();
+      if (editingPhoto) {
+        await updatePhotoIfUnchanged(editingPhoto, meta, now);
+      } else {
+        const selected = file.querySelector('input').files?.[0];
+        validatePhotoFile(selected);
+        const image = await compressPhoto(selected);
+        await putPhoto({ id: id(), ...meta, ...image, createdAt: now, updatedAt: now });
+      }
+      editingPhoto = null;
+      render();
+      message('Đã lưu ảnh trong trình duyệt này.');
+    } catch (error) { message(error.message || 'Không thể lưu ảnh.', true); }
+  });
+  box.append(form);
+  main.append(box);
+  const gallery = panel(h2('Ảnh đã lưu'));
+  const filter = field('Lọc ảnh', 'photoFilter', photoFilter, { tag: 'select', choices: [{ value: 'all', label: 'Tất cả' }, ...PHOTO_CATEGORIES] });
+  filter.querySelector('select').addEventListener('change', event => { photoFilter = event.target.value; render(); });
+  gallery.append(filter);
+  main.append(gallery);
+  listPhotos().then(records => {
+    if (journalSection !== 'photos' || !gallery.isConnected) return;
+    const visible = records.filter(item => photoFilter === 'all' || item.category === photoFilter).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+    if (!visible.length) { gallery.append(p('Chưa có ảnh trong mục này.', 'empty')); return; }
+    for (const item of visible) {
+      const card = div('photo-card');
+      const imageUrl = URL.createObjectURL(item.thumbnail || item.blob);
+      const fullUrl = URL.createObjectURL(item.blob);
+      photoUrls.push(imageUrl);
+      photoUrls.push(fullUrl);
+      const img = node('img', { src: imageUrl, alt: `Ảnh ${PHOTO_CATEGORIES.find(entry => entry.value === item.category)?.label || ''} ngày ${item.date}`, loading: 'lazy' });
+      card.append(img, div('stack', h3(`${item.date} · ${PHOTO_CATEGORIES.find(entry => entry.value === item.category)?.label || ''}`),
+        item.pose ? p(`Góc: ${PHOTO_POSES.find(entry => entry.value === item.pose)?.label || item.pose}`, 'hint') : document.createTextNode(''),
+        item.weight !== null || item.waist !== null ? p(`Cân: ${item.weight ?? '—'} kg · Eo: ${item.waist ?? '—'} cm`, 'hint') : document.createTextNode(''),
+        item.note ? p(item.note, 'hint') : document.createTextNode(''),
+        div('actions', node('a', { class: 'secondary', href: fullUrl, target: '_blank', rel: 'noopener', text: 'Xem ảnh' }), button('Sửa', () => { editingPhoto = item; journalDate = item.date; render(); window.scrollTo(0, 0); }), button('Xóa', () => confirmAction(`Xóa ảnh ngày ${item.date}? Ảnh này sẽ mất khỏi trình duyệt.`, async () => {
+          try {
+            await deletePhotoIfUnchanged(item);
+            render(); message('Đã xóa ảnh.');
+          } catch (error) { message(error.message, true); }
+        }), 'danger'))));
+      gallery.append(card);
+    }
+  }).catch(error => { if (gallery.isConnected) gallery.append(p(error.message, 'empty')); });
+}
+
 function checkinsView() {
   const nav = div('subtabs', button('Tổng quan tiến độ', () => { progressSubView = 'overview'; render(); }), button('Nhập & xem check-in', () => { progressSubView = 'checkins'; render(); }));
   main.append(nav);
@@ -845,13 +1053,62 @@ function settingsView() {
   });
   box.append(form);
   main.append(box);
-  const backup = panel(h2('Sao lưu dữ liệu'), p('Bản JSON chứa toàn bộ dữ liệu cấu trúc trên trình duyệt này. Hãy giữ file riêng tư. Ảnh (nếu có trong tương lai) chưa nằm trong bản JSON.', 'hint'), div('actions', button('Chuẩn bị file JSON', exportData, 'primary'), button('Sao chép JSON', copyData)), div('actions', node('span', { id: 'backup-link' })), p('Nếu trình duyệt không tải file, dùng Sao chép JSON và lưu nội dung vào file .json riêng tư.', 'hint'));
+  const backup = panel(h2('Sao lưu dữ liệu'), p('Để sao lưu đủ, tải HAI file: dữ liệu chữ/số và ảnh. Hai file đều riêng tư. Khôi phục JSON chỉ thay dữ liệu chữ/số; khôi phục ảnh chỉ thêm ảnh chưa có.', 'hint'), div('actions', button('Chuẩn bị file dữ liệu JSON', exportData, 'primary'), button('Sao chép JSON', copyData)), div('actions', node('span', { id: 'backup-link' })), p('Nếu trình duyệt không tải file dữ liệu, dùng Sao chép JSON và lưu nội dung vào file .json riêng tư.', 'hint'));
   const fileField = field('Chọn file JSON để khôi phục', 'restoreFile', '', { type: 'file' });
   fileField.querySelector('input').setAttribute('accept', '.json,application/json');
   fileField.querySelector('input').addEventListener('change', previewRestore);
   backup.append(h3('Khôi phục dữ liệu'), p('Kiểm tra file và xem trước trước khi thay thế dữ liệu hiện tại.', 'hint'), fileField, div('restore-preview'));
   main.append(backup);
   renderRestorePreview();
+  const photos = panel(h2('Sao lưu ảnh'), p('Ảnh JPEG đã nén được đóng gói trong file JSON riêng. File này có thể lớn hơn kho ảnh do mã hóa base64; tối đa 200 MB ảnh. Không đưa file ảnh cá nhân lên GitHub.', 'hint'), div('actions', button('Chuẩn bị file ảnh', exportPhotos, 'primary')), node('span', { id: 'photo-backup-link' }));
+  const photoFile = field('Chọn file ảnh Tracker để khôi phục', 'photoRestoreFile', '', { type: 'file' });
+  photoFile.querySelector('input').setAttribute('accept', '.json,application/json');
+  photoFile.querySelector('input').addEventListener('change', previewPhotoRestore);
+  photos.append(h3('Khôi phục ảnh'), p('Xem trước rồi thêm ảnh chưa có. Ảnh cùng ID đang lưu sẽ được giữ nguyên.', 'hint'), photoFile, div('photo-restore-preview'));
+  main.append(photos);
+  renderPhotoRestorePreview();
+}
+
+async function exportPhotos() {
+  try {
+    const records = await listPhotos();
+    if (!records.length) throw new Error('Chưa có ảnh để sao lưu.');
+    const packed = await createPhotoBackup(records);
+    if (photoBackupUrl) URL.revokeObjectURL(photoBackupUrl);
+    photoBackupUrl = URL.createObjectURL(new Blob([packed], { type: 'application/json' }));
+    document.querySelector('#photo-backup-link').replaceChildren(node('a', { href: photoBackupUrl, download: `tracker-photos-${localDate()}.json`, class: 'primary', text: `Tải file ảnh (${records.length} ảnh)` }));
+    message('File ảnh đã sẵn sàng. Hãy tải và giữ cùng bản sao dữ liệu.');
+  } catch (error) { message(error.message || 'Không xuất được ảnh.', true); }
+}
+
+async function previewPhotoRestore(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 280_000_000) throw new Error('File ảnh vượt 280 MB.');
+    const parsed = parsePhotoBackup(await file.text());
+    const existing = new Set((await listPhotos()).map(item => item.id));
+    photoRestorePreview = { ...parsed, addCount: parsed.photos.filter(item => !existing.has(item.id)).length };
+    renderPhotoRestorePreview();
+    message('Đã kiểm tra file ảnh. Xem trước trước khi nhập.');
+  } catch (error) { photoRestorePreview = null; renderPhotoRestorePreview(); message(error.message, true); }
+}
+
+function renderPhotoRestorePreview() {
+  const box = document.querySelector('.photo-restore-preview');
+  if (!box) return;
+  box.replaceChildren();
+  if (!photoRestorePreview) return;
+  const selected = photoRestorePreview;
+  box.append(h3('Xem trước ảnh'), p(`Xuất lúc: ${selected.exportedAt}`, 'hint'), p(`${selected.photos.length} ảnh trong file · ${selected.addCount} ảnh mới dự kiến thêm · ${(selected.bytes / 1_000_000).toFixed(1)} MB dữ liệu ảnh`, 'summary'));
+  box.append(div('actions', button('Hủy', () => { photoRestorePreview = null; renderPhotoRestorePreview(); }), button('Thêm ảnh từ file', async () => {
+    try {
+      const result = await addMissingPhotos(selected.photos);
+      photoRestorePreview = null;
+      renderPhotoRestorePreview();
+      message(`Đã thêm ${result.added} ảnh; giữ nguyên ${result.skipped} ảnh đã có.`);
+    } catch (error) { message(error.message || 'Không nhập được ảnh.', true); }
+  }, 'primary')));
 }
 
 async function previewRestore(event) {
@@ -873,7 +1130,7 @@ function renderRestorePreview() {
   if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
   const counts = restorePreview.counts;
   box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
-    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · có cài đặt`, 'summary'));
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · ${counts.journal} nhật ký · có cài đặt`, 'summary'));
   if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
   restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
   box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
@@ -890,7 +1147,7 @@ async function restoreData() {
   const selected = restorePreview;
   const done = await mutate(next => {
     if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
-    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes']) next[key] = structuredClone(selected.data[key] ?? null);
+    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes', 'journalEntries']) next[key] = structuredClone(selected.data[key] ?? null);
   }, 'Đã khôi phục dữ liệu từ file.');
   if (done) { restorePreview = null; renderRestorePreview(); }
 }
