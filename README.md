@@ -19,7 +19,7 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 1. Vào **Cài đặt** chọn tuần chương trình (mặc định tuần 1) và sửa mục tiêu ăn nếu cần.
 2. Vào **Tập luyện → Chương trình**, chọn A/B/C/D rồi bắt đầu buổi. Nhập tạ, số lần, RIR và chọn **Lưu hiệp**; bản nháp lưu sau mỗi hiệp.
 3. Chọn **Hoàn thành & lưu buổi**. Vào **Tập luyện → Lịch sử** để xem hoặc mở lại sửa.
-4. Tạo món từ nhãn thực phẩm ở **Ăn uống**, rồi thêm vào nhật ký theo ngày và số khẩu phần.
+4. Tạo món từ nhãn thực phẩm ở **Ăn uống → Thực phẩm**, rồi thêm vào **Nhật ký ngày**. Có thể lưu một bữa đã ghi thành **Bữa lưu sẵn**, sao chép ngày trước, hoặc nhập **Công thức**. Macro công thức là dữ liệu bạn tự nhập; công thức thiếu macro không ghi vào nhật ký ăn.
 5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
    **Tiến độ → Tổng quan** cho biết các trung bình theo tuần và lịch sử theo bài khi có dữ liệu. **Tập luyện → Cardio & gối** cho phép ghi hoạt động và tình trạng gối riêng.
 6. Vào **Cài đặt → Chuẩn bị file JSON → Tải file JSON** để sao lưu. Nếu browser không tải file, dùng **Sao chép JSON** và lưu văn bản vào một file `.json` riêng tư. Xác nhận file thực sự tồn tại trước khi xóa dữ liệu browser.
@@ -28,7 +28,7 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 ## Giới hạn hiện tại
 
 - Dữ liệu chỉ ở browser profile hiện tại. Xóa site data, đổi origin/profile hoặc cài lại trình duyệt có thể làm mất dữ liệu; xuất backup đều đặn.
-- Chưa hỗ trợ đồng bộ, tài khoản, ảnh, công thức nấu hay Flask/SQLite. Bản JSON chỉ bao gồm dữ liệu cấu trúc; không bao gồm ảnh trong tương lai.
+- Chưa hỗ trợ đồng bộ, tài khoản, ảnh hay Flask/SQLite. Bản JSON chỉ bao gồm dữ liệu cấu trúc; không bao gồm ảnh trong tương lai. Công thức đã có nhưng chưa hỗ trợ ảnh và tự scale nguyên liệu theo số phần.
 - Trong buổi tập có thể dùng **Chế độ tập trung**, **Dùng số lần trước**, ghi chú setup riêng và đồng hồ nghỉ tùy chọn. Đồng hồ dùng mức thấp của khoảng nghỉ trong plan làm mặc định; dữ liệu lần trước chỉ để điền nhanh, không phải lời khuyên tăng tải.
 - Nếu đã mở Tracker trong nhiều tab trước khi cập nhật phiên bản này, tải lại tất cả tab để chúng dùng cùng cách lưu an toàn mới. Trình duyệt cần hỗ trợ Web Locks; nếu không, ứng dụng từ chối ghi dữ liệu thay vì ghi đè thiếu an toàn.
 - Dashboard gợi ý **buổi kế tiếp** theo buổi hoàn thành gần nhất (A→B→C→D), không tự quyết định ngày nào bạn phải tập.

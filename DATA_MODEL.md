@@ -1,4 +1,4 @@
-# Local data model (schemaVersion 3)
+# Local data model (schemaVersion 4)
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
@@ -12,11 +12,13 @@ One JSON object is stored under `vshape-tracker` in `localStorage`.
 - `exerciseNotes`: personal setup text keyed by workout and exercise index (`A:0` etc.). These are separate from the program's technique notes.
 - `cardioEntries[]`: date, activity, minutes, optional distance (km), intensity text and notes. No prescription is inferred.
 - `kneeEntries[]`: date, moment, optional 0–10 pain, swelling/instability/stiffness status and notes. This is recording only.
+- `savedMeals[]`: reusable name and item snapshots (`foodId`, per-serving food snapshot, servings). Applying a template creates new independent `entries[]`; editing/deleting a template does not rewrite old days.
+- `recipes[]`: name, description, servings, structured ingredient quantities/units/names, ordered steps, tags, notes and optional manually entered complete macro set per serving. Unknown nutrition is `null`. Logging a recipe snapshots its per-serving macros into an entry.
 
 IDs use `crypto.randomUUID()`. Calendar dates use local time; timestamps use ISO UTC. Writes take an origin-scoped Web Lock, reload the latest object, apply one change, then save. This prevents two current Tracker tabs from overwriting independent changes. A stale edit to the same record is rejected. If Web Locks are unavailable, writes fail with a clear message rather than claiming to save safely. Older already-open versions of Tracker should be reloaded after updating the code.
 
-The data-safety fixes needed no migration. Phase 3 adds additive migrations: version 1 → 2 adds `exerciseNotes`; version 2 → 3 adds `cardioEntries` and `kneeEntries`. `loadData` migrates in memory without rewriting the original saved object; the next successful user write saves the new schema. Existing sessions, food entries and check-ins are preserved. Entries contain a per-serving food snapshot. Changing an old entry's serving amount keeps that snapshot; choosing a different food creates a new snapshot.
+The data-safety fixes needed no migration. Additive migrations: version 1 → 2 adds `exerciseNotes`; version 2 → 3 adds `cardioEntries` and `kneeEntries`; version 3 → 4 adds `savedMeals` and `recipes`. `loadData` migrates in memory without rewriting the original saved object; the next successful user write saves the new schema. Existing sessions, food entries and check-ins are preserved. Entries contain a per-serving food snapshot. Changing an old entry's serving amount keeps that snapshot; choosing a different food creates a new snapshot.
 
-Parse/schema failure stops use of stored data rather than silently overwriting it. Export wraps the state as `{ schemaVersion, exportedAt, data }`; restore also accepts earlier version 1/2 exports and migrates them in memory. Import validates required fields, previews counts, requires an explicit restore action, and checks that live data has not changed since preview. JSON backup includes settings, sessions, draft, foods, entries, check-ins, exercise notes, cardio and knee entries. It does not include photos.
+Parse/schema failure stops use of stored data rather than silently overwriting it. Export wraps the state as `{ schemaVersion, exportedAt, data }`; restore also accepts earlier version 1–3 exports and migrates them in memory. Import validates required fields, previews counts, requires an explicit restore action, and checks that live data has not changed since preview. JSON backup includes settings, sessions, draft, foods, entries, check-ins, exercise notes, cardio, knee, saved meals and recipes. It does not include photos.
 
 Future Flask/SQLite migration should keep this frontend and replace the persistence boundary in `js/data.js` feature by feature. Map settings first, then sessions/sets, foods/entries, check-ins. Validate and back up the local JSON before any migration; use SQLite foreign keys and parameterized queries. There is no decision yet to start a backend.

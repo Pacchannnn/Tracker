@@ -112,16 +112,28 @@ test('backup round trip includes timestamp and preview counts', () => {
   const text = createBackup(data, new Date('2026-09-30T12:00:00Z'));
   const parsed = parseBackup(text);
   assert.equal(parsed.exportedAt, '2026-09-30T12:00:00.000Z');
-  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0, cardio: 0, knee: 0 });
+  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0, cardio: 0, knee: 0, savedMeals: 0, recipes: 0 });
   assert.deepEqual(parsed.data, data);
 });
 
 test('restore rejects corrupt and incompatible files without changing storage', () => {
   assert.throws(() => parseBackup('{bad'), /JSON/);
   assert.throws(() => parseBackup(JSON.stringify({ schemaVersion: 99, data: emptyData() })), /Phiên bản/);
+  assert.throws(() => parseBackup(JSON.stringify({ schemaVersion: 1, exportedAt: '2026-09-30T12:00:00.000Z', data: emptyData() })), /khớp/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), sessions: [{ id: 'bad' }] })), /buổi tập/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), entries: [{ id: 'e1', date: '2026-09-30', meal: 'Lunch', servings: 1, foodId: 'f1', food: { calories: 'oops' } }] })), /bữa ăn/);
-  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 3);
+  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 4);
+});
+
+test('backup includes saved meals and recipes with stable snapshots', () => {
+  const data = emptyData();
+  const food = { name: 'Food', serving: '1', calories: 100, protein: 8, carbs: 10, fat: 2 };
+  data.savedMeals.push({ id: 'm1', name: 'Lunch', items: [{ foodId: 'f1', food, servings: 1 }] });
+  data.recipes.push({ id: 'r1', name: 'Recipe', description: '', servings: 2, ingredients: [{ quantity: 100, unit: 'g', name: 'Rice' }], steps: ['Cook'], tags: [], notes: '', nutritionPerServing: null });
+  const restored = parseBackup(createBackup(data));
+  assert.equal(restored.counts.savedMeals, 1);
+  assert.equal(restored.counts.recipes, 1);
+  assert.deepEqual(restored.data.savedMeals[0].items[0].food, food);
 });
 
 test('version 1 workout history migrates without deleting user data', () => {
@@ -132,10 +144,12 @@ test('version 1 workout history migrates without deleting user data', () => {
   const memory = new Map([['vshape-tracker', JSON.stringify(old)]]);
   const storage = { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
   const loaded = loadData(storage);
-  assert.equal(loaded.schemaVersion, 3);
+  assert.equal(loaded.schemaVersion, 4);
   assert.deepEqual(loaded.exerciseNotes, {});
   assert.deepEqual(loaded.cardioEntries, []);
   assert.deepEqual(loaded.kneeEntries, []);
+  assert.deepEqual(loaded.savedMeals, []);
+  assert.deepEqual(loaded.recipes, []);
   assert.equal(loaded.sessions[0].id, 's1');
   assert.equal(JSON.parse(memory.get('vshape-tracker')).schemaVersion, 1);
   assert.equal(parseBackup(JSON.stringify(old)).data.sessions[0].id, 's1');
@@ -147,9 +161,20 @@ test('version 2 exercise notes migrate and remain intact', () => {
   delete old.kneeEntries;
   const storage = { getItem: () => JSON.stringify(old) };
   const next = loadData(storage);
-  assert.equal(next.schemaVersion, 3);
+  assert.equal(next.schemaVersion, 4);
   assert.equal(next.exerciseNotes['A:0'], 'Ghế số 3');
   assert.deepEqual(next.cardioEntries, []);
+});
+
+test('version 3 cardio and knee data migrate into the nutrition schema', () => {
+  const old = { ...emptyData(), schemaVersion: 3, cardioEntries: [{ id: 'c1', date: '2026-09-30', activity: 'Walk', durationMinutes: 20, distanceKm: null, intensity: '', notes: '' }] };
+  delete old.savedMeals;
+  delete old.recipes;
+  const loaded = loadData({ getItem: () => JSON.stringify(old) });
+  assert.equal(loaded.schemaVersion, 4);
+  assert.equal(loaded.cardioEntries[0].id, 'c1');
+  assert.deepEqual(loaded.savedMeals, []);
+  assert.deepEqual(loaded.recipes, []);
 });
 
 test('cardio and knee logs accept records without inventing prescriptions or symptoms', () => {

@@ -1,14 +1,15 @@
 export const STORAGE_KEY = 'vshape-tracker';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 export const emptyData = () => ({
   schemaVersion: SCHEMA_VERSION,
   settings: { week: 1, calories: 2400, protein: 120 },
-  sessions: [], foods: [], entries: [], checkins: [], draft: null, exerciseNotes: {}, cardioEntries: [], kneeEntries: []
+  sessions: [], foods: [], entries: [], checkins: [], draft: null, exerciseNotes: {}, cardioEntries: [], kneeEntries: [], savedMeals: [], recipes: []
 });
 
 function migrateData(data) {
   if (data?.schemaVersion === 1) data = { ...data, schemaVersion: 2, exerciseNotes: {} };
   if (data?.schemaVersion === 2) data = { ...data, schemaVersion: 3, cardioEntries: [], kneeEntries: [] };
+  if (data?.schemaVersion === 3) data = { ...data, schemaVersion: 4, savedMeals: [], recipes: [] };
   return data;
 }
 
@@ -103,7 +104,7 @@ export function loadData(storage) {
   let data;
   try { data = JSON.parse(raw); } catch { throw new Error('Dữ liệu đã lưu bị lỗi. Hãy giữ nguyên trình duyệt và dùng bản sao lưu nếu có.'); }
   data = migrateData(data);
-  if (!data || data.schemaVersion !== SCHEMA_VERSION || !data.settings || !['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries'].every(key => Array.isArray(data[key])) || !data.exerciseNotes || typeof data.exerciseNotes !== 'object' || Array.isArray(data.exerciseNotes)) {
+  if (!data || data.schemaVersion !== SCHEMA_VERSION || !data.settings || !['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes'].every(key => Array.isArray(data[key])) || !data.exerciseNotes || typeof data.exerciseNotes !== 'object' || Array.isArray(data.exerciseNotes)) {
     throw new Error('Định dạng dữ liệu lưu không được hỗ trợ. Không ghi đè dữ liệu cũ.');
   }
   return data;
@@ -162,7 +163,7 @@ function validateBackupData(data) {
   if (!isObject(data) || data.schemaVersion !== SCHEMA_VERSION) throw new Error('Phiên bản dữ liệu không tương thích.');
   if (!isObject(data.settings) || !Number.isInteger(data.settings.week) || data.settings.week < 1 || data.settings.week > 12 ||
     !isNumber(data.settings.calories) || !isNumber(data.settings.protein)) throw new Error('Cài đặt trong bản sao lưu không hợp lệ.');
-  if (!['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries'].every(key => Array.isArray(data[key]))) throw new Error('Bản sao lưu thiếu danh sách dữ liệu cần thiết.');
+  if (!['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes'].every(key => Array.isArray(data[key]))) throw new Error('Bản sao lưu thiếu danh sách dữ liệu cần thiết.');
   if (!isObject(data.exerciseNotes) || !Object.values(data.exerciseNotes).every(value => typeof value === 'string')) throw new Error('Ghi chú bài tập không hợp lệ.');
   const validSession = item => isObject(item) && isId(item.id) && ['A', 'B', 'C', 'D'].includes(item.workout) &&
     validDate(item.date) && Number.isInteger(item.week) && item.week >= 1 && item.week <= 12 && Array.isArray(item.sets) &&
@@ -183,7 +184,14 @@ function validateBackupData(data) {
     (item.pain === null || (Number.isInteger(item.pain) && item.pain >= 0 && item.pain <= 10)) &&
     ['swelling', 'instability', 'stiffness'].every(key => ['unknown', 'no', 'yes'].includes(item[key])) &&
     typeof item.notes === 'string')) throw new Error('Có ghi chú gối không hợp lệ trong bản sao lưu.');
-  for (const key of ['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries']) {
+  if (!data.savedMeals.every(item => isObject(item) && isId(item.id) && typeof item.name === 'string' && Array.isArray(item.items) && item.items.length > 0 &&
+    item.items.every(food => isObject(food) && isId(food.foodId) && validMacros(food.food) && isNumber(food.servings) && food.servings > 0))) throw new Error('Có bữa ăn lưu sẵn không hợp lệ.');
+  if (!data.recipes.every(item => isObject(item) && isId(item.id) && typeof item.name === 'string' && isNumber(item.servings) && item.servings > 0 &&
+    typeof item.description === 'string' && Array.isArray(item.ingredients) && item.ingredients.length > 0 &&
+    item.ingredients.every(ingredient => isObject(ingredient) && isNumber(ingredient.quantity) && ingredient.quantity > 0 && typeof ingredient.unit === 'string' && typeof ingredient.name === 'string') &&
+    Array.isArray(item.steps) && item.steps.length > 0 && item.steps.every(step => typeof step === 'string') && Array.isArray(item.tags) && item.tags.every(tag => typeof tag === 'string') &&
+    typeof item.notes === 'string' && (item.nutritionPerServing === null || (isObject(item.nutritionPerServing) && ['calories', 'protein', 'carbs', 'fat'].every(key => isNumber(item.nutritionPerServing[key])))))) throw new Error('Có công thức không hợp lệ.');
+  for (const key of ['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes']) {
     if (new Set(data[key].map(item => item.id)).size !== data[key].length) throw new Error(`ID trùng trong ${key}.`);
   }
 }
@@ -197,8 +205,9 @@ export function parseBackup(text) {
   let parsed;
   try { parsed = JSON.parse(text); } catch { throw new Error('File không phải JSON hợp lệ.'); }
   const wrapped = isObject(parsed) && Object.hasOwn(parsed, 'data');
+  if (wrapped && parsed.schemaVersion !== parsed.data?.schemaVersion) throw new Error('Phiên bản vỏ và dữ liệu không khớp.');
   const data = migrateData(wrapped ? parsed.data : parsed);
-  if (wrapped && ![1, 2, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
+  if (wrapped && ![1, 2, 3, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
   validateBackupData(data);
   return {
     data: structuredClone(data),
@@ -210,7 +219,9 @@ export function parseBackup(text) {
       entries: data.entries.length,
       checkins: data.checkins.length,
       cardio: data.cardioEntries.length,
-      knee: data.kneeEntries.length
+      knee: data.kneeEntries.length,
+      savedMeals: data.savedMeals.length,
+      recipes: data.recipes.length
     }
   };
 }

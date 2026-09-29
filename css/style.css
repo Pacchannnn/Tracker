@@ -139,6 +139,10 @@ a.primary { display: inline-flex; align-items: center; }
 .program-card h3 { margin: 0; }
 .list-card { padding: 15px 0; border-top: 2px dashed #b9b1a6; }
 .list-card:first-of-type { border-top: 0; }
+.recipe-detail { padding: 15px 0; border-top: 2px dashed #b9b1a6; }
+.recipe-detail summary { cursor: pointer; font-size: 1.16rem; font-weight: 700; }
+.recipe-detail[open] summary { margin-bottom: 14px; }
+.recipe-detail .form-grid { margin-top: 18px; }
 
 footer { padding: 9px 0; color: var(--muted); font-size: .82rem; }
 dialog { max-width: min(500px, calc(100vw - 28px)); padding: 23px; color: var(--ink); background: var(--paper); border: 3px solid var(--ink); border-radius: var(--wobbly); box-shadow: 8px 8px 0 var(--ink); }

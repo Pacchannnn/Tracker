@@ -3,6 +3,7 @@ import { emptyData, loadData, updateData, validateSet, validateFood, validateEnt
 import { navigationGroup } from './navigation.js?v=2';
 import { previousSetFor, nextIncompleteExercise, restSeconds } from './workout.js';
 import { weeklySummary, exerciseHistory } from './progress.js';
+import { recentFoods, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -28,6 +29,9 @@ let editingCardio = null;
 let editingKnee = null;
 let progressSubView = 'overview';
 let selectedExercise = '';
+let nutritionSubView = 'daily';
+let editingSavedMeal = null;
+let editingRecipe = null;
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -57,7 +61,7 @@ function field(label, name, value = '', options = {}) {
     for (const choice of options.choices) input.append(node('option', { value: typeof choice === 'string' ? choice : choice.value, text: typeof choice === 'string' ? choice : choice.label }));
     input.value = value;
   }
-  const wrapper = node('label', { class: options.type === 'checkbox' ? 'field checkbox-field' : 'field' });
+  const wrapper = node('label', { class: options.type === 'checkbox' ? 'field checkbox-field' : options.tag === 'textarea' ? 'field span-all' : 'field' });
   wrapper.append(node('span', { text: label }), input);
   return wrapper;
 }
@@ -477,7 +481,19 @@ function gymLogsView() {
 
 function nutritionView() {
   main.append(panel(h2('Dinh dưỡng'), p('Tự nhập thông tin từ nhãn hoặc nguồn bạn tin cậy. Ứng dụng không có dữ liệu macro mặc định.', 'hint')));
+  const nav = div('subtabs', ...[
+    ['daily', 'Nhật ký ngày'], ['foods', 'Thực phẩm'], ['saved', 'Bữa lưu sẵn'], ['recipes', 'Công thức'], ['summary', 'Tổng kết']
+  ].map(([key, label]) => {
+    const item = button(label, () => { nutritionSubView = key; render(); });
+    item.setAttribute('aria-pressed', String(nutritionSubView === key));
+    return item;
+  }));
+  main.append(nav);
   const foodDate = diaryDate(foodDateSelection);
+  if (nutritionSubView === 'foods') { renderFoodLibrary(); return; }
+  if (nutritionSubView === 'saved') { renderSavedMeals(foodDate); return; }
+  if (nutritionSubView === 'recipes') { renderRecipes(foodDate); return; }
+  if (nutritionSubView === 'summary') { renderNutritionSummary(); return; }
   const dateField = field('Ngày', 'date', foodDate, { type: 'date' });
   dateField.querySelector('input').addEventListener('change', event => {
     if (!validDate(event.target.value)) { message('Ngày không hợp lệ.', true); return; }
@@ -491,8 +507,13 @@ function nutritionView() {
     stat('Carbs', `${fmt(totals.carbs)} g`), stat('Fat', `${fmt(totals.fat)} g`)));
   summary.append(p('Mục tiêu carbs: DATA NOT DEFINED YET · Chất béo theo plan khoảng 60–75 g/ngày.', 'hint'));
   summary.append(button('Về hôm nay', () => { foodDateSelection = { mode: 'today', date: localDate() }; render(); }));
+  const yesterday = new Date(`${foodDate}T12:00:00`);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const sourceDate = localDate(yesterday);
+  summary.append(button('Sao chép ngày hôm trước', () => confirmAction(`Sao chép các món ngày ${sourceDate} vào ${foodDate}? Món đang có sẽ được giữ nguyên.`, () => mutate(next => {
+    next.entries.push(...copyDayEntries(next.entries, sourceDate, foodDate, id));
+  }, 'Đã sao chép nhật ký ăn.'))));
   main.append(summary);
-  renderFoodLibrary();
   renderFoodEntries(foodDate);
 }
 
@@ -525,12 +546,20 @@ function renderFoodLibrary() {
     if (done) { editingFood = null; render(); }
   });
   box.append(form);
-  if (!data.foods.length) box.append(p('Chưa có món nào. Nhập macro từ nhãn thực phẩm để bắt đầu.', 'empty'));
-  for (const food of data.foods) {
-    box.append(div('list-card', h3(food.name), p(`${food.serving} · ${fmt(food.calories)} kcal · P ${fmt(food.protein)} · C ${fmt(food.carbs)} · F ${fmt(food.fat)}`, 'summary'), food.notes ? p(food.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingFood = food.id; render(); }), button('Xóa', () => {
+  const search = field('Tìm thực phẩm', 'foodSearch');
+  const results = div('food-results');
+  const updateResults = () => {
+    results.replaceChildren();
+    const query = search.querySelector('input').value.trim().toLocaleLowerCase('vi');
+    const foods = recentFoods(data.foods, data.entries).filter(food => food.name.toLocaleLowerCase('vi').includes(query));
+    if (!foods.length) results.append(p(query ? 'Không tìm thấy thực phẩm phù hợp.' : 'Chưa có món nào. Nhập macro từ nhãn thực phẩm để bắt đầu.', 'empty'));
+    for (const food of foods) results.append(div('list-card', h3(food.name), p(`${food.serving} · ${fmt(food.calories)} kcal · P ${fmt(food.protein)} · C ${fmt(food.carbs)} · F ${fmt(food.fat)}`, 'summary'), food.notes ? p(food.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingFood = food.id; render(); }), button('Xóa', () => {
       confirmAction(`Xóa món ${food.name} khỏi thư viện? Các bữa đã ghi vẫn giữ nguyên.`, () => mutate(next => { next.foods = next.foods.filter(item => item.id !== food.id); }, 'Đã xóa món khỏi thư viện.'));
     }, 'danger'))));
-  }
+  };
+  search.querySelector('input').addEventListener('input', updateResults);
+  box.append(search, results);
+  updateResults();
   main.append(box);
 }
 
@@ -544,7 +573,7 @@ function renderFoodEntries(foodDate) {
       field('Số khẩu phần', 'servings', editing?.servings ?? 1, { type: 'number', min: '0.01', step: 'any', required: true })
     ]);
     const select = form.querySelector('[name=foodId]');
-    select.replaceChildren(...data.foods.map(food => node('option', { value: food.id, text: `${food.name} · ${food.serving}` })));
+    select.replaceChildren(...recentFoods(data.foods, data.entries).map(food => node('option', { value: food.id, text: `${food.name} · ${food.serving}` })));
     if (editing && !data.foods.some(food => food.id === editing.foodId)) select.prepend(node('option', { value: editing.foodId, text: `${editing.food.name} (đã xóa khỏi thư viện)` }));
     select.value = editing?.foodId || data.foods[0]?.id || '';
     form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi bữa' : 'Ghi bữa ăn' }));
@@ -564,10 +593,159 @@ function renderFoodEntries(foodDate) {
       if (done) { editingEntry = null; render(); }
     });
     box.append(form);
-  } else box.append(p('Tạo một món trong thư viện trước khi ghi bữa ăn.', 'empty'));
+  } else box.append(p('Tạo một món trong thư viện trước khi ghi bữa ăn.', 'empty'), button('Mở thư viện thực phẩm', () => { nutritionSubView = 'foods'; render(); }));
   const entries = data.entries.filter(item => item.date === foodDate);
   if (!entries.length) box.append(p('Chưa có bữa ăn cho ngày này.', 'empty'));
   for (const entry of entries) box.append(div('list-card', h3(`${entry.meal} · ${entry.food.name}`), p(`${fmt(entry.servings)} × ${entry.food.serving} · ${fmt(entry.food.calories * entry.servings)} kcal · P ${fmt(entry.food.protein * entry.servings)} · C ${fmt(entry.food.carbs * entry.servings)} · F ${fmt(entry.food.fat * entry.servings)}`, 'summary'), div('actions', button('Sửa', () => { editingEntry = entry.id; render(); }), button('Xóa', () => confirmAction('Xóa bữa ăn này?', () => mutate(next => { next.entries = next.entries.filter(item => item.id !== entry.id); }, 'Đã xóa bữa ăn.')), 'danger'))));
+  main.append(box);
+}
+
+function renderSavedMeals(foodDate) {
+  const editing = data.savedMeals.find(item => item.id === editingSavedMeal);
+  const box = panel(h2('Bữa ăn lưu sẵn'), p('Lưu các món đã ghi trong một bữa để dùng lại. Bữa đã ghi luôn giữ macro tại thời điểm thêm.', 'hint'));
+  const form = node('form', { class: 'form-grid' }, [
+    field('Tên bữa lưu sẵn', 'name', editing?.name || '', { required: true }),
+    field('Lấy món từ ngày', 'date', foodDate, { type: 'date', required: true }),
+    field('Bữa nguồn', 'meal', 'Breakfast', { tag: 'select', choices: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Custom'] })
+  ]);
+  if (editing) form.append(field('Thay danh sách món bằng bữa nguồn (tùy chọn)', 'replaceItems', '', { type: 'checkbox' }));
+  form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi bữa mẫu' : 'Lưu bữa đang có' }));
+  if (editing) form.append(button('Hủy sửa', () => { editingSavedMeal = null; render(); }));
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const raw = Object.fromEntries(new FormData(form));
+    const done = await mutate(next => {
+      if (!validDate(raw.date)) throw new Error('Ngày nguồn không hợp lệ.');
+      const name = raw.name.trim();
+      if (!name) throw new Error('Nhập tên bữa lưu sẵn.');
+      if (editing) {
+        const index = next.savedMeals.findIndex(item => item.id === editing.id);
+        ensureUnchanged(next.savedMeals[index], editing);
+        next.savedMeals[index] = { ...editing, name, items: raw.replaceItems !== undefined ? savedMealFromEntries(name, next.entries, raw.date, raw.meal, id).items : editing.items };
+      } else next.savedMeals.push(savedMealFromEntries(name, next.entries, raw.date, raw.meal, id));
+    }, 'Đã lưu bữa ăn mẫu.');
+    if (done) { editingSavedMeal = null; render(); }
+  });
+  box.append(form);
+  if (!data.savedMeals.length) box.append(p('Chưa có bữa lưu sẵn. Ghi món trong Nhật ký ngày, rồi lưu bữa tại đây.', 'empty'));
+  for (const template of data.savedMeals) {
+    const card = div('list-card', h3(template.name), p(`${template.items.length} món · ${fmt(template.items.reduce((sum, item) => sum + item.food.calories * item.servings, 0))} kcal theo bản mẫu`, 'summary'));
+    const list = node('ul', { class: 'history-list' });
+    for (const item of template.items) list.append(node('li', { text: `${fmt(item.servings)} × ${item.food.name} · ${fmt(item.food.calories * item.servings)} kcal` }));
+    const useForm = node('form', { class: 'form-grid' }, [
+      field('Ngày cần ghi', 'date', foodDate, { type: 'date', required: true }),
+      field('Bữa cần ghi', 'meal', 'Breakfast', { tag: 'select', choices: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Custom'] }),
+      node('button', { type: 'submit', class: 'primary', text: 'Ghi bữa mẫu' })
+    ]);
+    useForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const raw = Object.fromEntries(new FormData(useForm));
+      const done = await mutate(next => {
+        if (!validDate(raw.date)) throw new Error('Ngày không hợp lệ.');
+        const current = next.savedMeals.find(item => item.id === template.id);
+        ensureUnchanged(current, template);
+        next.entries.push(...useSavedMeal(current, raw.date, raw.meal, id));
+      }, 'Đã ghi bữa mẫu vào nhật ký.');
+      if (done) { foodDateSelection = { mode: raw.date === localDate() ? 'today' : 'selected', date: raw.date }; nutritionSubView = 'daily'; render(); }
+    });
+    card.append(list, useForm, div('actions', button('Sửa mẫu', () => { editingSavedMeal = template.id; render(); }),
+      button('Xóa mẫu', () => confirmAction(`Xóa bữa mẫu ${template.name}? Nhật ký cũ vẫn giữ nguyên.`, () => mutate(next => {
+        ensureUnchanged(next.savedMeals.find(item => item.id === template.id), template);
+        next.savedMeals = next.savedMeals.filter(item => item.id !== template.id);
+      }, 'Đã xóa bữa mẫu.')), 'danger')));
+    box.append(card);
+  }
+  main.append(box);
+}
+
+function renderRecipes(foodDate) {
+  const editing = data.recipes.find(item => item.id === editingRecipe);
+  const box = panel(h2('Công thức'), p('Nhập nguyên liệu và dinh dưỡng từ nguồn của bạn. Nếu chưa biết đủ macro, để trống cả bốn ô; ứng dụng không tự ước tính.', 'hint'));
+  const form = node('form', { class: 'form-grid' }, [
+    field('Tên công thức', 'name', editing?.name || '', { required: true }),
+    field('Số phần', 'servings', editing?.servings ?? 1, { type: 'number', min: '0.01', step: 'any', required: true }),
+    field('Mô tả', 'description', editing?.description || ''),
+    field('Nguyên liệu, mỗi dòng: số lượng | đơn vị | tên', 'ingredients', editing?.ingredients.map(item => `${item.quantity} | ${item.unit} | ${item.name}`).join('\n') || '', { tag: 'textarea', required: true }),
+    field('Các bước, mỗi dòng một bước', 'steps', editing?.steps.join('\n') || '', { tag: 'textarea', required: true }),
+    field('Thẻ (cách nhau bằng dấu phẩy)', 'tags', editing?.tags.join(', ') || ''),
+    field('Calories / phần (tùy chọn)', 'calories', editing?.nutritionPerServing?.calories ?? '', { type: 'number', min: '0', step: 'any' }),
+    field('Protein / phần (g)', 'protein', editing?.nutritionPerServing?.protein ?? '', { type: 'number', min: '0', step: 'any' }),
+    field('Carbs / phần (g)', 'carbs', editing?.nutritionPerServing?.carbs ?? '', { type: 'number', min: '0', step: 'any' }),
+    field('Fat / phần (g)', 'fat', editing?.nutritionPerServing?.fat ?? '', { type: 'number', min: '0', step: 'any' }),
+    field('Ghi chú nấu ăn', 'notes', editing?.notes || '', { tag: 'textarea' }),
+    node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu công thức' : 'Thêm công thức' })
+  ]);
+  if (editing) form.append(button('Hủy sửa', () => { editingRecipe = null; render(); }));
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const raw = Object.fromEntries(new FormData(form));
+    const done = await mutate(next => {
+      const recipe = { id: editing?.id || id(), ...validateRecipe(raw) };
+      if (editing) {
+        const index = next.recipes.findIndex(item => item.id === editing.id);
+        ensureUnchanged(next.recipes[index], editing);
+        next.recipes[index] = recipe;
+      } else next.recipes.push(recipe);
+    }, 'Đã lưu công thức.');
+    if (done) { editingRecipe = null; render(); }
+  });
+  box.append(form);
+  if (!data.recipes.length) box.append(p('Chưa có công thức nào.', 'empty'));
+  for (const recipe of data.recipes) {
+    const detail = node('details', { class: 'recipe-detail' }, [node('summary', { text: `${recipe.name} · ${fmt(recipe.servings)} phần` })]);
+    if (recipe.description) detail.append(p(recipe.description, 'summary'));
+    const ingredients = node('ul', { class: 'history-list' });
+    for (const item of recipe.ingredients) ingredients.append(node('li', { text: `${fmt(item.quantity)} ${item.unit} · ${item.name}` }));
+    const steps = node('ol', { class: 'history-list' });
+    for (const step of recipe.steps) steps.append(node('li', { text: step }));
+    detail.append(h3('Nguyên liệu'), ingredients, h3('Cách làm'), steps);
+    const total = recipeTotals(recipe);
+    detail.append(p(recipe.nutritionPerServing ? `Mỗi phần: ${fmt(recipe.nutritionPerServing.calories)} kcal · P ${fmt(recipe.nutritionPerServing.protein)} · C ${fmt(recipe.nutritionPerServing.carbs)} · F ${fmt(recipe.nutritionPerServing.fat)}. Toàn công thức: ${fmt(total.calories)} kcal.` : 'Dinh dưỡng: DATA NOT DEFINED YET', 'hint'));
+    if (recipe.tags.length) detail.append(p(`Thẻ: ${recipe.tags.join(', ')}`, 'hint'));
+    if (recipe.notes) detail.append(p(`Ghi chú: ${recipe.notes}`, 'hint'));
+    if (recipe.nutritionPerServing) {
+      const logForm = node('form', { class: 'form-grid' }, [
+        field('Ngày ghi', 'date', foodDate, { type: 'date', required: true }),
+        field('Bữa', 'meal', 'Custom', { tag: 'select', choices: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Custom'] }),
+        field('Số phần', 'servings', 1, { type: 'number', min: '0.01', step: 'any', required: true }),
+        node('button', { type: 'submit', class: 'primary', text: 'Ghi vào nhật ký ăn' })
+      ]);
+      logForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const raw = Object.fromEntries(new FormData(logForm));
+        const done = await mutate(next => {
+          const current = next.recipes.find(item => item.id === recipe.id);
+          ensureUnchanged(current, recipe);
+          const entry = validateEntry(raw);
+          next.entries.push({ id: id(), ...entry, foodId: `recipe:${recipe.id}`, food: { name: recipe.name, serving: '1 phần', ...structuredClone(recipe.nutritionPerServing) } });
+        }, 'Đã ghi công thức vào nhật ký.');
+        if (done) { foodDateSelection = { mode: raw.date === localDate() ? 'today' : 'selected', date: raw.date }; nutritionSubView = 'daily'; render(); }
+      });
+      detail.append(logForm);
+    }
+    detail.append(div('actions', button('Sửa công thức', () => { editingRecipe = recipe.id; render(); }),
+      button('Xóa công thức', () => confirmAction(`Xóa công thức ${recipe.name}? Nhật ký ăn cũ vẫn giữ nguyên.`, () => mutate(next => {
+        ensureUnchanged(next.recipes.find(item => item.id === recipe.id), recipe);
+        next.recipes = next.recipes.filter(item => item.id !== recipe.id);
+      }, 'Đã xóa công thức.')), 'danger')));
+    box.append(detail);
+  }
+  main.append(box);
+}
+
+function renderNutritionSummary() {
+  const current = weekStart();
+  const box = panel(h2('Tổng kết dinh dưỡng'), p('Trung bình chỉ tính ngày đã ghi món. Ngày trống không được tính là 0.', 'hint'));
+  let hasData = false;
+  for (let index = 0; index < 4; index++) {
+    const date = new Date(`${current}T12:00:00`);
+    date.setDate(date.getDate() - index * 7);
+    const week = weeklySummary(data, localDate(date));
+    if (!week.nutritionDays) continue;
+    hasData = true;
+    box.append(div('list-card', h3(`${week.start} → ${week.end}`), p(`${week.nutritionDays} ngày ghi ăn · ${fmt(week.calorieAverage)} kcal/ngày · ${fmt(week.proteinAverage)} g protein/ngày · đạt mục tiêu protein ${week.proteinDaysMet}/${week.nutritionDays} ngày ghi`, 'summary')));
+  }
+  if (!hasData) box.append(p('Chưa có ngày ăn nào được ghi trong 4 tuần gần đây.', 'empty'));
   main.append(box);
 }
 
@@ -695,7 +873,7 @@ function renderRestorePreview() {
   if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
   const counts = restorePreview.counts;
   box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
-    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · có cài đặt`, 'summary'));
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · có cài đặt`, 'summary'));
   if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
   restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
   box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
@@ -712,7 +890,7 @@ async function restoreData() {
   const selected = restorePreview;
   const done = await mutate(next => {
     if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
-    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries']) next[key] = structuredClone(selected.data[key] ?? null);
+    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes']) next[key] = structuredClone(selected.data[key] ?? null);
   }, 'Đã khôi phục dữ liệu từ file.');
   if (done) { restorePreview = null; renderRestorePreview(); }
 }
