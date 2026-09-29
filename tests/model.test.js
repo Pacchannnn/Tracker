@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PROGRAM, programDay, setCount, todayWorkout, targetRir, weekGuidance, nextWorkout } from '../js/program.js';
-import { emptyData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, loadData, saveData, diaryDate, foodSnapshotForEntry, updateData, createBackup, parseBackup, ensureUnchanged } from '../js/data.js';
+import { emptyData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, loadData, saveData, diaryDate, foodSnapshotForEntry, updateData, createBackup, parseBackup, ensureUnchanged } from '../js/data.js';
 
 test('program preserves plan order and first two weeks reduce three-set exercises', () => {
   assert.deepEqual(Object.keys(PROGRAM), ['A', 'B', 'C', 'D']);
@@ -112,7 +112,7 @@ test('backup round trip includes timestamp and preview counts', () => {
   const text = createBackup(data, new Date('2026-09-30T12:00:00Z'));
   const parsed = parseBackup(text);
   assert.equal(parsed.exportedAt, '2026-09-30T12:00:00.000Z');
-  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0 });
+  assert.deepEqual(parsed.counts, { sessions: 1, sets: 1, foods: 1, entries: 0, checkins: 0, cardio: 0, knee: 0 });
   assert.deepEqual(parsed.data, data);
 });
 
@@ -121,5 +121,42 @@ test('restore rejects corrupt and incompatible files without changing storage', 
   assert.throws(() => parseBackup(JSON.stringify({ schemaVersion: 99, data: emptyData() })), /Phiên bản/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), sessions: [{ id: 'bad' }] })), /buổi tập/);
   assert.throws(() => parseBackup(JSON.stringify({ ...emptyData(), entries: [{ id: 'e1', date: '2026-09-30', meal: 'Lunch', servings: 1, foodId: 'f1', food: { calories: 'oops' } }] })), /bữa ăn/);
-  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 1);
+  assert.equal(parseBackup(JSON.stringify(emptyData())).data.schemaVersion, 3);
+});
+
+test('version 1 workout history migrates without deleting user data', () => {
+  const old = emptyData();
+  old.schemaVersion = 1;
+  delete old.exerciseNotes;
+  old.sessions.push({ id: 's1', workout: 'A', date: '2026-09-30', week: 1, notes: '', sets: [] });
+  const memory = new Map([['vshape-tracker', JSON.stringify(old)]]);
+  const storage = { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
+  const loaded = loadData(storage);
+  assert.equal(loaded.schemaVersion, 3);
+  assert.deepEqual(loaded.exerciseNotes, {});
+  assert.deepEqual(loaded.cardioEntries, []);
+  assert.deepEqual(loaded.kneeEntries, []);
+  assert.equal(loaded.sessions[0].id, 's1');
+  assert.equal(JSON.parse(memory.get('vshape-tracker')).schemaVersion, 1);
+  assert.equal(parseBackup(JSON.stringify(old)).data.sessions[0].id, 's1');
+});
+
+test('version 2 exercise notes migrate and remain intact', () => {
+  const old = { ...emptyData(), schemaVersion: 2, exerciseNotes: { 'A:0': 'Ghế số 3' } };
+  delete old.cardioEntries;
+  delete old.kneeEntries;
+  const storage = { getItem: () => JSON.stringify(old) };
+  const next = loadData(storage);
+  assert.equal(next.schemaVersion, 3);
+  assert.equal(next.exerciseNotes['A:0'], 'Ghế số 3');
+  assert.deepEqual(next.cardioEntries, []);
+});
+
+test('cardio and knee logs accept records without inventing prescriptions or symptoms', () => {
+  assert.deepEqual(validateCardio({ date: '2026-09-30', activity: 'Xe đạp', durationMinutes: '20', distanceKm: '', intensity: '', notes: '' }),
+    { date: '2026-09-30', activity: 'Xe đạp', durationMinutes: 20, distanceKm: null, intensity: '', notes: '' });
+  assert.throws(() => validateCardio({ date: '2026-09-30', activity: 'Đi bộ', durationMinutes: '-2' }));
+  assert.deepEqual(validateKnee({ date: '2026-09-30', moment: 'next-morning', pain: '3', swelling: 'unknown', instability: 'no', stiffness: 'yes', notes: '' }),
+    { date: '2026-09-30', moment: 'next-morning', pain: 3, swelling: 'unknown', instability: 'no', stiffness: 'yes', notes: '' });
+  assert.throws(() => validateKnee({ date: '2026-09-30', moment: 'after', pain: '', swelling: 'unknown', instability: 'unknown', stiffness: 'unknown', notes: '' }));
 });

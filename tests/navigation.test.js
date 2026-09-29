@@ -7,6 +7,7 @@ test('every existing view selects its matching primary navigation section', () =
   assert.equal(navigationGroup('program'), 'training');
   assert.equal(navigationGroup('workout'), 'training');
   assert.equal(navigationGroup('history'), 'training');
+  assert.equal(navigationGroup('gym-logs'), 'training');
   assert.equal(navigationGroup('nutrition'), 'food');
   assert.equal(navigationGroup('checkins'), 'progress');
   assert.equal(navigationGroup('settings'), 'settings');

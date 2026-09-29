@@ -3,6 +3,7 @@ const groups = {
   program: 'training',
   workout: 'training',
   history: 'training',
+  'gym-logs': 'training',
   nutrition: 'food',
   checkins: 'progress',
   settings: 'settings'

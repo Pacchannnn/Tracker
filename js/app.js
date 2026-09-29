@@ -1,6 +1,8 @@
 import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js';
-import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js';
-import { navigationGroup } from './navigation.js';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js';
+import { navigationGroup } from './navigation.js?v=2';
+import { previousSetFor, nextIncompleteExercise, restSeconds } from './workout.js';
+import { weeklySummary, exerciseHistory } from './progress.js';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -18,6 +20,14 @@ let backupUrl = null;
 let restoreSafetyUrl = null;
 let restorePreview = null;
 let selectedProgram = 'A';
+let focusMode = false;
+let focusIndex = 0;
+let restTimer = null;
+let editingExerciseNote = null;
+let editingCardio = null;
+let editingKnee = null;
+let progressSubView = 'overview';
+let selectedExercise = '';
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -44,10 +54,10 @@ function field(label, name, value = '', options = {}) {
   const input = node(options.tag || 'input', { name, type: options.type || 'text', value: value ?? '', min: options.min, max: options.max, step: options.step, required: options.required ? '' : null });
   if (options.tag === 'textarea') input.textContent = value ?? '';
   if (options.tag === 'select') {
-    for (const choice of options.choices) input.append(node('option', { value: choice, text: choice }));
+    for (const choice of options.choices) input.append(node('option', { value: typeof choice === 'string' ? choice : choice.value, text: typeof choice === 'string' ? choice : choice.label }));
     input.value = value;
   }
-  const wrapper = node('label', { class: 'field' });
+  const wrapper = node('label', { class: options.type === 'checkbox' ? 'field checkbox-field' : 'field' });
   wrapper.append(node('span', { text: label }), input);
   return wrapper;
 }
@@ -117,7 +127,7 @@ function updateNavigation() {
 
 function render() {
   main.replaceChildren();
-  ({ dashboard: dashboardView, program: programView, workout: workoutView, history: historyView, nutrition: nutritionView, checkins: checkinsView, settings: settingsView })[view]();
+  ({ dashboard: dashboardView, program: programView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, checkins: checkinsView, settings: settingsView })[view]();
 }
 
 function latestCheckin(key) { return [...data.checkins].filter(item => item[key] !== null).sort((a, b) => b.date.localeCompare(a.date))[0]; }
@@ -139,7 +149,7 @@ function dashboardView() {
   const week = panel(p('TUẦN CHƯƠNG TRÌNH', 'eyebrow'), h2(`${data.settings.week} / 12`), p(weekGuidance(data.settings.week), 'hint'), div('stat-pair',
     div('', node('strong', { text: `${currentWeekCount()} / 4` }), node('small', { text: 'buổi tuần này' })),
     div('', node('strong', { text: weight ? `${fmt(weight.weight)} kg` : '—' }), node('small', { text: 'cân gần nhất' }))));
-  const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => show('checkins')));
+  const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => { progressSubView = 'checkins'; show('checkins'); }));
   main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Đi nhanh đến'), div('quick-links',
     quickLink('Chương trình A/B/C/D', 'Bài, số hiệp, RIR', () => show('program')),
     quickLink('Thêm món ăn', 'Nhật ký theo ngày', () => show('nutrition')),
@@ -160,7 +170,7 @@ function programView() {
   }
   const chosen = programDay(selectedProgram, data.settings.week);
   const details = panel(div('row', div('', p(`BUỔI ${selectedProgram}`, 'eyebrow'), h2(chosen.title)), button('Bắt đầu buổi →', () => openWorkout(selectedProgram), 'primary')), p(`${chosen.day} · Tuần ${data.settings.week}`, 'hint'));
-  chosen.exercises.forEach((item, index) => details.append(div('program-line', node('strong', { text: `${index + 1}. ${item.name}` }), node('span', { text: `${item.sets} × ${item.reps} · nghỉ ${item.rest} · RIR ${item.rir}` }), item.note ? p(item.note, 'hint') : document.createTextNode(''))));
+  chosen.exercises.forEach((item, index) => details.append(div('program-line', node('strong', { text: `${index + 1}. ${item.name}` }), node('span', { text: `${item.sets} × ${item.reps} · nghỉ ${item.rest} · RIR ${item.rir}` }), item.note ? p(item.note, 'hint') : document.createTextNode(''), data.exerciseNotes[`${selectedProgram}:${index}`] ? p(`Ghi chú riêng: ${data.exerciseNotes[`${selectedProgram}:${index}`]}`, 'hint') : document.createTextNode(''))));
   const guidance = panel(h2('Nguyên tắc buổi tập'), p(weekGuidance(data.settings.week), 'warning'), p('Nếu lỡ buổi, tiếp tục thứ tự A → B → C → D; không nhồi hai buổi trong một ngày.', 'hint'), p('Ứng dụng chỉ ghi chép, không tự quyết định tăng hoặc giảm tải.', 'hint'));
   if (selectedProgram === 'B' || selectedProgram === 'D') guidance.append(p('Gối: nếu đau nhói, kẹt, lỏng/khuỵu khi tập, dừng bài. Theo dõi sưng hoặc đau tăng sau buổi và sáng hôm sau. Xem MASTER_PLAN.md.', 'warning'));
   guidance.append(p('Cardio: bắt đầu 2 lần/tuần, 15–20 phút đi bộ phẳng hoặc xe đạp tại chỗ nếu gối dung nạp; chi tiết trong MASTER_PLAN.md.', 'hint'));
@@ -184,6 +194,8 @@ async function openWorkout(key) {
       if (next.draft) throw new Error('Một tab khác đã mở buổi tập. Hãy mở lại mục Tập luyện.');
       next.draft = { id: id(), workout: key, date: localDate(), week: next.settings.week, sets: [], notes: '' };
     }, `Đã mở buổi ${key}.`)) return;
+    restTimer = null;
+    focusIndex = 0;
   }
   show('workout');
 }
@@ -212,9 +224,16 @@ function workoutView() {
   }, 'Đã lưu bản nháp.')));
   header.append(details);
   main.append(header);
-  const group = panel(h2('Ghi từng hiệp'));
-  const nextExercise = workout.exercises.findIndex((item, index) => draft.sets.filter(set => set.exerciseIndex === index).length < setCount(item, draft.week));
-  workout.exercises.forEach((item, index) => group.append(exerciseBlock(item, index, draft, index === nextExercise)));
+  if (restTimer) main.append(restTimerPanel());
+  const nextExercise = nextIncompleteExercise(workout.exercises, draft);
+  if (focusMode && !workout.exercises[focusIndex]) focusIndex = nextExercise ?? 0;
+  const group = panel(div('row', h2(focusMode ? `Bài ${focusIndex + 1} / ${workout.exercises.length}` : 'Ghi từng hiệp'),
+    button(focusMode ? 'Xem toàn bộ' : 'Chế độ tập trung', () => { focusMode = !focusMode; focusIndex = nextExercise ?? 0; render(); })));
+  if (focusMode) {
+    group.append(exerciseBlock(workout.exercises[focusIndex], focusIndex, draft, true), div('actions',
+      button('← Bài trước', () => { focusIndex = Math.max(0, focusIndex - 1); render(); }),
+      button('Bài sau →', () => { focusIndex = Math.min(workout.exercises.length - 1, focusIndex + 1); render(); })));
+  } else workout.exercises.forEach((item, index) => group.append(exerciseBlock(item, index, draft, index === nextExercise)));
   main.append(group);
   const end = panel(h2('Hoàn thành buổi tập'), p('Các hiệp đã ghi được lưu trong lịch sử. Bạn có thể mở lại để sửa sau.', 'hint'), div('actions', button('Hoàn thành & lưu buổi', completeWorkout, 'primary'), button('Bỏ bản nháp', () => confirmAction('Xóa bản nháp buổi tập hiện tại?', () => mutate(next => { next.draft = null; }, 'Đã bỏ bản nháp.')), 'danger')));
   main.append(end);
@@ -225,11 +244,38 @@ function exerciseBlock(item, index, draft, isNext = false) {
   const previous = previousSets(draft.workout, index, draft.id);
   const wrapper = div(`exercise${isNext ? ' is-next' : ''}`, h3(`${index + 1}. ${item.name}`), p(`${setCount(item, draft.week)} hiệp × ${item.reps} · Nghỉ ${item.rest} · RIR mục tiêu ${targetRir(item, draft.week)}`, 'exercise-meta'));
   if (item.note) wrapper.append(p(item.note, 'hint'));
+  const noteKey = `${draft.workout}:${index}`;
+  const ownNote = data.exerciseNotes[noteKey] || '';
+  if (ownNote) wrapper.append(p(`Ghi chú setup: ${ownNote}`, 'hint'));
+  if (editingExerciseNote === noteKey) {
+    const noteForm = node('form', { class: 'form-grid' }, [field('Máy, ghế, tay cầm hoặc kỹ thuật cá nhân', 'note', ownNote, { tag: 'textarea', required: true }), node('button', { type: 'submit', class: 'primary', text: 'Lưu ghi chú' })]);
+    noteForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const value = noteForm.querySelector('[name=note]').value.trim();
+      if (!value) { message('Ghi chú không được để trống.', true); return; }
+      const saved = await mutate(next => {
+        if ((next.exerciseNotes[noteKey] || '') !== ownNote) throw new Error('Ghi chú đã đổi ở tab khác. Hãy mở lại.');
+        next.exerciseNotes[noteKey] = value;
+      }, 'Đã lưu ghi chú riêng.');
+      if (saved) { editingExerciseNote = null; render(); }
+    });
+    noteForm.append(button('Hủy', () => { editingExerciseNote = null; render(); }));
+    wrapper.append(noteForm);
+  } else wrapper.append(button(ownNote ? 'Sửa ghi chú riêng' : 'Thêm ghi chú riêng', () => { editingExerciseNote = noteKey; render(); }));
+  if (ownNote) wrapper.append(button('Xóa ghi chú riêng', () => confirmAction('Xóa ghi chú setup của bài này?', () => mutate(next => {
+    if (next.exerciseNotes[noteKey] !== ownNote) throw new Error('Ghi chú đã đổi ở tab khác. Hãy mở lại.');
+    delete next.exerciseNotes[noteKey];
+  }, 'Đã xóa ghi chú riêng.')), 'danger'));
   if (previous.length) wrapper.append(p(`Lần trước: ${previous.map(set => `${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ')}`, 'hint'));
   const list = node('ul', { class: 'set-list' });
   for (const set of saved) {
     const line = node('li', {}, [node('span', { text: `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` })]);
     line.append(button('Sửa', () => { editingSet = set.id; render(); }));
+    const rest = restSeconds(item.rest);
+    if (rest) line.append(button('Nghỉ sau hiệp', () => {
+      restTimer = { exercise: item.name, planRest: item.rest, duration: rest, remaining: rest, endAt: Date.now() + rest * 1000, running: true };
+      render();
+    }));
     line.append(button('Xóa', () => confirmAction(`Xóa hiệp ${set.setNumber} của bài này?`, () => mutate(next => { next.draft.sets = next.draft.sets.filter(item => item.id !== set.id); }, 'Đã xóa hiệp.')), 'danger'));
     list.append(line);
   }
@@ -238,6 +284,7 @@ function exerciseBlock(item, index, draft, isNext = false) {
   const edit = saved.find(set => set.id === editingSet);
   if (nextSet !== undefined || edit) {
     const setNumber = edit?.setNumber ?? nextSet;
+    const previousSet = previousSetFor(data.sessions, draft.workout, index, setNumber, draft.id);
     const form = node('form', { class: 'set-form' }, [
       field(`Hiệp ${setNumber} · tạ`, 'weight', edit?.weight ?? '', { type: 'number', min: '0', step: 'any', required: true }),
       field('Đơn vị', 'unit', edit?.unit || 'kg', { tag: 'select', choices: ['kg', 'lb'] }),
@@ -245,6 +292,17 @@ function exerciseBlock(item, index, draft, isNext = false) {
       field('RIR', 'rir', edit?.rir ?? '', { type: 'number', min: '0', max: '10', step: 'any', required: true }),
       node('button', { type: 'submit', class: 'primary', text: edit ? 'Lưu thay đổi hiệp' : 'Lưu hiệp' })
     ]);
+    if (!edit && previousSet) {
+      const quickFill = button('Dùng số lần trước', () => {
+        form.querySelector('[name=weight]').value = previousSet.weight;
+        form.querySelector('[name=unit]').value = previousSet.unit || 'kg';
+        form.querySelector('[name=reps]').value = previousSet.reps;
+        form.querySelector('[name=rir]').value = previousSet.rir;
+        form.querySelector('[name=weight]').focus();
+      });
+      quickFill.classList.add('span-all');
+      form.prepend(p(`Hiệp ${setNumber} lần trước: ${fmt(previousSet.weight)} ${previousSet.unit || 'kg'} × ${previousSet.reps} · RIR ${fmt(previousSet.rir)}`, 'hint'), quickFill);
+    }
     if (edit) form.append(button('Hủy sửa', () => { editingSet = null; render(); }));
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -260,11 +318,41 @@ function exerciseBlock(item, index, draft, isNext = false) {
         else next.draft.sets.push({ id: id(), exerciseIndex: index, exerciseName: item.name, setNumber, ...set });
       }, `Đã lưu hiệp ${setNumber}.`);
       if (done && edit) { editingSet = null; render(); }
+      if (done && !edit && focusMode && data.draft) {
+        const nextIndex = nextIncompleteExercise(PROGRAM[draft.workout].exercises, data.draft);
+        if (nextIndex !== null) { focusIndex = nextIndex; render(); }
+      }
     });
     wrapper.append(form);
   }
   return wrapper;
 }
+
+function restTimerPanel() {
+  const timer = panel(h3('Đồng hồ nghỉ'), p(`${restTimer.exercise} · theo plan: ${restTimer.planRest}. Khoảng nghỉ dùng mức thấp làm mặc định.`, 'hint'));
+  const display = node('strong', { class: 'timer-count', text: timerText() });
+  timer.append(display, div('actions',
+    button('Bắt đầu', () => { restTimer.remaining = restTimer.duration; restTimer.endAt = Date.now() + restTimer.duration * 1000; restTimer.running = true; updateTimerDisplay(); }),
+    button('Tạm dừng', () => { if (restTimer.running) restTimer.remaining = Math.max(0, Math.ceil((restTimer.endAt - Date.now()) / 1000)); restTimer.running = false; updateTimerDisplay(); }),
+    button('Tiếp tục', () => { if (!restTimer.running && restTimer.remaining > 0) { restTimer.endAt = Date.now() + restTimer.remaining * 1000; restTimer.running = true; updateTimerDisplay(); } }),
+    button('Đặt lại', () => { restTimer.remaining = restTimer.duration; restTimer.running = false; updateTimerDisplay(); }),
+    button('Bỏ qua', () => { restTimer = null; render(); })));
+  return timer;
+}
+
+function timerText() {
+  if (!restTimer) return '';
+  const seconds = restTimer.running ? Math.max(0, Math.ceil((restTimer.endAt - Date.now()) / 1000)) : restTimer.remaining;
+  return seconds === 0 ? 'Nghỉ xong' : `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+function updateTimerDisplay() {
+  if (!restTimer) return;
+  if (restTimer.running && Date.now() >= restTimer.endAt) { restTimer.remaining = 0; restTimer.running = false; }
+  const display = document.querySelector('.timer-count');
+  if (display) display.textContent = timerText();
+}
+setInterval(updateTimerDisplay, 1000);
 
 async function completeWorkout() {
   if (!data.draft?.sets.length) { message('Hãy ghi ít nhất một hiệp trước khi hoàn thành.', true); return; }
@@ -277,7 +365,7 @@ async function completeWorkout() {
     else next.sessions.push(session);
     next.draft = null;
   }, 'Đã lưu buổi tập.');
-  if (saved) show('history');
+  if (saved) { restTimer = null; show('history'); }
 }
 
 function historyView() {
@@ -302,6 +390,89 @@ function historyView() {
     }), button('Xóa buổi', () => confirmAction(`Xóa buổi ${session.workout} ngày ${session.date}?`, () => mutate(next => { next.sessions = next.sessions.filter(item => item.id !== session.id); }, 'Đã xóa buổi tập.')), 'danger')));
     main.append(box);
   }
+}
+
+function gymLogsView() {
+  main.append(panel(h2('Cardio & ghi nhận gối'), p('Chỉ ghi lại hoạt động và triệu chứng. Ứng dụng không chẩn đoán hoặc xác nhận gối an toàn để tăng tải.', 'hint')));
+  const cardio = data.cardioEntries.find(item => item.id === editingCardio);
+  const cardioBox = panel(h2('Cardio'));
+  const cardioForm = node('form', { class: 'form-grid' }, [
+    field('Ngày', 'date', cardio?.date || localDate(), { type: 'date', required: true }),
+    field('Hoạt động', 'activity', cardio?.activity || '', { required: true }),
+    field('Thời lượng (phút)', 'durationMinutes', cardio?.durationMinutes ?? '', { type: 'number', min: '1', step: 'any', required: true }),
+    field('Quãng đường (km, tùy chọn)', 'distanceKm', cardio?.distanceKm ?? '', { type: 'number', min: '0', step: 'any' }),
+    field('Cường độ tự ghi (tùy chọn)', 'intensity', cardio?.intensity || ''),
+    field('Ghi chú', 'notes', cardio?.notes || '', { tag: 'textarea' }),
+    node('button', { type: 'submit', class: 'primary', text: cardio ? 'Lưu cardio' : 'Thêm cardio' })
+  ]);
+  if (cardio) cardioForm.append(button('Hủy sửa', () => { editingCardio = null; render(); }));
+  cardioForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const raw = Object.fromEntries(new FormData(cardioForm));
+    const saved = await mutate(next => {
+      const record = { id: cardio?.id || id(), ...validateCardio(raw) };
+      if (cardio) {
+        const index = next.cardioEntries.findIndex(item => item.id === cardio.id);
+        ensureUnchanged(next.cardioEntries[index], cardio);
+        next.cardioEntries[index] = record;
+      } else next.cardioEntries.push(record);
+    }, 'Đã lưu cardio.');
+    if (saved) { editingCardio = null; render(); }
+  });
+  cardioBox.append(cardioForm);
+  if (!data.cardioEntries.length) cardioBox.append(p('Chưa ghi cardio.', 'empty'));
+  for (const item of [...data.cardioEntries].sort((a, b) => b.date.localeCompare(a.date))) cardioBox.append(div('list-card',
+    h3(`${item.date} · ${item.activity}`), p(`${fmt(item.durationMinutes)} phút${item.distanceKm !== null ? ` · ${fmt(item.distanceKm)} km` : ''}${item.intensity ? ` · ${item.intensity}` : ''}`, 'summary'),
+    item.notes ? p(item.notes, 'hint') : document.createTextNode(''), div('actions',
+      button('Sửa', () => { editingCardio = item.id; render(); }),
+      button('Xóa', () => confirmAction(`Xóa cardio ngày ${item.date}?`, () => mutate(next => {
+        ensureUnchanged(next.cardioEntries.find(entry => entry.id === item.id), item);
+        next.cardioEntries = next.cardioEntries.filter(entry => entry.id !== item.id);
+      }, 'Đã xóa cardio.')), 'danger'))));
+  main.append(cardioBox);
+
+  const knee = data.kneeEntries.find(item => item.id === editingKnee);
+  const kneeBox = panel(h2('Ghi nhận gối'));
+  const statusChoices = [{ value: 'unknown', label: 'Chưa ghi' }, { value: 'no', label: 'Không' }, { value: 'yes', label: 'Có' }];
+  const kneeForm = node('form', { class: 'form-grid' }, [
+    field('Ngày', 'date', knee?.date || localDate(), { type: 'date', required: true }),
+    field('Thời điểm', 'moment', knee?.moment || 'after', { tag: 'select', choices: [
+      { value: 'during', label: 'Trong buổi tập' }, { value: 'after', label: 'Sau buổi tập' }, { value: 'next-morning', label: 'Sáng hôm sau' }
+    ] }),
+    field('Đau (0–10, tùy chọn)', 'pain', knee?.pain ?? '', { type: 'number', min: '0', max: '10', step: '1' }),
+    field('Sưng', 'swelling', knee?.swelling || 'unknown', { tag: 'select', choices: statusChoices }),
+    field('Mất vững', 'instability', knee?.instability || 'unknown', { tag: 'select', choices: statusChoices }),
+    field('Cứng', 'stiffness', knee?.stiffness || 'unknown', { tag: 'select', choices: statusChoices }),
+    field('Ghi chú', 'notes', knee?.notes || '', { tag: 'textarea' }),
+    node('button', { type: 'submit', class: 'primary', text: knee ? 'Lưu ghi nhận gối' : 'Thêm ghi nhận gối' })
+  ]);
+  if (knee) kneeForm.append(button('Hủy sửa', () => { editingKnee = null; render(); }));
+  kneeForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const raw = Object.fromEntries(new FormData(kneeForm));
+    const saved = await mutate(next => {
+      const record = { id: knee?.id || id(), ...validateKnee(raw) };
+      if (knee) {
+        const index = next.kneeEntries.findIndex(item => item.id === knee.id);
+        ensureUnchanged(next.kneeEntries[index], knee);
+        next.kneeEntries[index] = record;
+      } else next.kneeEntries.push(record);
+    }, 'Đã lưu ghi nhận gối.');
+    if (saved) { editingKnee = null; render(); }
+  });
+  kneeBox.append(kneeForm);
+  if (!data.kneeEntries.length) kneeBox.append(p('Chưa có ghi nhận gối có cấu trúc.', 'empty'));
+  const statusText = value => ({ yes: 'có', no: 'không', unknown: 'chưa ghi' })[value];
+  const momentText = value => ({ during: 'Trong buổi tập', after: 'Sau buổi tập', 'next-morning': 'Sáng hôm sau' })[value];
+  for (const item of [...data.kneeEntries].sort((a, b) => b.date.localeCompare(a.date))) kneeBox.append(div('list-card',
+    h3(`${item.date} · ${momentText(item.moment)}`), p(`Đau: ${item.pain ?? 'chưa ghi'} · Sưng: ${statusText(item.swelling)} · Mất vững: ${statusText(item.instability)} · Cứng: ${statusText(item.stiffness)}`, 'summary'),
+    item.notes ? p(item.notes, 'hint') : document.createTextNode(''), div('actions',
+      button('Sửa', () => { editingKnee = item.id; render(); }),
+      button('Xóa', () => confirmAction(`Xóa ghi nhận gối ngày ${item.date}?`, () => mutate(next => {
+        ensureUnchanged(next.kneeEntries.find(entry => entry.id === item.id), item);
+        next.kneeEntries = next.kneeEntries.filter(entry => entry.id !== item.id);
+      }, 'Đã xóa ghi nhận gối.')), 'danger'))));
+  main.append(kneeBox);
 }
 
 function nutritionView() {
@@ -401,6 +572,9 @@ function renderFoodEntries(foodDate) {
 }
 
 function checkinsView() {
+  const nav = div('subtabs', button('Tổng quan tiến độ', () => { progressSubView = 'overview'; render(); }), button('Nhập & xem check-in', () => { progressSubView = 'checkins'; render(); }));
+  main.append(nav);
+  if (progressSubView === 'overview') { progressOverview(); return; }
   const editing = data.checkins.find(item => item.id === editingCheckin);
   const box = panel(h2('Check-in cơ thể'), p('Cân nặng và vòng eo là dữ liệu quan sát. Ghi chú gối không phải chẩn đoán hoặc chỉ dẫn tăng tải.', 'hint'));
   const form = node('form', { class: 'form-grid' }, [
@@ -435,6 +609,42 @@ function checkinsView() {
     history.append(div('list-card', h3(item.date), p([item.weight !== null ? `${fmt(item.weight)} kg` : '', item.waist !== null ? `${fmt(item.waist)} cm eo` : '', item.sleep !== null ? `${fmt(item.sleep)} giờ ngủ` : ''].filter(Boolean).join(' · ') || 'Ghi chú', 'summary'), item.knee ? p(`Gối: ${item.knee}`, 'hint') : document.createTextNode(''), item.notes ? p(item.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingCheckin = item.id; render(); window.scrollTo(0, 0); }), button('Xóa', () => confirmAction(`Xóa check-in ${item.date}?`, () => mutate(next => { next.checkins = next.checkins.filter(entry => entry.id !== item.id); }, 'Đã xóa check-in.')), 'danger'))));
   }
   main.append(history);
+}
+
+function progressOverview() {
+  const current = weekStart();
+  const weeks = Array.from({ length: 4 }, (_, index) => {
+    const date = new Date(`${current}T12:00:00`);
+    date.setDate(date.getDate() - index * 7);
+    return weeklySummary(data, localDate(date));
+  });
+  const latest = weeks[0];
+  const box = panel(h2('Tổng kết tuần'), p(`${latest.start} → ${latest.end} · chỉ tính những ngày có dữ liệu thực.`, 'hint'));
+  box.append(div('stats', stat('Buổi tập', String(latest.workouts)), stat('Cardio', `${fmt(latest.cardioMinutes)} phút`),
+    stat('Cân trung bình', latest.weightAverage === null ? 'Chưa có' : `${fmt(latest.weightAverage)} kg`),
+    stat('Eo trung bình', latest.waistAverage === null ? 'Chưa có' : `${fmt(latest.waistAverage)} cm`)));
+  box.append(p(`A ${latest.sessionCounts.A} · B ${latest.sessionCounts.B} · C ${latest.sessionCounts.C} · D ${latest.sessionCounts.D} · ${latest.kneeRecords} ghi nhận gối`, 'summary'));
+  box.append(p(latest.nutritionDays ? `Đã ghi ăn ${latest.nutritionDays} ngày · trung bình ${fmt(latest.calorieAverage)} kcal, ${fmt(latest.proteinAverage)} g protein · đạt mục tiêu protein ${latest.proteinDaysMet}/${latest.nutritionDays} ngày đã ghi.` : 'Chưa có dữ liệu ăn uống trong tuần; ngày chưa ghi không được tính là ăn 0 kcal.', latest.nutritionDays ? 'summary' : 'empty'));
+  main.append(box);
+  const trend = panel(h2('4 tuần gần đây'), p('Trung bình chỉ dựa trên những lần bạn thực sự ghi. Chưa có dữ liệu được hiển thị riêng.', 'hint'));
+  const observedWeeks = weeks.filter(week => week.workouts || week.weightAverage !== null || week.waistAverage !== null || week.nutritionDays || week.cardioMinutes || week.kneeRecords);
+  if (!observedWeeks.length) trend.append(p('Chưa có dữ liệu tiến độ trong 4 tuần gần đây.', 'empty'));
+  for (const week of observedWeeks) trend.append(div('list-card', h3(`${week.start} → ${week.end}`),
+    p(`${week.workouts} buổi tập · cân TB ${week.weightAverage === null ? 'chưa có' : `${fmt(week.weightAverage)} kg`} · eo TB ${week.waistAverage === null ? 'chưa có' : `${fmt(week.waistAverage)} cm`}`, 'summary'),
+    p(week.nutritionDays ? `${week.nutritionDays} ngày ghi ăn · ${fmt(week.calorieAverage)} kcal/ngày · ${fmt(week.proteinAverage)} g protein/ngày` : 'Chưa ghi ăn tuần này.', 'hint')));
+  main.append(trend);
+  const names = [...new Set(data.sessions.flatMap(session => session.sets.map(set => set.exerciseName)))].sort();
+  const exerciseBox = panel(h2('Lịch sử theo bài'), p('Số liệu được ghi lại; ứng dụng không tự yêu cầu tăng tạ.', 'hint'));
+  if (!names.length) exerciseBox.append(p('Chưa có hiệp tập nào để xem.', 'empty'));
+  else {
+    if (!names.includes(selectedExercise)) selectedExercise = names[0];
+    const selector = field('Chọn bài', 'exercise', selectedExercise, { tag: 'select', choices: names });
+    selector.querySelector('select').addEventListener('change', event => { selectedExercise = event.target.value; render(); });
+    exerciseBox.append(selector);
+    const history = exerciseHistory(data.sessions, selectedExercise);
+    for (const set of history.slice(0, 20)) exerciseBox.append(div('list-card', p(`${set.date} · Buổi ${set.workout} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'summary')));
+  }
+  main.append(exerciseBox);
 }
 
 function settingsView() {
@@ -485,7 +695,7 @@ function renderRestorePreview() {
   if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
   const counts = restorePreview.counts;
   box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
-    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · có cài đặt`, 'summary'));
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · có cài đặt`, 'summary'));
   if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
   restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
   box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
@@ -502,7 +712,7 @@ async function restoreData() {
   const selected = restorePreview;
   const done = await mutate(next => {
     if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
-    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft']) next[key] = structuredClone(selected.data[key] ?? null);
+    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries']) next[key] = structuredClone(selected.data[key] ?? null);
   }, 'Đã khôi phục dữ liệu từ file.');
   if (done) { restorePreview = null; renderRestorePreview(); }
 }

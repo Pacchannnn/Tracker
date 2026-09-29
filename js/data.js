@@ -1,10 +1,16 @@
 export const STORAGE_KEY = 'vshape-tracker';
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 3;
 export const emptyData = () => ({
   schemaVersion: SCHEMA_VERSION,
   settings: { week: 1, calories: 2400, protein: 120 },
-  sessions: [], foods: [], entries: [], checkins: [], draft: null
+  sessions: [], foods: [], entries: [], checkins: [], draft: null, exerciseNotes: {}, cardioEntries: [], kneeEntries: []
 });
+
+function migrateData(data) {
+  if (data?.schemaVersion === 1) data = { ...data, schemaVersion: 2, exerciseNotes: {} };
+  if (data?.schemaVersion === 2) data = { ...data, schemaVersion: 3, cardioEntries: [], kneeEntries: [] };
+  return data;
+}
 
 export function validDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -60,6 +66,30 @@ export function validateCheckin(raw) {
   return { date: raw.date, weight, waist, sleep, knee, notes };
 }
 
+export function validateCardio(raw) {
+  if (!validDate(raw.date)) throw new Error('Ngày cardio không hợp lệ.');
+  const activity = String(raw.activity ?? '').trim();
+  if (!activity) throw new Error('Loại hoạt động là bắt buộc.');
+  return {
+    date: raw.date, activity,
+    durationMinutes: number(raw.durationMinutes, 'Thời lượng', { min: 1, max: 1440 }),
+    distanceKm: number(raw.distanceKm, 'Quãng đường', { max: 10000, optional: true }),
+    intensity: String(raw.intensity ?? '').trim(), notes: String(raw.notes ?? '').trim()
+  };
+}
+
+export function validateKnee(raw) {
+  if (!validDate(raw.date)) throw new Error('Ngày ghi gối không hợp lệ.');
+  const moment = String(raw.moment ?? '');
+  if (!['during', 'after', 'next-morning'].includes(moment)) throw new Error('Thời điểm ghi gối không hợp lệ.');
+  const pain = number(raw.pain, 'Mức đau', { max: 10, integer: true, optional: true });
+  const status = key => ['unknown', 'no', 'yes'].includes(raw[key]) ? raw[key] : (() => { throw new Error(`${key} không hợp lệ.`); })();
+  const swelling = status('swelling'), instability = status('instability'), stiffness = status('stiffness');
+  const notes = String(raw.notes ?? '').trim();
+  if (pain === null && [swelling, instability, stiffness].every(value => value === 'unknown') && !notes) throw new Error('Ghi ít nhất một triệu chứng hoặc ghi chú.');
+  return { date: raw.date, moment, pain, swelling, instability, stiffness, notes };
+}
+
 export function dailyTotals(entries, date) {
   return entries.filter(entry => entry.date === date).reduce((total, entry) => {
     for (const key of ['calories', 'protein', 'carbs', 'fat']) total[key] += entry.food[key] * entry.servings;
@@ -72,7 +102,8 @@ export function loadData(storage) {
   if (raw === null) return emptyData();
   let data;
   try { data = JSON.parse(raw); } catch { throw new Error('Dữ liệu đã lưu bị lỗi. Hãy giữ nguyên trình duyệt và dùng bản sao lưu nếu có.'); }
-  if (!data || data.schemaVersion !== SCHEMA_VERSION || !data.settings || !['sessions', 'foods', 'entries', 'checkins'].every(key => Array.isArray(data[key]))) {
+  data = migrateData(data);
+  if (!data || data.schemaVersion !== SCHEMA_VERSION || !data.settings || !['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries'].every(key => Array.isArray(data[key])) || !data.exerciseNotes || typeof data.exerciseNotes !== 'object' || Array.isArray(data.exerciseNotes)) {
     throw new Error('Định dạng dữ liệu lưu không được hỗ trợ. Không ghi đè dữ liệu cũ.');
   }
   return data;
@@ -131,7 +162,8 @@ function validateBackupData(data) {
   if (!isObject(data) || data.schemaVersion !== SCHEMA_VERSION) throw new Error('Phiên bản dữ liệu không tương thích.');
   if (!isObject(data.settings) || !Number.isInteger(data.settings.week) || data.settings.week < 1 || data.settings.week > 12 ||
     !isNumber(data.settings.calories) || !isNumber(data.settings.protein)) throw new Error('Cài đặt trong bản sao lưu không hợp lệ.');
-  if (!['sessions', 'foods', 'entries', 'checkins'].every(key => Array.isArray(data[key]))) throw new Error('Bản sao lưu thiếu danh sách dữ liệu cần thiết.');
+  if (!['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries'].every(key => Array.isArray(data[key]))) throw new Error('Bản sao lưu thiếu danh sách dữ liệu cần thiết.');
+  if (!isObject(data.exerciseNotes) || !Object.values(data.exerciseNotes).every(value => typeof value === 'string')) throw new Error('Ghi chú bài tập không hợp lệ.');
   const validSession = item => isObject(item) && isId(item.id) && ['A', 'B', 'C', 'D'].includes(item.workout) &&
     validDate(item.date) && Number.isInteger(item.week) && item.week >= 1 && item.week <= 12 && Array.isArray(item.sets) &&
     item.sets.every(set => isObject(set) && isId(set.id) && Number.isInteger(set.exerciseIndex) && set.exerciseIndex >= 0 &&
@@ -144,7 +176,14 @@ function validateBackupData(data) {
   if (!data.checkins.every(item => isObject(item) && isId(item.id) && validDate(item.date) &&
     ['weight', 'waist', 'sleep'].every(key => item[key] === null || isNumber(item[key])) &&
     typeof item.knee === 'string' && typeof item.notes === 'string')) throw new Error('Có check-in không hợp lệ trong bản sao lưu.');
-  for (const key of ['sessions', 'foods', 'entries', 'checkins']) {
+  if (!data.cardioEntries.every(item => isObject(item) && isId(item.id) && validDate(item.date) && typeof item.activity === 'string' &&
+    isNumber(item.durationMinutes) && item.durationMinutes > 0 && (item.distanceKm === null || isNumber(item.distanceKm)) &&
+    typeof item.intensity === 'string' && typeof item.notes === 'string')) throw new Error('Có cardio không hợp lệ trong bản sao lưu.');
+  if (!data.kneeEntries.every(item => isObject(item) && isId(item.id) && validDate(item.date) && ['during', 'after', 'next-morning'].includes(item.moment) &&
+    (item.pain === null || (Number.isInteger(item.pain) && item.pain >= 0 && item.pain <= 10)) &&
+    ['swelling', 'instability', 'stiffness'].every(key => ['unknown', 'no', 'yes'].includes(item[key])) &&
+    typeof item.notes === 'string')) throw new Error('Có ghi chú gối không hợp lệ trong bản sao lưu.');
+  for (const key of ['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries']) {
     if (new Set(data[key].map(item => item.id)).size !== data[key].length) throw new Error(`ID trùng trong ${key}.`);
   }
 }
@@ -158,8 +197,8 @@ export function parseBackup(text) {
   let parsed;
   try { parsed = JSON.parse(text); } catch { throw new Error('File không phải JSON hợp lệ.'); }
   const wrapped = isObject(parsed) && Object.hasOwn(parsed, 'data');
-  const data = wrapped ? parsed.data : parsed;
-  if (wrapped && parsed.schemaVersion !== SCHEMA_VERSION) throw new Error('Phiên bản bản sao lưu không tương thích.');
+  const data = migrateData(wrapped ? parsed.data : parsed);
+  if (wrapped && ![1, 2, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
   validateBackupData(data);
   return {
     data: structuredClone(data),
@@ -169,7 +208,9 @@ export function parseBackup(text) {
       sets: data.sessions.reduce((sum, item) => sum + item.sets.length, 0),
       foods: data.foods.length,
       entries: data.entries.length,
-      checkins: data.checkins.length
+      checkins: data.checkins.length,
+      cardio: data.cardioEntries.length,
+      knee: data.kneeEntries.length
     }
   };
 }
