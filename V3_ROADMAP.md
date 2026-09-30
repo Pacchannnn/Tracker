@@ -40,7 +40,7 @@ _30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ li
 
 - **CURRENT PHASE:** review V3 local — phases 1–8 đã triển khai.
 - **COMPLETED:** migration schema 6, library, builder, plans, one-off snapshots, alternatives, ảnh food/recipe, local planner. 55/55 tests đạt trong lượt hiện tại.
-- **IN PROGRESS:** không còn cho phases 1–8; lưu checkpoint Git local sau khi kiểm tra cuối.
+- **IN PROGRESS:** không còn cho phases 1–8; không có công việc dở dang cho bản local.
 - **NEXT:** dùng thực tế và ghi nhận lỗi/UX; chỉ quyết định remote AI nếu có nhu cầu.
 - **BLOCKERS:** không có cho manual/local planner.
 
@@ -62,3 +62,5 @@ _30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ li
 ## Review cuối
 
 Đã sửa stale draft khi input/validation đổi, giới hạn tên nhân bản và lọc dụng cụ Hammer Curl. Regression planner đã kiểm chứng trên browser; review lại không còn important trong phạm vi đó. Phiên mới không có lỗi console ở các màn hình đã thử. Hai file backup chuẩn bị được link tải, chưa khẳng định download/restore trên profile người dùng. Báo cáo đầy đủ: `V3_IMPLEMENTATION_REPORT.md`.
+
+Checkpoint code: `b99f8d2` trên `main`, chưa push. Follow-up mobile: tên 160 ký tự không có khoảng trắng đã được test (scroll width 2052→305 tại viewport 320); thêm xuống dòng, nhân bản tên dài qua UI thành công.

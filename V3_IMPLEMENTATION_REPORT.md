@@ -43,7 +43,7 @@ Một JSON `vshape-tracker` trong localStorage, schema **6**. Migration cộng t
 
 ## MOBILE STATUS
 
-Đã thử 320/360 px cho builder/library/planner, và 360 px cho food library; không tràn ngang. Giữ font/UI giấy đã chốt. Move up/down là button có disabled ở biên; optional exercise selections trong planner được gộp vào details để bớt dài. Ảnh chụp thử nằm trong `.local/v3-mobile.jpg`, không commit.
+Đã thử 320/360 px cho builder/library/planner, và 360 px cho food library; không tràn ngang; trường hợp tên kế hoạch 160 ký tự không có khoảng trắng đã được sửa và test lại ở 320 px. Nhân bản tên dài cũng đã chạy qua UI. Giữ font/UI giấy đã chốt. Move up/down là button có disabled ở biên; optional exercise selections trong planner được gộp vào details để bớt dài. Ảnh chụp thử nằm trong `.local/v3-mobile.jpg`, không commit.
 
 ## KNOWN LIMITATIONS
 
@@ -69,3 +69,5 @@ Dùng thực tế ở phòng tập để ghi nhận các lỗi/điểm khó dùn
 ## RECOMMENDED MODEL FOR THAT PHASE
 
 **GPT-6.1-sol · reasoning high** cho review/fix/triển khai tiếp; reasoning medium cho thay đổi giao diện nhỏ. Model/reasoning theo từng bước có trong `FULL_STEP_BY_STEP_GUIDE.txt`.
+
+Code checkpoint: `b99f8d2` trên `main`, sau đó có checkpoint chỉnh mobile/tài liệu. Chưa push GitHub.

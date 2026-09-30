@@ -85,7 +85,7 @@ Each step includes model / reasoning guidance, verification and done condition.
 
 CURRENT IMPLEMENTATION STATUS
 CURRENT PHASE: V3 local review/documentation, phases 1–8 implemented.
-CURRENT STEP: final verification complete; local Git checkpoint.
+CURRENT STEP: COMPLETE for local phases 1–8; code checkpoint b99f8d2.
 COMPLETED: V2 preserved, schema 6, manual planning, snapshots, local planner,
 food/recipe ownership photos; automatic tests and browser workflows.
 IN PROGRESS: none for phases 1–8. 55/55 tests pass; review findings fixed.
