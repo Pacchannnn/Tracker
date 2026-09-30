@@ -171,6 +171,12 @@ a.primary { display: inline-flex; align-items: center; }
 .photo-card .actions { flex-wrap: wrap; }
 .photo-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
 .photo-strip img { width: 88px; height: 88px; flex: none; object-fit: cover; border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
+.choice-fieldset { min-width: 0; padding: 12px; border: 2px dashed var(--ink); border-radius: var(--wobbly-small); }
+.choice-fieldset legend { font-weight: 700; padding: 0 5px; }
+.checkbox-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.checkbox-options label { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 5px; }
+.checkbox-options input { width: 20px; height: 20px; flex: none; }
+details > summary { cursor: pointer; min-height: 44px; padding: 8px 0; font-weight: 700; }
 
 footer { padding: 9px 0; color: var(--muted); font-size: .82rem; }
 dialog { max-width: min(500px, calc(100vw - 28px)); padding: 23px; color: var(--ink); background: var(--paper); border: 3px solid var(--ink); border-radius: var(--wobbly); box-shadow: 8px 8px 0 var(--ink); }
@@ -209,7 +215,14 @@ dialog::backdrop { background: #2d2d2db0; }
   .mood-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .journal-calendar { gap: 2px; }
   .photo-card { grid-template-columns: 1fr; }
+  .checkbox-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .primary, .secondary, .danger, .quick-links button { transition: none; }
 }
+
+.contract-preview { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; }
+
+.food-thumbnail { width: 100%; max-width: 240px; height: 160px; object-fit: cover; border-radius: 8px; }
+.nutrition-photo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .75rem 0; }
+.nutrition-photo-preview { flex-basis: 100%; }

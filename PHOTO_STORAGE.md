@@ -8,6 +8,10 @@ Tracker giữ dữ liệu chữ/số trong một đối tượng `localStorage` 
 
 ## Sao lưu và khôi phục
 
+V3 thêm `ownerType: food | recipe` và `ownerId` tùy chọn trong cùng photo record/store, category vẫn `food`; không đổi DB version và không sao chép ảnh sang localStorage. Card thư viện hiển thị ảnh mới nhất của chủ sở hữu. Thay/gỡ ảnh chỉ tác động ảnh của chủ sở hữu đó, có xác nhận và kiểm tra ID/updatedAt để chặn tab cũ ghi đè. Nếu giao dịch thay ảnh thất bại, IndexedDB rollback cả phần xóa ảnh cũ. Xóa food/recipe giữ ảnh trong gallery để người dùng quản lý, và không đổi meal macro snapshot. File backup ảnh giữ metadata owner; phục hồi ảnh không tự tạo món/công thức còn thiếu.
+
+Tests Node dùng [fake-indexeddb của maintainer](https://github.com/dumbmatter/fakeIndexedDB) làm dev dependency để chạy giao dịch trong bộ nhớ; frontend vẫn dùng IndexedDB native. Kiểm tra mô phỏng rollback không chứng minh khả năng chịu quota thật trên thiết bị.
+
 Một bản sao đầy đủ hiện cần **hai file riêng**:
 
 1. `tracker-backup-*.json`: cài đặt, buổi tập, dinh dưỡng, check-in và nhật ký chữ/số. Khôi phục file này thay thế dữ liệu cấu trúc sau kiểm tra/xem trước và xác nhận.

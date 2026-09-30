@@ -23,6 +23,8 @@ _30/09/2026 · Bản này mở rộng ứng dụng hiện tại; giữ giao di�
 
 ## Tiếp theo / quyết định để sau
 
+V3 mở rộng đã có roadmap riêng trong `V3_ROADMAP.md`: custom exercises/plans, builder, one-off snapshot, local planner và ảnh món/công thức. V2 vẫn được giữ; data JSON lên schema 6 theo migration cộng thêm, ảnh tiếp tục dùng kho v1.
+
 - Thử tải cả hai file sao lưu trong browser thường dùng, giữ file ở nơi riêng tư, rồi thử khôi phục trên origin thử. Không thử restore lên dữ liệu thật trước khi xác nhận file tải được.
 - Nếu kho ảnh tiến gần 200 MB, đánh giá định dạng ZIP/streaming và luồng khôi phục dung lượng lớn. Trước mắt không thêm thư viện chỉ để có ZIP.
 - Chỉ xem xét đồng bộ nhiều thiết bị, đăng nhập, PWA, Flask/SQLite hoặc triển khai khi có nhu cầu sử dụng thật; chưa chọn dịch vụ hay kiến trúc backend.

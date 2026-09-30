@@ -1,12 +1,16 @@
-import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js';
-import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js';
-import { navigationGroup } from './navigation.js?v=6';
-import { previousSetFor, nextIncompleteExercise, restSeconds } from './workout.js';
-import { weeklySummary, exerciseHistory } from './progress.js';
-import { recentFoods, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js';
-import { MOODS, validateJournal, monthDays } from './journal.js';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js';
+import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=15';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js?v=15';
+import { navigationGroup } from './navigation.js?v=15';
+import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=15';
+import { weeklySummary, exerciseHistory } from './progress.js?v=15';
+import { recentFoods, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=15';
+import { MOODS, validateJournal, monthDays } from './journal.js?v=15';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js?v=15';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=15';
+import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=15';
+import { createGymBuilder } from './gym-builder-ui.js?v=15';
+import { createPlannerUI } from './planner-ui.js?v=15';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=15';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -96,6 +100,15 @@ function confirmAction(question, accept) {
   cancel.focus();
 }
 
+const gymBuilder = createGymBuilder({ main, getData: () => data, mutate, render, show, startWorkout: startCustomWorkout,
+  helpers: { node, button, field, panel, div, p, h2, h3, id, message, confirmAction } });
+const plannerView = createPlannerUI({ main, getData: () => data, helpers: { node, button, field, panel, div, p, h2, h3, id, message },
+  checkChoices: gymBuilder.checkChoices, render, useDraft: day => gymBuilder.setOneOff(day, () => show('builder')) });
+const nutritionPhoto = createNutritionPhotos({ helpers: { node, button, div, p, id, message, confirmAction }, render,
+  registerUrl: url => photoUrls.push(url), ownerExists: (type, ownerId) => {
+    const latest = loadData(localStorage); return (type === 'food' ? latest.foods : latest.recipes).some(item => item.id === ownerId);
+  } });
+
 async function mutate(change, success = 'Đã lưu.') {
   try {
     data = await updateData(localStorage, navigator.locks, change);
@@ -145,27 +158,27 @@ function render() {
   photoUrls.forEach(url => URL.revokeObjectURL(url));
   photoUrls = [];
   main.replaceChildren();
-  ({ dashboard: dashboardView, program: programView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
+  ({ dashboard: dashboardView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
 }
 
 function latestCheckin(key) { return [...data.checkins].filter(item => item[key] !== null).sort((a, b) => b.date.localeCompare(a.date))[0]; }
 function currentWeekCount() { const start = weekStart(); return data.sessions.filter(item => item.date >= start && item.date <= localDate()).length; }
 
 function dashboardView() {
-  const today = nextWorkout(data.sessions, data.draft);
+  const today = nextWorkoutInfo();
   const weight = latestCheckin('weight');
   const waist = latestCheckin('waist');
   const latest = [...data.checkins].sort((a, b) => b.date.localeCompare(a.date))[0];
   const totals = dailyTotals(data.entries, localDate());
-  const intro = panel(p(`BUỔI KẾ TIẾP · ${today}`, 'eyebrow'), h2(PROGRAM[today].title), p(`${PROGRAM[today].exercises.length} bài tập · tiếp tục thứ tự A → B → C → D khi lỡ buổi.`, 'summary'));
+  const intro = panel(p(today.planName, 'eyebrow'), h2(today.title), p(today.detail, 'summary'));
   intro.classList.add('hero-panel');
-  intro.append(button(data.draft ? `Tiếp tục buổi ${today} →` : `Bắt đầu buổi ${today} →`, () => openWorkout(today), 'primary'));
+  intro.append(button(data.draft ? 'Tiếp tục buổi đang tập →' : 'Bắt đầu buổi kế tiếp →', today.begin, 'primary'));
   const nutrition = panel(div('row', h2('Dinh dưỡng hôm nay'), button('Mở nhật ký', () => show('nutrition'))), div('stat-pair',
     div('', node('strong', { text: `${fmt(totals.calories)} / ${fmt(data.settings.calories)}` }), node('small', { text: 'kcal đã ghi / mục tiêu' })),
     div('', node('strong', { text: `${fmt(totals.protein)} / ${fmt(data.settings.protein)}` }), node('small', { text: 'g protein đã ghi / mục tiêu' }))));
   if (!data.entries.some(item => item.date === localDate())) nutrition.append(p('Chưa ghi món ăn nào hôm nay.', 'hint'));
-  const week = panel(p('TUẦN CHƯƠNG TRÌNH', 'eyebrow'), h2(`${data.settings.week} / 12`), p(weekGuidance(data.settings.week), 'hint'), div('stat-pair',
-    div('', node('strong', { text: `${currentWeekCount()} / 4` }), node('small', { text: 'buổi tuần này' })),
+  const week = panel(p('TUẦN ORIGINAL PLAN', 'eyebrow'), h2(`${data.settings.week} / 12`), p(weekGuidance(data.settings.week), 'hint'), div('stat-pair',
+    div('', node('strong', { text: data.activePlanId === null ? `${currentWeekCount()} / 4` : String(currentWeekCount()) }), node('small', { text: 'buổi tuần này' })),
     div('', node('strong', { text: weight ? `${fmt(weight.weight)} kg` : '—' }), node('small', { text: 'cân gần nhất' }))));
   const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => { progressSubView = 'checkins'; show('checkins'); }));
   main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Chọn việc cần làm'), div('quick-links',
@@ -181,7 +194,29 @@ function quickLink(label, detail, action) {
   return link;
 }
 
+function nextWorkoutInfo() {
+  if (data.draft) return { title: sessionTitle(data.draft), planName: data.draft.workoutSnapshot?.planName || 'Original Plan · 12 tuần', detail: `${sessionExercises(data.draft).length} bài · bản nháp đã lưu`, begin: () => show('workout') };
+  const plan = data.plans.find(item => item.id === data.activePlanId);
+  if (plan) {
+    const day = nextPlanDay({ ...plan, days: plan.days.filter(item => item.exercises.length) }, data.sessions);
+    return day ? { title: day.name, planName: plan.name, detail: `${day.exercises.length} bài · tiếp tục theo thứ tự buổi trong kế hoạch`, begin: () => startCustomWorkout(day, plan) } :
+      { title: 'Kế hoạch chưa có buổi có bài', planName: plan.name, detail: 'Thêm bài trong Kế hoạch của tôi để bắt đầu.', begin: () => show('plans') };
+  }
+  const key = nextWorkout(data.sessions, null);
+  return { title: `Buổi ${key} · ${PROGRAM[key].title}`, planName: 'Original Plan · 12 tuần', detail: `${PROGRAM[key].exercises.length} bài · tiếp tục thứ tự A → B → C → D`, begin: () => openWorkout(key) };
+}
+
 function programView() {
+  const next = nextWorkoutInfo();
+  main.append(panel(p(next.planName, 'eyebrow'), h2(next.title), p(next.detail, 'summary'), div('actions', button(data.draft ? 'Tiếp tục buổi đang tập' : 'Bắt đầu buổi kế tiếp', next.begin, 'primary'), button('Tạo buổi riêng hôm nay', () => show('builder')), button('Trợ lý lên buổi', () => show('planner')), button('Kế hoạch của tôi', () => show('plans')), button('Thư viện bài tập', () => show('exercise-library')))));
+  const active = data.plans.find(item => item.id === data.activePlanId);
+  if (!active) { originalProgramView(); return; }
+  const box = panel(h2(`Các buổi · ${active.name}`));
+  for (const day of active.days) box.append(div('list-card', h3(day.name), p(`${day.exercises.length} bài · ${day.exercises.map(item => item.name).join(' · ')}`, 'hint'), button('Mở buổi này', () => startCustomWorkout(day, active), 'primary')));
+  box.append(button('Xem Original Plan', () => show('original-program'))); main.append(box);
+}
+
+function originalProgramView() {
   const days = div('program-days');
   for (const [key, workout] of Object.entries(PROGRAM)) {
     const choice = node('button', { type: 'button', 'aria-label': `Buổi ${key}: ${workout.day} · ${workout.title}`, 'aria-pressed': key === selectedProgram ? 'true' : 'false', onClick: () => { selectedProgram = key; render(); } }, [node('strong', { text: key }), node('span', { text: `${workout.day} · ${workout.title.split(' · ')[0]}` })]);
@@ -194,6 +229,23 @@ function programView() {
   if (selectedProgram === 'B' || selectedProgram === 'D') guidance.append(p('Gối: nếu đau nhói, kẹt, lỏng/khuỵu khi tập, dừng bài. Theo dõi sưng hoặc đau tăng sau buổi và sáng hôm sau. Xem MASTER_PLAN.md.', 'warning'));
   guidance.append(p('Cardio: bắt đầu 2 lần/tuần, 15–20 phút đi bộ phẳng hoặc xe đạp tại chỗ nếu gối dung nạp; chi tiết trong MASTER_PLAN.md.', 'hint'));
   main.append(days, div('program-detail', details, guidance));
+}
+
+async function startCustomWorkout(day, plan = null) {
+  let snapshot;
+  try { snapshot = snapshotWorkout(day, plan); } catch (error) { message(error.message, true); return; }
+  data = loadData(localStorage);
+  if (data.draft?.workoutSnapshot?.dayId === day.id && data.draft.workoutSnapshot.planId === (plan?.id ?? null)) { show('workout'); return; }
+  const expected = data.draft ? structuredClone(data.draft) : null;
+  const start = async () => {
+    const done = await mutate(next => {
+      if (expected) ensureUnchanged(next.draft, expected); else if (next.draft) throw new Error('Tab khác đã mở buổi tập. Hãy kiểm tra bản nháp.');
+      if (plan) ensureUnchanged(next.plans.find(item => item.id === plan.id), plan);
+      next.draft = { id: id(), workout: 'CUSTOM', workoutSnapshot: structuredClone(snapshot), date: localDate(), week: next.settings.week, sets: [], notes: '' };
+    }, 'Đã mở buổi custom với snapshot riêng.');
+    if (done) { restTimer = null; focusIndex = 0; show('workout'); }
+  };
+  if (expected) confirmAction('Bắt đầu buổi này sẽ thay bản nháp đang có. Tiếp tục?', start); else start();
 }
 
 async function openWorkout(key) {
@@ -219,23 +271,25 @@ async function openWorkout(key) {
   show('workout');
 }
 
-function previousSets(key, exerciseIndex, excludeId) {
-  const session = [...data.sessions].filter(item => item.workout === key && item.id !== excludeId).sort((a, b) => b.date.localeCompare(a.date))[0];
-  return session?.sets.filter(set => set.exerciseIndex === exerciseIndex) ?? [];
+function previousSets(key, exerciseIndex, excludeId, exerciseId = null) {
+  return previousExerciseSets(data.sessions, key, exerciseIndex, excludeId, exerciseId);
 }
 
 function workoutView() {
   if (!data.draft) {
-    const box = panel(h2('Chọn buổi tập'), p('Mở A/B/C/D để ghi từng hiệp. Bản nháp tự lưu trên trình duyệt.', 'summary'));
+    const today = nextWorkoutInfo();
+    const box = panel(h2('Chọn buổi tập'), p(`${today.planName} · ${today.title}`, 'summary'), div('actions', button('Mở buổi kế tiếp', today.begin, 'primary'), button('Tạo buổi riêng', () => show('builder')), button('Xem kế hoạch', () => show('plans'))));
     box.append(div('actions', ...Object.keys(PROGRAM).map(key => button(`Buổi ${key}`, () => openWorkout(key), 'primary'))));
     main.append(box); return;
   }
   const draft = data.draft;
-  const workout = PROGRAM[draft.workout];
-  const header = panel(h2(`Buổi ${draft.workout} · ${workout.title}`), p(`Tuần ${draft.week} · ${draft.date} · ${draft.sets.length} hiệp đã ghi`, 'summary'), p('Ghi DB theo mỗi tay; barbell tính cả thanh. Với máy, ghi đúng đơn vị và tên máy trong ghi chú buổi. Theo MASTER_PLAN.md.', 'hint'));
+  const workout = { title: draft.workoutSnapshot?.name || PROGRAM[draft.workout].title, exercises: sessionExercises(draft) };
+  const header = panel(h2(draft.workoutSnapshot ? workout.title : `Buổi ${draft.workout} · ${workout.title}`), p(`${draft.workoutSnapshot?.planName || `Original Plan · tuần ${draft.week}`} · ${draft.date} · ${draft.sets.length} hiệp đã ghi`, 'summary'), p('Ghi DB theo mỗi tay; barbell tính cả thanh. Với máy, ghi đúng đơn vị và tên máy trong ghi chú buổi. Theo MASTER_PLAN.md.', 'hint'));
+  if (draft.workoutSnapshot) header.append(p('Buổi này giữ thông số đã duyệt lúc bắt đầu. Sửa/xóa kế hoạch sau đó không đổi nội dung buổi.', 'hint'));
   if (draft.workout === 'B' || draft.workout === 'D') header.append(p('Điều kiện bài chân: chỉ thực hiện khi đã được phép trở lại tập sức mạnh và không có hạn chế riêng sau mổ; không tập xuyên qua đau/sưng/mất vững. Xem MASTER_PLAN.md.', 'warning'));
   const details = div('form-grid', field('Ngày tập', 'date', draft.date, { type: 'date' }), field('Ghi chú buổi', 'notes', draft.notes));
   details.querySelectorAll('input').forEach(input => input.addEventListener('change', () => mutate(next => {
+    if (next.draft?.id !== draft.id) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại.');
     const date = details.querySelector('[name=date]').value;
     if (!validDate(date)) throw new Error('Ngày tập không hợp lệ.');
     next.draft.date = date;
@@ -259,11 +313,13 @@ function workoutView() {
 }
 
 function exerciseBlock(item, index, draft, isNext = false) {
+  const count = draft.workoutSnapshot ? item.sets : setCount(item, draft.week);
+  const rir = draft.workoutSnapshot ? item.rir : targetRir(item, draft.week);
   const saved = draft.sets.filter(set => set.exerciseIndex === index).sort((a, b) => a.setNumber - b.setNumber);
-  const previous = previousSets(draft.workout, index, draft.id);
-  const wrapper = div(`exercise${isNext ? ' is-next' : ''}`, h3(`${index + 1}. ${item.name}`), p(`${setCount(item, draft.week)} hiệp × ${item.reps} · Nghỉ ${item.rest} · RIR mục tiêu ${targetRir(item, draft.week)}`, 'exercise-meta'));
+  const previous = previousSets(draft.workout, index, draft.id, item.exerciseId || null);
+  const wrapper = div(`exercise${isNext ? ' is-next' : ''}`, h3(`${index + 1}. ${item.name}`), p(`${count} hiệp × ${item.reps} · Nghỉ ${item.rest} · RIR mục tiêu ${rir}`, 'exercise-meta'));
   if (item.note) wrapper.append(p(item.note, 'hint'));
-  const noteKey = `${draft.workout}:${index}`;
+  const noteKey = item.exerciseId ? `exercise:${item.exerciseId}` : `${draft.workout}:${index}`;
   const ownNote = data.exerciseNotes[noteKey] || '';
   if (ownNote) wrapper.append(p(`Ghi chú setup: ${ownNote}`, 'hint'));
   if (editingExerciseNote === noteKey) {
@@ -299,11 +355,11 @@ function exerciseBlock(item, index, draft, isNext = false) {
     list.append(line);
   }
   wrapper.append(list);
-  const nextSet = Array.from({ length: setCount(item, draft.week) }, (_, i) => i + 1).find(n => !saved.some(set => set.setNumber === n));
+  const nextSet = Array.from({ length: count }, (_, i) => i + 1).find(n => !saved.some(set => set.setNumber === n));
   const edit = saved.find(set => set.id === editingSet);
   if (nextSet !== undefined || edit) {
     const setNumber = edit?.setNumber ?? nextSet;
-    const previousSet = previousSetFor(data.sessions, draft.workout, index, setNumber, draft.id);
+    const previousSet = previousSetFor(data.sessions, draft.workout, index, setNumber, draft.id, item.exerciseId || null);
     const form = node('form', { class: 'set-form' }, [
       field(`Hiệp ${setNumber} · tạ`, 'weight', edit?.weight ?? '', { type: 'number', min: '0', step: 'any', required: true }),
       field('Đơn vị', 'unit', edit?.unit || 'kg', { tag: 'select', choices: ['kg', 'lb'] }),
@@ -334,11 +390,14 @@ function exerciseBlock(item, index, draft, isNext = false) {
           ensureUnchanged(current, edit);
           Object.assign(current, set);
         }
-        else next.draft.sets.push({ id: id(), exerciseIndex: index, exerciseName: item.name, setNumber, ...set });
+        else {
+          if (next.draft.sets.some(item => item.exerciseIndex === index && item.setNumber === setNumber)) throw new Error('Hiệp này đã được ghi ở tab khác. Hãy mở lại.');
+          next.draft.sets.push({ id: id(), exerciseIndex: index, exerciseName: item.name, ...(item.exerciseId ? { exerciseId: item.exerciseId } : {}), setNumber, ...set });
+        }
       }, `Đã lưu hiệp ${setNumber}.`);
       if (done && edit) { editingSet = null; render(); }
       if (done && !edit && focusMode && data.draft) {
-        const nextIndex = nextIncompleteExercise(PROGRAM[draft.workout].exercises, data.draft);
+        const nextIndex = nextIncompleteExercise(sessionExercises(data.draft), data.draft);
         if (nextIndex !== null) { focusIndex = nextIndex; render(); }
       }
     });
@@ -392,7 +451,7 @@ function historyView() {
   const sessions = [...data.sessions].sort((a, b) => b.date.localeCompare(a.date));
   if (!sessions.length) { main.append(panel(p('Chưa có buổi tập nào. Mở một buổi và lưu ít nhất một hiệp.', 'empty'))); return; }
   for (const session of sessions) {
-    const box = panel(h3(`${session.date} · Buổi ${session.workout}`), p(`${session.sets.length} hiệp${session.notes ? ` · ${session.notes}` : ''}`, 'summary'));
+    const box = panel(h3(`${session.date} · ${sessionTitle(session)}`), p(`${session.workoutSnapshot?.planName || 'Original Plan'} · ${session.sets.length} hiệp${session.notes ? ` · ${session.notes}` : ''}`, 'summary'));
     const list = node('ul', { class: 'history-list' });
     for (const set of session.sets) list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }));
     box.append(list, div('actions', button('Mở để sửa', () => {
@@ -568,8 +627,8 @@ function renderFoodLibrary() {
     const query = search.querySelector('input').value.trim().toLocaleLowerCase('vi');
     const foods = recentFoods(data.foods, data.entries).filter(food => food.name.toLocaleLowerCase('vi').includes(query));
     if (!foods.length) results.append(p(query ? 'Không tìm thấy thực phẩm phù hợp.' : 'Chưa có món nào. Nhập macro từ nhãn thực phẩm để bắt đầu.', 'empty'));
-    for (const food of foods) results.append(div('list-card', h3(food.name), p(`${food.serving} · ${fmt(food.calories)} kcal · P ${fmt(food.protein)} · C ${fmt(food.carbs)} · F ${fmt(food.fat)}`, 'summary'), food.notes ? p(food.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingFood = food.id; render(); }), button('Xóa', () => {
-      confirmAction(`Xóa món ${food.name} khỏi thư viện? Các bữa đã ghi vẫn giữ nguyên.`, () => mutate(next => { next.foods = next.foods.filter(item => item.id !== food.id); }, 'Đã xóa món khỏi thư viện.'));
+    for (const food of foods) results.append(div('list-card', h3(food.name), nutritionPhoto('food', food.id, food.name), p(`${food.serving} · ${fmt(food.calories)} kcal · P ${fmt(food.protein)} · C ${fmt(food.carbs)} · F ${fmt(food.fat)}`, 'summary'), food.notes ? p(food.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingFood = food.id; render(); }), button('Xóa', () => {
+      confirmAction(`Xóa món ${food.name} khỏi thư viện? Các bữa đã ghi giữ nguyên; ảnh còn trong Nhật ký & Ảnh để bạn tự quản lý.`, () => mutate(next => { ensureUnchanged(next.foods.find(item => item.id === food.id), food); next.foods = next.foods.filter(item => item.id !== food.id); }, 'Đã xóa món khỏi thư viện.'));
     }, 'danger'))));
   };
   search.querySelector('input').addEventListener('input', updateResults);
@@ -708,6 +767,7 @@ function renderRecipes(foodDate) {
   if (!data.recipes.length) box.append(p('Chưa có công thức nào.', 'empty'));
   for (const recipe of data.recipes) {
     const detail = node('details', { class: 'recipe-detail' }, [node('summary', { text: `${recipe.name} · ${fmt(recipe.servings)} phần` })]);
+    detail.append(nutritionPhoto('recipe', recipe.id, recipe.name));
     if (recipe.description) detail.append(p(recipe.description, 'summary'));
     const ingredients = node('ul', { class: 'history-list' });
     for (const item of recipe.ingredients) ingredients.append(node('li', { text: `${fmt(item.quantity)} ${item.unit} · ${item.name}` }));
@@ -739,7 +799,7 @@ function renderRecipes(foodDate) {
       detail.append(logForm);
     }
     detail.append(div('actions', button('Sửa công thức', () => { editingRecipe = recipe.id; render(); }),
-      button('Xóa công thức', () => confirmAction(`Xóa công thức ${recipe.name}? Nhật ký ăn cũ vẫn giữ nguyên.`, () => mutate(next => {
+      button('Xóa công thức', () => confirmAction(`Xóa công thức ${recipe.name}? Nhật ký ăn giữ nguyên; ảnh còn trong Nhật ký & Ảnh.`, () => mutate(next => {
         ensureUnchanged(next.recipes.find(item => item.id === recipe.id), recipe);
         next.recipes = next.recipes.filter(item => item.id !== recipe.id);
       }, 'Đã xóa công thức.')), 'danger')));
@@ -837,7 +897,7 @@ function journalView() {
     catch (error) { message(`Nhật ký đã xóa nhưng ảnh cùng ngày chưa dọn được: ${error.message}. Hãy xóa trong mục Ảnh.`, true); }
   }), 'danger'));
   const related = data.sessions.filter(item => item.date === journalDate);
-  if (related.length) box.append(p(`Buổi tập cùng ngày: ${related.map(item => item.workout).join(', ')}`, 'hint'));
+  if (related.length) box.append(p(`Buổi tập cùng ngày: ${related.map(sessionTitle).join(', ')}`, 'hint'));
   const attached = div('journal-attached');
   box.append(attached);
   listPhotos().then(photos => {
@@ -900,6 +960,10 @@ function renderPhotos() {
   file.querySelector('input').setAttribute('accept', 'image/jpeg,image/png,image/webp');
   if (editingPhoto) file.hidden = true;
   const category = field('Loại ảnh', 'category', editingPhoto?.category || 'daily', { tag: 'select', choices: PHOTO_CATEGORIES });
+  if (editingPhoto?.ownerType) {
+    category.querySelector('select').disabled = true;
+    box.append(p('Ảnh này liên kết thư viện món/công thức; loại ảnh Món ăn được giữ nguyên.', 'hint'));
+  }
   const pose = field('Góc chụp (nếu theo dõi cơ thể)', 'pose', editingPhoto?.pose || '', { tag: 'select', choices: PHOTO_POSES });
   const measurement = div('form-grid span-all', field('Cân nặng kg (tùy chọn)', 'weight', editingPhoto?.weight ?? '', { type: 'number', min: 0, step: .1 }), field('Vòng eo cm (tùy chọn)', 'waist', editingPhoto?.waist ?? '', { type: 'number', min: 0, step: .1 }));
   form.append(file, field('Ngày', 'date', editingPhoto?.date || journalDate, { type: 'date', required: true }), category, pose, measurement, field('Ghi chú ảnh', 'note', editingPhoto?.note || '', { tag: 'textarea' }));
@@ -909,6 +973,7 @@ function renderPhotos() {
     event.preventDefault();
     try {
       const raw = Object.fromEntries(new FormData(form));
+      if (editingPhoto?.ownerType) Object.assign(raw, { category: 'food', ownerType: editingPhoto.ownerType, ownerId: editingPhoto.ownerId });
       const meta = validatePhotoMeta(raw);
       const now = new Date().toISOString();
       if (editingPhoto) {
@@ -1009,7 +1074,7 @@ function progressOverview() {
   box.append(div('stats', stat('Buổi tập', String(latest.workouts)), stat('Cardio', `${fmt(latest.cardioMinutes)} phút`),
     stat('Cân trung bình', latest.weightAverage === null ? 'Chưa có' : `${fmt(latest.weightAverage)} kg`),
     stat('Eo trung bình', latest.waistAverage === null ? 'Chưa có' : `${fmt(latest.waistAverage)} cm`)));
-  box.append(p(`A ${latest.sessionCounts.A} · B ${latest.sessionCounts.B} · C ${latest.sessionCounts.C} · D ${latest.sessionCounts.D} · ${latest.kneeRecords} ghi nhận gối`, 'summary'));
+  box.append(p(`A ${latest.sessionCounts.A} · B ${latest.sessionCounts.B} · C ${latest.sessionCounts.C} · D ${latest.sessionCounts.D} · Custom ${latest.sessionCounts.CUSTOM} · ${latest.kneeRecords} ghi nhận gối`, 'summary'));
   box.append(p(latest.nutritionDays ? `Đã ghi ăn ${latest.nutritionDays} ngày · trung bình ${fmt(latest.calorieAverage)} kcal, ${fmt(latest.proteinAverage)} g protein · đạt mục tiêu protein ${latest.proteinDaysMet}/${latest.nutritionDays} ngày đã ghi.` : 'Chưa có dữ liệu ăn uống trong tuần; ngày chưa ghi không được tính là ăn 0 kcal.', latest.nutritionDays ? 'summary' : 'empty'));
   main.append(box);
   const trend = panel(h2('4 tuần gần đây'), p('Trung bình chỉ dựa trên những lần bạn thực sự ghi. Chưa có dữ liệu được hiển thị riêng.', 'hint'));
@@ -1028,7 +1093,7 @@ function progressOverview() {
     selector.querySelector('select').addEventListener('change', event => { selectedExercise = event.target.value; render(); });
     exerciseBox.append(selector);
     const history = exerciseHistory(data.sessions, selectedExercise);
-    for (const set of history.slice(0, 20)) exerciseBox.append(div('list-card', p(`${set.date} · Buổi ${set.workout} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'summary')));
+    for (const set of history.slice(0, 20)) exerciseBox.append(div('list-card', p(`${set.date} · ${set.workoutName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'summary')));
   }
   main.append(exerciseBox);
 }
@@ -1130,7 +1195,7 @@ function renderRestorePreview() {
   if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
   const counts = restorePreview.counts;
   box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
-    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · ${counts.journal} nhật ký · có cài đặt`, 'summary'));
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · ${counts.journal} nhật ký · ${counts.customExercises} bài custom · ${counts.plans} kế hoạch · có cài đặt`, 'summary'));
   if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
   restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
   box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
@@ -1147,7 +1212,7 @@ async function restoreData() {
   const selected = restorePreview;
   const done = await mutate(next => {
     if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
-    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes', 'journalEntries']) next[key] = structuredClone(selected.data[key] ?? null);
+    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes', 'journalEntries', 'customExercises', 'plans', 'activePlanId']) next[key] = structuredClone(selected.data[key] ?? null);
   }, 'Đã khôi phục dữ liệu từ file.');
   if (done) { restorePreview = null; renderRestorePreview(); }
 }

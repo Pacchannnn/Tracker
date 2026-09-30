@@ -1,0 +1,115 @@
+TRACKER — COMPLETE PROJECT GUIDE
+Updated: 2026-09-30
+
+CURRENT PROJECT STATE
+Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
+photos remain. One localStorage object, schema 6; IndexedDB photo store v1.
+Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
+Work is on main, local checkpoints only; no automatic GitHub push.
+
+MVP / CURRENT DELIVERABLE
+Open Gym → choose Original/custom plan or build one-off → review exercise
+settings → start → log weight/reps/RIR → save → reload → history persists.
+Food/recipe logging, check-ins, journal, backup and local photos continue.
+
+PHASES AND DEPENDENCIES
+Each step includes model / reasoning guidance, verification and done condition.
+
+[DONE] 0. Read source documents and inspect Git/source/tests.
+  Depends: repository access. Model: GPT-6.1-sol; reasoning: medium.
+  Verify: V2 baseline 34 tests pass; private files identified.
+  Done: preserve source truth, no rewrite, minimal V3 model recorded.
+
+[DONE] 1. Add schema 6 and additive V5 migration.
+  Depends: 0. Model: GPT-6.1-sol; reasoning: high.
+  Verify: old version migrations, safe parsing, custom snapshot backup and
+  invalid live references. Done: no history/journal/settings erased.
+
+[DONE] 2. Exercise Library.
+  Depends: 1. Model: GPT-6.1-sol; reasoning: medium.
+  Verify: create/edit/search/filter, validation; referenced exercise archives.
+  Done: built-ins immutable, custom CRUD available.
+
+[DONE] 3. Manual builder and editable exercise slots.
+  Depends: 2. Model: GPT-6.1-sol; reasoning: high.
+  Verify: add/reorder/settings validation; narrow 320/360 px; keyboard-safe
+  move buttons. Done: sets/reps/RIR/rest/notes editable without source changes.
+
+[DONE] 4. Multiple plans and Original Plan copy/return.
+  Depends: 3. Model: GPT-6.1-sol; reasoning: high.
+  Verify: create/select/reload/edit; delete preserves session history by tests.
+  Done: create/rename/duplicate/edit/delete, active selection, original retained.
+
+[DONE] 5. One-off sessions and history snapshots.
+  Depends: 3–4. Model: GPT-6.1-sol; reasoning: high.
+  Verify: browser log/reload/complete; template rename keeps old history name;
+  pure tests verify snapshot isolation and plan deletion.
+  Done: reviewed session is independent; one-off never advances custom plan.
+
+[DONE] 6. Alternatives.
+  Depends: 2–3. Model: GPT-6.1-sol; reasoning: medium.
+  Verify: rank/exclude archived and self; browser replacement retains parameters.
+  Done: short differences, alternative or arbitrary manual replacement.
+
+[DONE] 7. Food and recipe photos.
+  Depends: V2 photo infrastructure. Model: GPT-6.1-sol; reasoning: high.
+  Verify: browser add food/recipe photos and food photo reload; owner backup;
+  IndexedDB emulation tests add/replace/remove, rollback and stale-tab conflict.
+  Done: one compression/storage path, no blobs in localStorage, macro snapshots.
+
+[DONE] 8. Local planner + provider-neutral request/output and review UI.
+  Depends: 2–6. Model: GPT-6.1-sol; reasoning: high.
+  Verify: include/exclude, equipment, coverage/time/health conflicts, output gate;
+  browser draft → review builder → start one-off → history.
+  Done: manual functional, no key/network, no automatic save/activation.
+
+[NEXT, OPTIONAL] 9. Remote AI decision and integration.
+  Depends: explicit product/privacy/API decisions (AI_PLANNER.md).
+  Model: GPT-6.1-sol; reasoning: high for implementation; GPT-6-astra/high for
+  difficult privacy/backend design if needed. Do not connect without approval.
+  Tests: malformed/provider error, constraints, timeout/offline, consent, limits.
+  Done: secure server key, approved data flow, validated draft and manual fallback.
+
+[DECIDE LATER] 10. Flask/SQLite feature-by-feature migration.
+  Depends: actual multi-device/backend need and backup confirmation.
+  Model: GPT-6.1-sol; reasoning: high.
+  Order: settings → exercises/plans → sessions/sets → food/entries → journal/
+  measurements → photo ownership. Keep UI; replace persistence boundary.
+  Tests: export/import roundtrip, foreign keys, parameterized SQL, history.
+  Done: no data loss, backups and restore proven. Authentication only if needed.
+
+[DECIDE LATER] 11. Deployment/cloud/PWA/photos at scale.
+  Depends: backend/privacy requirements. Model: GPT-6.1-sol; reasoning: high.
+  Research current official hosting docs, storage/SQLite/privacy/HTTPS/backup
+  before selecting a provider. No deployment required for local usage.
+
+CURRENT IMPLEMENTATION STATUS
+CURRENT PHASE: V3 local review/documentation, phases 1–8 implemented.
+CURRENT STEP: final verification complete; local Git checkpoint.
+COMPLETED: V2 preserved, schema 6, manual planning, snapshots, local planner,
+food/recipe ownership photos; automatic tests and browser workflows.
+IN PROGRESS: none for phases 1–8. 55/55 tests pass; review findings fixed.
+Evidence and test limits: V3_IMPLEMENTATION_REPORT.md / V3_ROADMAP.md.
+NEXT: real gym usage review; fix observed issues before remote AI/backend.
+BLOCKERS: none for local use. Remote API/privacy/provider choices remain open.
+DECISIONS NEEDED: whether remote AI or multi-device storage is actually needed;
+which provider/model, allowed data, budget and retention if AI is requested.
+KNOWN LIMITATIONS: unsaved one-off editor/planner preferences are memory-only;
+local algorithm does not interpret free text or medical restrictions; library
+retains original combined exercise names; no PWA cache/cloud sync.
+TEST LIMITATIONS: browser deletion/replacement confirmation paths not exercised;
+Node IndexedDB emulation covers storage removal/replacement/rollback. Real
+device quota failures and large backup downloads are not proven.
+
+FEATURE BACKLOG
+Optional weekly muscle distribution, richer specific exercise catalogue,
+saved planner preferences, one-off editor autosave, recipe scaling, shopping
+list, ZIP/streaming photo backup >200 MB, PWA, cloud sync, login if necessary.
+Do not let these delay the usable manual/local workflow.
+
+WORK RULES
+Keep MASTER_PLAN.md unchanged. Test each affected milestone, inspect diff,
+update status without regenerating this guide per small edit. Use logical
+local commits; push only when requested. Keep personal docs/backups out of
+the public repository. Bump the same asset/module version on future releases
+to prevent mixing cached old modules with new exports.

@@ -3,3 +3,8 @@ vshape-backup-*.json
 tracker-backup-*.json
 tracker-photos-*.json
 .local/
+# Private source plan and personal notes stay on this computer.
+MASTER_PLAN.md
+TONG_KET_DU_AN.md
+NHAT_KY_TAP.md
+CLIP_NOTES.md

@@ -28,3 +28,10 @@ test('rest duration uses the minimum defined duration without inventing a value'
   assert.equal(restSeconds('60–90 giây'), 60);
   assert.equal(restSeconds('DATA NOT DEFINED YET'), null);
 });
+test('custom sessions keep configured three sets in week one and match previous exercise IDs', () => {
+  const exercises = [{ sets: 3, exerciseId: 'e1', name: 'Row' }];
+  const draft = { id: 'new', week: 1, workoutSnapshot: { exercises }, sets: [{ exerciseIndex: 0, setNumber: 1 }, { exerciseIndex: 0, setNumber: 2 }] };
+  assert.equal(nextIncompleteExercise(exercises, draft), 0);
+  const previous = [{ id: 'old', workout: 'CUSTOM', date: '2026-09-29', sets: [{ exerciseIndex: 2, exerciseId: 'e1', setNumber: 1, weight: 20 }] }];
+  assert.equal(previousSetFor(previous, 'CUSTOM', 0, 1, null, 'e1').weight, 20);
+});

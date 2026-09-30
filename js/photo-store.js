@@ -1,4 +1,4 @@
-import { validDate } from './data.js';
+import { validDate } from './data.js?v=15';
 
 export const PHOTO_CATEGORIES = [
   { value: 'daily', label: 'Nhật ký ngày' },
@@ -28,7 +28,12 @@ export function validatePhotoMeta(raw) {
   };
   const note = String(raw.note || '').trim();
   if (note.length > 1000) throw new Error('Ghi chú ảnh quá dài.');
-  return { date: raw.date, category, pose, weight: measure(raw.weight, 'Cân nặng'), waist: measure(raw.waist, 'Vòng eo'), note };
+  const owner = {};
+  if (raw.ownerType !== undefined || raw.ownerId !== undefined) {
+    if (!['food', 'recipe'].includes(raw.ownerType) || typeof raw.ownerId !== 'string' || !raw.ownerId.trim() || raw.ownerId.length > 160 || category !== 'food') throw new Error('Chủ sở hữu ảnh món ăn không hợp lệ.');
+    owner.ownerType = raw.ownerType; owner.ownerId = raw.ownerId;
+  }
+  return { date: raw.date, category, pose, weight: measure(raw.weight, 'Cân nặng'), waist: measure(raw.waist, 'Vòng eo'), note, ...owner };
 }
 
 export function validatePhotoFile(file) {
@@ -99,6 +104,52 @@ export async function putPhoto(record) {
 
 export async function deletePhoto(id) {
   await transaction('readwrite', store => store.delete(id));
+}
+
+export function ownedPhotos(records, ownerType, ownerId) {
+  return records.filter(item => item.ownerType === ownerType && item.ownerId === ownerId);
+}
+
+// Replace only this owner's records in one transaction; unrelated journal photos stay intact.
+function sameOwnedPhotos(current, expected) {
+  const signature = records => records.map(item => `${item.id}:${item.updatedAt}`).sort().join('|');
+  return expected === null || signature(current) === signature(expected);
+}
+
+export async function replaceOwnedPhoto(record, expectedPhotos = null) {
+  validatePhotoMeta(record);
+  if (!record.ownerType) throw new Error('Ảnh thiếu chủ sở hữu.');
+  const db = await openDb();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite'), store = tx.objectStore(STORE);
+      const request = store.getAll();
+      request.onsuccess = () => {
+        const current = ownedPhotos(request.result, record.ownerType, record.ownerId);
+        if (!sameOwnedPhotos(current, expectedPhotos)) { tx.abort(); reject(new Error('Ảnh món đã đổi ở tab khác. Mở lại thư viện trước khi thay.')); return; }
+        try { for (const previous of current) store.delete(previous.id); store.put(record); }
+        catch { tx.abort(); }
+      };
+      tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = () => reject(new Error('Không lưu được ảnh món ăn. Ảnh cũ vẫn được giữ khi giao dịch thất bại.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function deleteOwnedPhotos(ownerType, ownerId, expectedPhotos = null) {
+  const db = await openDb();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite'), store = tx.objectStore(STORE), request = store.getAll();
+      request.onsuccess = () => {
+        const current = ownedPhotos(request.result, ownerType, ownerId);
+        if (!sameOwnedPhotos(current, expectedPhotos)) { tx.abort(); reject(new Error('Ảnh món đã đổi ở tab khác. Mở lại trước khi gỡ.')); return; }
+        try { for (const item of current) store.delete(item.id); } catch { tx.abort(); }
+      };
+      tx.oncomplete = resolve;
+      tx.onerror = tx.onabort = () => reject(new Error('Không gỡ được ảnh khỏi kho cục bộ.'));
+    });
+  } finally { db.close(); }
 }
 
 export async function updatePhotoIfUnchanged(previous, meta, updatedAt) {

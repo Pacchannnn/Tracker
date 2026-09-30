@@ -1,6 +1,11 @@
 const groups = {
   dashboard: 'today',
   program: 'training',
+  'original-program': 'training',
+  'exercise-library': 'training',
+  plans: 'training',
+  builder: 'training',
+  planner: 'training',
   workout: 'training',
   history: 'training',
   'gym-logs': 'training',

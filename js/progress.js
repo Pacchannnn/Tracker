@@ -1,4 +1,4 @@
-import { dailyTotals, localDate } from './data.js';
+import { dailyTotals, localDate } from './data.js?v=15';
 
 const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 
@@ -15,7 +15,7 @@ export function weeklySummary(data, start) {
   return {
     start, end: endDate,
     workouts: sessions.length,
-    sessionCounts: Object.fromEntries(['A', 'B', 'C', 'D'].map(key => [key, sessions.filter(item => item.workout === key).length])),
+    sessionCounts: Object.fromEntries(['A', 'B', 'C', 'D', 'CUSTOM'].map(key => [key, sessions.filter(item => item.workout === key).length])),
     weightAverage: average(checkins.map(item => item.weight).filter(value => value !== null)),
     waistAverage: average(checkins.map(item => item.waist).filter(value => value !== null)),
     nutritionDays: dates.length,
@@ -30,6 +30,6 @@ export function weeklySummary(data, start) {
 export function exerciseHistory(sessions, name) {
   return sessions.flatMap(session => session.sets
     .filter(set => set.exerciseName === name)
-    .map(set => ({ date: session.date, workout: session.workout, ...set })))
+    .map(set => ({ date: session.date, workout: session.workout, workoutName: session.workoutSnapshot?.name || `Buổi ${session.workout}`, ...set })))
     .sort((a, b) => b.date.localeCompare(a.date) || a.setNumber - b.setNumber);
 }
