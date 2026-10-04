@@ -1,6 +1,22 @@
-# Local data model (schemaVersion 7)
+# Local data model (schemaVersion 8)
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
+
+## Phase 4B-1 identity foundation — CUTOVER PENDING 4B-2
+
+7→8 only bumps schemaVersion in memory; completed records, live draft, planningDraft and every other domain stay unchanged. Load never writes. updateData/Web Lock first successful write persists8; no automatic8→7 downgrade. Existing1→7 chain retained. Current Start/log/edit/delete/Complete remain legacy index writers.
+
+New optional sessionStructure: `{revision: safe integer >=0, basis: started|legacy-snapshot|legacy-program, slots:[], order:[]}`. Slots registry: `{id,exerciseId:null|ID,sourceSlotId:null|ID,replacesSlotId:null|ID,status:active|removed|replaced,snapshot:{name,sets,reps,rest,rir,notes,setupNote}}`. Sets target is positive integer; other snapshot values are raw display strings. Registry ordinal stays immutable; order is exact permutation including tombstones. Replacement refers to earlier registry entry marked replaced, at most one successor, no cycle. No structural commands/UI yet.
+
+Session occurrence UUID != catalog ID != source template occurrence; deterministic legacy-slot:index IDs are scoped to session. Duplicate exercise occurrences are distinct. Structured saved sets require slotId, compatible exerciseIndex registry ordinal, immutable name/known exercise ID, unique ID and owner/setNumber. Original materialization preserves over-target legacy logs and exact PROGRAM+week ranges/unilateral/unknowns; custom derives display fields from frozen workoutSnapshot. Canonical Original catalog match may differ source occurrence (B:4→A:3).
+
+js/session-identity.js exposes generation, registry enumeration/lookup, ordered display, saved owner resolution, fresh constructor, deterministic materialization and explicit ambiguous results. Helpers clone inputs; fresh snapshots are frozen. No helper automatically activates/persists a runtime draft. Missing/conflicting/duplicate legacy mappings keep raw data; structured corruption never falls back to index. Old completed sessions need no enrichment or current source-library reference.
+
+draft.historyEditBase supports null / cloned completed record / exact legacy-unknown marker. Baseline cannot contain historyEditBase; same session ID and valid date required; field never belongs in completed sessions. Creation/unknown detection are helpers only. Runtime reopening/Complete CAS not implemented. Imported structured or non-null baseline drafts use read-only bridge; old writers are blocked at latest-state compatibility checks. Normal runtime drafts stay entirely legacy, avoiding half-mixed ownership.
+
+Strict structure applies at load/write/backup. Legacy load/write validation remains compatible; old strict backup checks still handle legacy records. Data backup8 preserves structures/baselines losslessly and accepts raw/wrapped1–7; malformed structure/future schema/wrapper mismatch reject without replacing disk. Photo DB1/format1 unchanged. See PHASE4_LIVE_WORKOUT_CONTRACT.md and V4_IMPLEMENTATION_REPORT.md for evidence and4B-2 boundary.
+
+## Existing domains (unchanged)
 
 - `settings`: selected program week (1–12), daily calorie and protein targets. Defaults reflect `MASTER_PLAN.md`; edits affect the app only.
 - `draft`: at most one open workout session. Each saved set persists immediately.

@@ -1,9 +1,9 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-05 (V4 Phase 3 Shared Exercise Picker)
+Updated: 2026-10-05 (V4 Phase 4B-1 identity foundation)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
-photos remain. One localStorage object, schema 7; IndexedDB photo store v1.
+photos remain. One localStorage object, schema 8; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
 Work is on main, local checkpoints only; no automatic GitHub push.
 
@@ -121,7 +121,7 @@ local commits; push only when requested. Keep personal docs/backups out of
 the public repository. Bump the same asset/module version on future releases
 to prevent mixing cached old modules with new exports.
 
-V4 PHASE 3 STATUS — 2026-10-05
+HISTORICAL V4 PHASE 3 STATUS — 2026-10-05
 CURRENT PHASE: Phase 3 complete; STOP. Main roadmap: V4_ROADMAP.md.
 COMPLETED: shared inline Add/Replace; accent/primary/AND filters; review/pending;
 custom/archived/duplicate gates; confirmed changes reuse Phase2 draft recovery.
@@ -133,3 +133,23 @@ screen readers, UI quota fault injection not verified. Full evidence in report.
 NEXT / DECISIONS NEEDED: approve Phase4 live-edit/slot identity migration contract.
 MODEL / REASONING: GPT-6.1-sol / high for identity and migration work.
 BACKLOG: existing Phase4-8; no backend/AI/photos work added in this phase.
+
+V4 PHASE 4B-1 STATUS — 2026-10-05
+CURRENT PHASE: 4A contract approved; 4B-1 IMPLEMENTED/TESTED; Phase4 NOT DONE.
+CURRENT STEP: foundation handoff; STOP before4B-2. Main roadmap V4_ROADMAP.md.
+COMPLETED: additive7->8, identity validators/adapters/materialization, ambiguous
+legacy preservation, historyEditBase model, backup1-8, read-only import bridge.
+TESTED: 82->136 tests;38 JS syntax/diff; disposable8773 Original/custom/one-off,
+history reopen/edit, Phase2 recovery/Phase3 pending filtering, data backup roundtrip;
+structured restore/reload/export deep equality; bridge360px without overflow.
+IN PROGRESS: none. BLOCKERS: none in4B-1. No live structural controls/cutover.
+NEXT:4B-2 canonical writers/readers/revision/full-baseline guards/history CAS
+and explicit recovery; only after a separate request. Model GPT-6.1-sol/high.
+DONE CONDITION for4B-2: atomic cutover and no mixed ownership; guard race tests
+and old data/app flows; no4B-3/4 structural commands prematurely.
+DECISIONS NEEDED: next milestone authorization; external services DECIDE LATER.
+KNOWN LIMITATIONS/BUGS: normal legacy history overwrite still lacks new CAS until
+4B-2; imported identity/non-null baseline drafts read-only. No new failing test.
+NOT VERIFIED: physical phone/Safari/screen reader/real quota/large photo/download.
+BACKLOG:4B-3 Add/Remove/Reorder,4B-4 Replace, Phase5-8. Photos DB/format1 unchanged.
+CODE CHECKPOINT:09676c2 main; no push. Full evidence V4_IMPLEMENTATION_REPORT.md.

@@ -1,5 +1,7 @@
 # Tracker
 
+**Hiện tại: schema8 · V4 Phase4B-1 foundation ·136 tests.** Tải lại mọi tab để nhận asset/module `v=20`. Workout đang dùng luồng ghi cũ; chưa có Add/Remove/Replace/Reorder khi đang tập. Structure mới chỉ là foundation cho bước sau; bản ghi structured nhập từ backup tạm thời chỉ xem được. Migration giữ nguyên lịch sử/draft cũ, không tự gán ownership. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
+
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
 ## Chạy
@@ -64,7 +66,7 @@ Trạng thái triển khai và giới hạn kiểm tra: [V3_ROADMAP.md](V3_ROADM
 - **Nhật ký ngày:** tìm tên món không dấu ngay form ghi ăn; chọn món gần đây, nhập lượng và lưu. Không có kết quả sẽ khóa nút ghi để tránh lưu nhầm.
 - **Công thức:** mở chi tiết → đổi **Số phần định nấu** để xem lượng nguyên liệu và tổng macro tương ứng. Mỗi phần giữ kích thước và macro gốc; lượng ăn ghi trong form bên dưới là thao tác riêng. **Về lượng gốc** khôi phục preview. Không sửa công thức, lời hướng dẫn hay lịch sử.
 - **Nhật ký & Ảnh:** thẻ gần đây có thể chọn/bỏ, đồng bộ với ô nhập và vẫn cần bấm Lưu. Bố cục trạng thái ngày thích ứng theo chiều rộng màn hình.
-- Phase 1 giữ schema6; Phase 2 hiện dùng **schema7**, không thêm dịch vụ/thư viện runtime. Tải lại mọi tab Tracker sau cập nhật để nhận bộ asset `v=18`.
+- Mốc lịch sử: Phase1 schema6, Phase2–3 schema7. Hiện Phase4B-1 dùng schema8 additive; không thêm dịch vụ/thư viện runtime. Tải lại mọi tab Tracker để nhận asset/module `v=20`.
 
 Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md). Ý tưởng chưa triển khai: [TRACKER_FEATURE_BACKLOG.md](TRACKER_FEATURE_BACKLOG.md), [TRACKER_PRODUCT_IDEAS.md](TRACKER_PRODUCT_IDEAS.md). Trạng thái và bằng chứng: [V4_ROADMAP.md](V4_ROADMAP.md), [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).
 

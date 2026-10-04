@@ -1,5 +1,9 @@
 # Ảnh cục bộ và sao lưu
 
+## V4 Phase 4B-1 — schema8 compatibility
+
+Data JSON now uses schema8; raw/wrapped1–7 migrate additively. Identity/session snapshots/historyEditBase are preserved losslessly and malformed structure fails validation. Photo IndexedDB version1 and photo backup format1 are unchanged; no image migration or new photo feature. Full backup still requires two files. Existing photo bytes/owners/rollback tests pass; this milestone's browser roundtrip checks data JSON only.
+
 ## Quyết định lưu trữ
 
 Tracker giữ dữ liệu chữ/số trong một đối tượng `localStorage` có `schemaVersion` và giữ ảnh dưới dạng Blob trong IndexedDB `tracker-photos/photos`. IndexedDB phù hợp với dữ liệu binary hơn localStorage và transaction giúp các lần thêm/xóa theo lô không bị lưu dở. Không có upload, analytics hay truy cập ảnh từ bên ngoài. Trình duyệt vẫn có thể xóa dữ liệu site khi hết dung lượng hoặc khi người dùng xóa profile/site data; vì vậy cần xuất bản sao thường xuyên.

@@ -1,4 +1,45 @@
-# Tracker V4 — Phase 3 Shared Exercise Picker + Alternatives
+# Tracker V4 — Phase 4B-1 Session Identity Foundation
+
+05/10/2026 · **4B-1 IMPLEMENTED / TESTED. Phase4 NOT DONE. 4B-2 NOT IMPLEMENTED. STOP.** Code checkpoint `09676c2`; main; no push. Prior reports below are historical evidence.
+
+## 4B-1 report — 21 required items
+
+1. **Schema:** baseline7,82/82 tests, clean main df8418a → schema8,136/136 tests.
+2. **Migration:** 7→8 shallow additive version bump after existing1→7 chain. No load-time write, random IDs, draft enrichment or historical rewrite. Load twice and load after successful write compare equal. First successful updateData write persists8; quota/invalid migration leaves original7 bytes intact. Actual df8418a reader rejects8 with0writes; no downgrade.
+3. **Structure:** `{revision,basis,slots,order}`. Registry and permutation separate; validators understand `started|legacy-snapshot|legacy-program`, active/removed/replaced and immutable definition snapshots. No structural mutation commands implemented.
+4. **Identity:** new helper allocates occurrence UUIDs independent of catalog/template IDs; legacy helper uses session-scoped `legacy-slot:<index>`. Same exercise twice stays separate. sourceSlotId keeps template occurrence or Original source occurrence. B:4 catalog is A:3; it is not incorrectly renamed to catalog B:4.
+5. **Sets:** structured saved sets require valid slotId, compatible immutable registry ordinal, snapshot name/known catalog agreement, unique set ID and `(slotId,setNumber)`. Legacy fields and saved-array order retained. Existing over-target sets preserved; no generated load/chronology.
+6. **Old completed history:** unchanged, no guessed ownership/full Original snapshots. Current history name-snapshot reader and legacy reopen/editor continue. Schema8 does not imply every session has structure.
+7. **Materialization:** pure deterministic candidate, custom/one-off from frozen workoutSnapshot, Original from accepted PROGRAM+week. Raw ranges, unilateral strings, unknown RIR and technique notes retained. Setup notes capture supplied current map; no claim these existed at old Start. No automatic persistence/activation.
+8. **Ambiguity:** out-of-range/name disagreement/duplicate IDs or index-number/missing definitions/orphan slotId return explicit ambiguous result plus unchanged cloned raw session. No guessing/drop/wipe. Legacy ambiguous Original can load, backup and write independent settings/domains; adapters refuse ownership guesses.
+9. **Validation:** strict structure at load/save/export/import; exact order bijection, unique slots, typed snapshots, revision/status/basis, registry/set FK and earlier predecessor/one-successor/replaced consistency/no cycles. Current source plan/library not required. Broken structured records never fallback to legacy; malformed store is rejected with original bytes preserved.
+10. **historyEditBase:** foundation supports null, cloned completed baseline or exact `{kind:'legacy-unknown'}`. Draft-only; no recursive baseline, ID mismatch or invalid dates. No history CAS writer or automatic baseline migration. Existing runtime drafts retain old shape.
+11. **Backup:** schema8 raw/wrapped roundtrip mixed legacy and structured records; preserves zero-log removed/replaced rows, IDs, links, order, revision and open history base.1–7 accepted, future/wrapper mismatch rejected. Photo IDB1/photo format1 untouched; paired backup still2files, no cross-store atomicity claim.
+12. **Cutover:** NOT DONE. Start/log/edit/delete/focus/next incomplete/quick fill/Complete/history overwrite remain index-based for ordinary legacy runtime. No live Add/Remove/Replace/Reorder. No backend/AI/cloud/auth/PWA/Nutrition expansion.
+13. **Half-mix prevention / BRIDGE ONLY:** runtime does not call structure constructors/materializers. Imported structured or non-null history-baseline draft is read-only; structured history reopen blocked. Latest-state generation guards block old date/notes/set/Complete/reopen handlers from editing identity records after restore. Complete also refuses replacing a structured source. These are compatibility guards, not slot writers/full-baseline CAS. Normal legacy history behavior stays as before4B-2.
+14. **Tests:** new identity/migration tests first failed on missing module; targeted then GREEN. Additional baseline/date/foreign-owner and draft-only tests observed RED before fixes. Fixture mistakes (empty draft sets, wrong unilateral day) corrected against existing fixtures/PROGRAM. Final `npm test`:136 passed,0failed/0skipped. Existing82 retained;3 schema expectation assertions now8, other assertions unchanged. All38 JS source/test files passed `node --check`; diff check passed.
+15. **Browser regression:** disposable127.0.0.1:8773 only, user8765 untouched. Original Start→20kg×10 RIR3→reload→22kg×9→Complete/History. Reopen→edit first load21→Complete keeps two sets. One-off through Builder→picker pending survives search→Confirm→reload/recovery→Start→5kg×12→Complete. Custom Original copy→Start→30kg×8→reload→Complete/History. Backup clipboard→real private file. Structured fixture UI import/preview/confirmation→restore→reload→export deep-equal; read-only draft/no Save, history reopen blocked, nutrition accessible. Final ordinary tab console warn/error[] after v20 reload.
+16. **Failures/corruption:** malformed ownership/import/export/load, duplicate IDs/order/set pairs, cycles/predecessors, revision/status/basis/snapshot, recursive baseline/future schema/wrapper mismatch reject. Invalid V7 migration and quota preserve raw disk. Existing Phase2 stale-lock/queued writes/planning corruption and photo rollback tests still pass. Browser instrumentation attempt to read iframe contentDocument failed because read-only DOM surface does not expose it; frame html locator measurement succeeded. No app failure was hidden.
+17. **Files:** new js/session-identity.js and2 test files. Logic changes js/data.js + small app.js bridge;3 existing tests schema expectations. index.html and module import URLs uniformly v20; other JS changes are cache URLs only. Docs: contract/roadmap/report/data model/README/photo storage/guide; private ignored TONG_KET updated separately. No MASTER_PLAN change, dependency change, committed personal fixture or remote upload.
+18. **Persistence evidence:** after real save+reload, `.local/phase4-runtime-backup.json` has wrapper/data8 and3 sessions (Original2sets,one-off1,custom1), no structure or slotId. `.local/phase4-structured-import.json` vs roundtrip file has deep-equal data,revision9 with editing baseline. Helpers/tests prove V7 disk remains7 until successful write8. Evidence files ignored/private.
+19. **Mobile / NOT VERIFIED:** affected read-only bridge at iframe360px, layout viewport345px after scrollbar, scrollWidth345px;0Save buttons; screenshot inspected. No physical phone/Safari/screen reader, real quota pressure, large-photo export/download-link completion, or Phase4 structural UI claim. Photos only existing automated regression this milestone; current browser backup verifies data JSON, not new paired photo exercise.
+20. **Git:** code09676c2 and a separate documentation checkpoint (see git log/handoff). main; no fetch/push/reset/rewrite. Private `.local/**`, MASTER_PLAN and TONG_KET remain ignored. Current local state/commit reported in handoff.
+21. **Exact4B-2 remaining:** approved next request needed. Atomic runtime materialization/UUID Start + historyEditBase activation; canonical slot writers/readers for log/edit/delete/date/notes/focus/next incomplete/previous occurrence/quick fill; consistent revision+full-session baseline guard inside Web Lock, same-tab queue/epoch and stale-tab handling; current-candidate checks; Complete strips draft baseline and CASes completed baseline; changed/deleted/legacy-unknown history recovery with reviewed independent copy/refresh/export. Test races, source changes, drafts reload/backup and legacy ambiguity before activating identity. No Add/Remove/Reorder until4B-3; Replace until4B-4. Model recommendation GPT-6.1-sol/high.
+
+### Index consumer checklist audited before cutover
+
+| Consumer | Location |4B-1 disposition |
+|---|---|---|
+| Original/custom/one-off Start | app openWorkout/startCustomWorkout | Unchanged legacy shape |
+| Render/group logs/next set number/edit/delete | app workoutView/exerciseBlock | Legacy; identity records blocked |
+| Quick fill / previous matching | workout previousExerciseSets/previousSetFor | Legacy API retained; occurrence matching pending |
+| Focus / next incomplete / post-save focus | workout nextIncompleteExercise; app focusIndex | Legacy; no partial slot cutover |
+| Complete / history overwrite | app completeWorkout | Legacy behavior plus generation bridge; no CAS claim |
+| Reopen | app historyView | Legacy clone still works; identity generation blocked |
+| Strict backup | data validateBackupData | Dual-generation validation |
+| History / progress / next plan day | app historyView, progress exerciseHistory, custom nextPlanDay | Existing name/plan snapshots retained |
+
+## Historical Phase 3 — Shared Exercise Picker + Alternatives
 
 05/10/2026 · IMPLEMENTED + TESTED. Scope ends at Phase3. Existing Phase2 report is preserved below.
 
