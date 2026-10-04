@@ -1,5 +1,5 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-09-30
+Updated: 2026-10-04 (V4 research and first local improvements)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -84,13 +84,21 @@ Each step includes model / reasoning guidance, verification and done condition.
   before selecting a provider. No deployment required for local usage.
 
 CURRENT IMPLEMENTATION STATUS
-CURRENT PHASE: V3 local review/documentation, phases 1–8 implemented.
-CURRENT STEP: COMPLETE for local phases 1–8; code checkpoint b99f8d2.
+CURRENT PHASE: V4 phase 0 research and phase 1 local improvements complete.
+CURRENT STEP: handoff; next is planning-draft recovery and paired backup testing.
+V3 phases 1–8 remain implemented. V4_ROADMAP.md has detailed dependencies,
+model/reasoning, acceptance tests and done conditions for phases 2–8 (PLANNED).
+GIT STATUS (2026-10-03): main, 6 commits ahead of cached origin/main; no fetch
+or push performed in this status update. Remote state not checked live.
 COMPLETED: V2 preserved, schema 6, manual planning, snapshots, local planner,
 food/recipe ownership photos; automatic tests and browser workflows.
-IN PROGRESS: none for phases 1–8. 55/55 tests pass; review findings fixed.
-Evidence and test limits: V3_IMPLEMENTATION_REPORT.md / V3_ROADMAP.md.
-NEXT: real gym usage review; fix observed issues before remote AI/backend.
+IN PROGRESS: none for the small V4 milestone; larger features remain proposals.
+COMPLETED V4: 35-product research, food search, recipe cook-size preview,
+recent journal tag toggles, responsive mood-card fix; schema remains 6.
+LAST TEST RUN: 2026-10-04, 60/60 tests passed; JavaScript syntax checks passed.
+Browser: isolated fixtures, save/edit/reload, keyboard, 320/360/390 px.
+Evidence and test limits: V4_IMPLEMENTATION_REPORT.md / V4_ROADMAP.md.
+NEXT: planning draft recovery + paired backup gate; then shared exercise picker.
 BLOCKERS: none for local use. Remote API/privacy/provider choices remain open.
 DECISIONS NEEDED: whether remote AI or multi-device storage is actually needed;
 which provider/model, allowed data, budget and retention if AI is requested.
@@ -103,7 +111,7 @@ device quota failures and large backup downloads are not proven.
 
 FEATURE BACKLOG
 Optional weekly muscle distribution, richer specific exercise catalogue,
-saved planner preferences, one-off editor autosave, recipe scaling, shopping
+saved planner preferences, one-off editor autosave, fixed-batch repartition, shopping
 list, ZIP/streaming photo backup >200 MB, PWA, cloud sync, login if necessary.
 Do not let these delay the usable manual/local workflow.
 

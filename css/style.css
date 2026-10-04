@@ -149,14 +149,17 @@ a.primary { display: inline-flex; align-items: center; }
 .journal-form > .primary { justify-self: start; }
 .mood-fieldset { min-width: 0; padding: 12px; border: 2px dashed var(--ink); border-radius: var(--wobbly-small); }
 .mood-fieldset legend { padding: 0 6px; font-weight: 700; }
-.mood-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.mood-choice { display: flex; align-items: center; gap: 6px; min-height: 50px; padding: 5px 9px; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wobbly-small); cursor: pointer; }
+.mood-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 110px), 1fr)); gap: 8px; }
+.mood-choice { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 50px; padding: 5px 9px; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wobbly-small); cursor: pointer; }
+.mood-choice > span:last-child { grid-column: 1 / -1; overflow-wrap: normal; }
 .mood-choice.is-selected { background: var(--yellow); box-shadow: 2px 2px 0 var(--ink); }
 .mood-choice input { width: 18px; height: 18px; flex: none; }
 .mood-mark { font-size: 1.3rem; line-height: 1; }
 .tag-suggestions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 .tag-suggestions .hint { margin: 0 6px 0 0; }
-.tag-suggestions button { min-height: 40px; padding: 4px 10px; color: var(--ink); background: var(--yellow); border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
+.tag-suggestions button { min-height: 44px; padding: 4px 10px; color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: var(--wobbly-small); }
+.tag-suggestions button[aria-pressed=true] { background: var(--yellow); box-shadow: 2px 2px 0 var(--ink); }
+.tag-suggestions button[aria-pressed=true]::before { content: '✓ '; }
 .journal-calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 15px; }
 .calendar-weekday { text-align: center; font-size: .82rem; }
 .calendar-day { min-width: 0; min-height: 48px; padding: 3px; color: var(--ink); background: var(--paper); border: 2px solid var(--old-paper); border-radius: var(--wobbly-small); }
@@ -212,7 +215,6 @@ dialog::backdrop { background: #2d2d2db0; }
   .form-grid { grid-template-columns: 1fr; }
   .stats { gap: 9px; }
   .stat { padding: 10px; }
-  .mood-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .journal-calendar { gap: 2px; }
   .photo-card { grid-template-columns: 1fr; }
   .checkbox-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -1,5 +1,5 @@
-import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=15';
-import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=15';
+import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=17';
+import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=17';
 
 export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft, render }) {
   const { node, field, panel, p, h2, h3, div, button, message, id } = helpers;

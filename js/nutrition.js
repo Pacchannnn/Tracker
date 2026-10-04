@@ -7,6 +7,12 @@ export function recentFoods(foods, entries) {
   return [...foods].sort((a, b) => (lastUsed.get(b.id) || '').localeCompare(lastUsed.get(a.id) || '') || a.name.localeCompare(b.name));
 }
 
+export function searchFoods(foods, entries, query) {
+  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi').replace(/đ/g, 'd').trim();
+  const term = normalize(query);
+  return recentFoods(foods, entries).filter(food => normalize(food.name).includes(term));
+}
+
 export function copyDayEntries(entries, sourceDate, targetDate, createId) {
   const source = entries.filter(item => item.date === sourceDate);
   if (!source.length) throw new Error('Ngày nguồn chưa có món ăn để sao chép.');
@@ -65,4 +71,20 @@ export function validateRecipe(raw) {
 export function recipeTotals(recipe) {
   if (!recipe.nutritionPerServing) return null;
   return Object.fromEntries(Object.entries(recipe.nutritionPerServing).map(([key, value]) => [key, value * recipe.servings]));
+}
+
+export function scaleRecipe(recipe, targetServings) {
+  const servings = Number(targetServings);
+  if (targetServings === null || targetServings === undefined || String(targetServings).trim() === '' || !Number.isFinite(servings) || servings <= 0 || servings > 100) {
+    throw new Error('Nhập số phần định nấu lớn hơn 0 và không quá 100.');
+  }
+  if (!Number.isFinite(recipe.servings) || recipe.servings <= 0) throw new Error('Số phần gốc không hợp lệ.');
+  const preview = structuredClone(recipe);
+  preview.servings = servings;
+  preview.ingredients = recipe.ingredients.map(item => {
+    const quantity = item.quantity * (servings / recipe.servings);
+    if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Lượng nguyên liệu sau khi đổi số phần không hợp lệ.');
+    return { ...item, quantity };
+  });
+  return preview;
 }

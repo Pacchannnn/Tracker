@@ -33,3 +33,11 @@ V3 adds three top-level fields to the one localStorage object: `customExercises[
 For custom and one-off training, `draft`/`sessions[]` carry a snapshot of the day as started, including exercise slots; logged sets retain their exercise name and ID. Legacy A/B/C/D sessions remain valid and use the original renderer. Editing or deleting a plan cannot rewrite finished sessions. Exercise deletion archives a definition if an existing template references it. Optional food/recipe photo ownership (`ownerType`, `ownerId`) live only in IndexedDB photo records; nutrition entries keep their existing macro snapshots.
 
 Schema migration 5 → 6 adds empty arrays and `activePlanId: null` without changing old records. Backup validation accepts migrated versions 1–5 and validate V6. Actual implementation status is tracked in `V3_ROADMAP.md`.
+
+## V4 local improvements — schema remains 6
+
+Daily food search and recipe cook-size previews are transient views, not new stored entities. Search normalizes Vietnamese accents only for matching and orders results by the latest logged date; ties retain name ordering. Editing a historical entry can still select its snapshot when the original definition is absent. Existing snapshot and stale-edit rules continue to apply.
+
+`scaleRecipe` clones the original recipe and multiplies numeric ingredient quantities by target servings / original servings. Per-serving nutrition stays unchanged (unknown stays null); batch totals use the preview servings. Steps, time strings and numbers embedded in prose are not scaled. Reset/reload discard the preview. Logging consumed portions remains a separate operation and uses the original per-serving snapshot. This is not redistribution of a fixed cooked batch.
+
+Journal suggestions derive up to eight distinct tags from newest diary dates, deduplicated case-insensitively. Toggling changes the form only; explicit Save persists the existing tags[] field. Mood values and historical records are not reclassified. No migration, photo-store change or backup-format change is required.

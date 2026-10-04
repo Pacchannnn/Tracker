@@ -1,16 +1,16 @@
-import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=15';
-import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js?v=15';
-import { navigationGroup } from './navigation.js?v=15';
-import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=15';
-import { weeklySummary, exerciseHistory } from './progress.js?v=15';
-import { recentFoods, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=15';
-import { MOODS, validateJournal, monthDays } from './journal.js?v=15';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js?v=15';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=15';
-import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=15';
-import { createGymBuilder } from './gym-builder-ui.js?v=15';
-import { createPlannerUI } from './planner-ui.js?v=15';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=15';
+import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=17';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js?v=17';
+import { navigationGroup } from './navigation.js?v=17';
+import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=17';
+import { weeklySummary, exerciseHistory } from './progress.js?v=17';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=17';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=17';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js?v=17';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=17';
+import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=17';
+import { createGymBuilder } from './gym-builder-ui.js?v=17';
+import { createPlannerUI } from './planner-ui.js?v=17';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=17';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -643,18 +643,32 @@ function renderFoodEntries(foodDate) {
   if (data.foods.length || editing) {
     const form = node('form', { class: 'form-grid' }, [
       field('Bữa', 'meal', editing?.meal || 'Breakfast', { tag: 'select', choices: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Custom'] }),
+      field('Tìm món để ghi', 'foodSearch', '', { type: 'search' }),
       field('Món', 'foodId', editing?.foodId || data.foods[0]?.id || '', { tag: 'select', choices: [] }),
       field('Số khẩu phần', 'servings', editing?.servings ?? 1, { type: 'number', min: '0.01', step: 'any', required: true })
     ]);
     const select = form.querySelector('[name=foodId]');
-    select.replaceChildren(...recentFoods(data.foods, data.entries).map(food => node('option', { value: food.id, text: `${food.name} · ${food.serving}` })));
-    if (editing && !data.foods.some(food => food.id === editing.foodId)) select.prepend(node('option', { value: editing.foodId, text: `${editing.food.name} (đã xóa khỏi thư viện)` }));
-    select.value = editing?.foodId || data.foods[0]?.id || '';
-    form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi bữa' : 'Ghi bữa ăn' }));
+    const search = form.querySelector('[name=foodSearch]');
+    const searchHint = p('', 'hint');
+    searchHint.setAttribute('role', 'status');
+    const save = node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu thay đổi bữa' : 'Ghi bữa ăn' });
+    const choices = [...data.foods];
+    if (editing && !choices.some(food => food.id === editing.foodId)) choices.push({ ...editing.food, id: editing.foodId });
+    const updateChoices = (preferred = select.value) => {
+      const matches = searchFoods(choices, data.entries, search.value);
+      select.replaceChildren(...matches.map(food => node('option', { value: food.id, text: `${food.name} · ${food.serving}${data.foods.some(item => item.id === food.id) ? '' : ' (bản ghi đã lưu)'}` })));
+      select.value = matches.some(food => food.id === preferred) ? preferred : matches[0]?.id || '';
+      select.disabled = save.disabled = !matches.length;
+      searchHint.textContent = matches.length ? `${matches.length} món · ưu tiên món ghi gần đây.` : 'Không có món phù hợp. Xóa từ tìm kiếm để chọn lại.';
+    };
+    updateChoices(editing?.foodId);
+    search.addEventListener('input', () => updateChoices());
+    form.append(searchHint, save);
     if (editing) form.append(button('Hủy sửa', () => { editingEntry = null; render(); }));
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const raw = Object.fromEntries(new FormData(form));
+      if (!select.value) { message('Chọn một món trước khi ghi bữa ăn.', true); return; }
       const done = await mutate(next => {
         const entry = validateEntry({ ...raw, date: diaryDate(foodDateSelection) });
         const current = editing ? next.entries.find(item => item.id === editing.id) : null;
@@ -770,12 +784,35 @@ function renderRecipes(foodDate) {
     detail.append(nutritionPhoto('recipe', recipe.id, recipe.name));
     if (recipe.description) detail.append(p(recipe.description, 'summary'));
     const ingredients = node('ul', { class: 'history-list' });
-    for (const item of recipe.ingredients) ingredients.append(node('li', { text: `${fmt(item.quantity)} ${item.unit} · ${item.name}` }));
+    const cookField = field('Số phần định nấu', 'cookServings', recipe.servings, { type: 'number', min: '0.01', max: '100', step: 'any' });
+    const cookInput = cookField.querySelector('input');
+    const previewError = p('', 'error');
+    previewError.setAttribute('role', 'status');
+    const macroPreview = p('', 'hint');
+    const quantityFormat = new Intl.NumberFormat('vi-VN', { maximumSignificantDigits: 6 });
+    const updatePreview = () => {
+      ingredients.replaceChildren();
+      macroPreview.textContent = '';
+      try {
+        const preview = scaleRecipe(recipe, cookInput.value);
+        for (const item of preview.ingredients) ingredients.append(node('li', { text: `${quantityFormat.format(item.quantity)} ${item.unit} · ${item.name}` }));
+        const total = recipeTotals(preview);
+        const per = preview.nutritionPerServing;
+        macroPreview.textContent = per ? `Mỗi phần: ${fmt(per.calories)} kcal · P ${fmt(per.protein)} · C ${fmt(per.carbs)} · F ${fmt(per.fat)}. Lượng định nấu (${quantityFormat.format(preview.servings)} phần): ${fmt(total.calories)} kcal · P ${fmt(total.protein)} · C ${fmt(total.carbs)} · F ${fmt(total.fat)}.` : 'Dinh dưỡng: DATA NOT DEFINED YET';
+        previewError.textContent = '';
+        cookInput.removeAttribute('aria-invalid');
+      } catch (error) {
+        previewError.textContent = error.message;
+        cookInput.setAttribute('aria-invalid', 'true');
+      }
+    };
+    cookInput.addEventListener('input', updatePreview);
+    updatePreview();
     const steps = node('ol', { class: 'history-list' });
     for (const step of recipe.steps) steps.append(node('li', { text: step }));
-    detail.append(h3('Nguyên liệu'), ingredients, h3('Cách làm'), steps);
-    const total = recipeTotals(recipe);
-    detail.append(p(recipe.nutritionPerServing ? `Mỗi phần: ${fmt(recipe.nutritionPerServing.calories)} kcal · P ${fmt(recipe.nutritionPerServing.protein)} · C ${fmt(recipe.nutritionPerServing.carbs)} · F ${fmt(recipe.nutritionPerServing.fat)}. Toàn công thức: ${fmt(total.calories)} kcal.` : 'Dinh dưỡng: DATA NOT DEFINED YET', 'hint'));
+    detail.append(h3('Nguyên liệu'), cookField, button('Về lượng gốc', () => { cookInput.value = recipe.servings; updatePreview(); }),
+      p('Xem lượng nấu với cùng kích thước một phần; không đổi công thức gốc hoặc lượng ghi ăn. Các bước, thời gian và số trong mô tả không tự đổi; hãy đọc lại khi nấu.', 'hint'),
+      previewError, ingredients, macroPreview, h3('Cách làm'), steps);
     if (recipe.tags.length) detail.append(p(`Thẻ: ${recipe.tags.join(', ')}`, 'hint'));
     if (recipe.notes) detail.append(p(`Ghi chú: ${recipe.notes}`, 'hint'));
     if (recipe.nutritionPerServing) {
@@ -857,15 +894,25 @@ function journalView() {
   moods.append(moodChoices);
   const tags = field('Thẻ hoạt động (cách nhau bằng dấu phẩy)', 'tags', existing?.tags.join(', ') || '');
   form.append(dateField, moods, tags);
-  const suggestions = [...new Set(data.journalEntries.flatMap(item => item.tags))].slice(0, 8);
+  const suggestions = recentJournalTags(data.journalEntries);
   if (suggestions.length) {
-    const chips = div('tag-suggestions', p('Thẻ đã dùng:', 'hint'));
-    for (const tag of suggestions) chips.append(button(tag, () => {
-      const input = tags.querySelector('input');
-      const values = input.value.split(',').map(value => value.trim()).filter(Boolean);
-      if (!values.some(value => value.toLocaleLowerCase('vi') === tag.toLocaleLowerCase('vi'))) input.value = [...values, tag].join(', ');
-      input.focus();
-    }));
+    const input = tags.querySelector('input');
+    const chips = div('tag-suggestions', p('Thẻ gần đây · bấm để chọn hoặc bỏ:', 'hint'));
+    const chipButtons = [];
+    const syncChips = () => {
+      const selected = input.value.split(',').map(value => value.trim().toLocaleLowerCase('vi'));
+      for (const [tag, chip] of chipButtons) chip.setAttribute('aria-pressed', String(selected.includes(tag.toLocaleLowerCase('vi'))));
+    };
+    for (const tag of suggestions) {
+      const chip = button(tag, () => {
+        try { input.value = toggleJournalTag(input.value, tag); syncChips(); }
+        catch (error) { message(error.message, true); }
+      });
+      chipButtons.push([tag, chip]);
+      chips.append(chip);
+    }
+    input.addEventListener('input', syncChips);
+    syncChips();
     form.append(chips);
   }
   form.append(field('Tiêu đề (tùy chọn)', 'title', existing?.title || ''), field('Ghi chú', 'note', existing?.note || '', { tag: 'textarea' }), node('button', { type: 'submit', class: 'primary', text: existing ? 'Lưu thay đổi' : 'Lưu nhật ký' }));

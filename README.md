@@ -29,7 +29,7 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 ## Giới hạn hiện tại
 
 - Dữ liệu chỉ ở browser profile hiện tại. Xóa site data, đổi origin/profile hoặc cài lại trình duyệt có thể làm mất dữ liệu; xuất backup đều đặn.
-- Chưa hỗ trợ đồng bộ, tài khoản hay Flask/SQLite. Ảnh nằm trong IndexedDB riêng; file dữ liệu JSON không chứa ảnh. Bản sao ảnh riêng dùng JSON/base64, giới hạn 200 MB ảnh và có thể tốn bộ nhớ với thư viện ảnh lớn. Công thức chưa tự scale nguyên liệu theo số phần.
+- Chưa hỗ trợ đồng bộ, tài khoản hay Flask/SQLite. Ảnh nằm trong IndexedDB riêng; file dữ liệu JSON không chứa ảnh. Bản sao ảnh riêng dùng JSON/base64, giới hạn 200 MB ảnh và có thể tốn bộ nhớ với thư viện ảnh lớn. Công thức có xem trước lượng định nấu; chưa hỗ trợ chia lại cùng mẻ thành khẩu phần mới hoặc quy đổi khối lượng sau nấu.
 - Trong buổi tập có thể dùng **Chế độ tập trung**, **Dùng số lần trước**, ghi chú setup riêng và đồng hồ nghỉ tùy chọn. Đồng hồ dùng mức thấp của khoảng nghỉ trong plan làm mặc định; dữ liệu lần trước chỉ để điền nhanh, không phải lời khuyên tăng tải.
 - Nếu đã mở Tracker trong nhiều tab trước khi cập nhật phiên bản này, tải lại tất cả tab để chúng dùng cùng cách lưu an toàn mới. Trình duyệt cần hỗ trợ Web Locks; nếu không, ứng dụng từ chối ghi dữ liệu thay vì ghi đè thiếu an toàn.
 - Dashboard gợi ý **buổi kế tiếp** trong plan active theo buổi hoàn thành gần nhất; Original Plan theo A→B→C→D. Buổi riêng không làm tiến thứ tự plan custom. Tuần 1–2 không tự giảm hiệp của plan custom.
@@ -58,3 +58,12 @@ Web chạy trực tiếp bằng Python, không cần npm để mở app. Bộ ki
 - Chỉ thử phục hồi trên origin thử sau khi kiểm tra đã có đủ hai file backup. Không đăng dữ liệu/ảnh hoặc tài liệu cá nhân lên repo public.
 
 Trạng thái triển khai và giới hạn kiểm tra: [V3_ROADMAP.md](V3_ROADMAP.md). Hướng dẫn toàn dự án: [FULL_STEP_BY_STEP_GUIDE.txt](FULL_STEP_BY_STEP_GUIDE.txt).
+
+## Cải tiến V4 — 04/10/2026
+
+- **Nhật ký ngày:** tìm tên món không dấu ngay form ghi ăn; chọn món gần đây, nhập lượng và lưu. Không có kết quả sẽ khóa nút ghi để tránh lưu nhầm.
+- **Công thức:** mở chi tiết → đổi **Số phần định nấu** để xem lượng nguyên liệu và tổng macro tương ứng. Mỗi phần giữ kích thước và macro gốc; lượng ăn ghi trong form bên dưới là thao tác riêng. **Về lượng gốc** khôi phục preview. Không sửa công thức, lời hướng dẫn hay lịch sử.
+- **Nhật ký & Ảnh:** thẻ gần đây có thể chọn/bỏ, đồng bộ với ô nhập và vẫn cần bấm Lưu. Bố cục trạng thái ngày thích ứng theo chiều rộng màn hình.
+- Schema vẫn **6**; không thêm dịch vụ hoặc thư viện runtime. Tải lại các tab Tracker sau cập nhật để nhận bộ asset `v=17`.
+
+Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md). Ý tưởng chưa triển khai: [TRACKER_FEATURE_BACKLOG.md](TRACKER_FEATURE_BACKLOG.md), [TRACKER_PRODUCT_IDEAS.md](TRACKER_PRODUCT_IDEAS.md). Trạng thái và bằng chứng: [V4_ROADMAP.md](V4_ROADMAP.md), [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).

@@ -1,6 +1,8 @@
 # Tracker V3 — kế hoạch triển khai
 
-_30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ liệu V2._
+_Cập nhật tiến độ: 03/10/2026 · Triển khai/kiểm tra gần nhất: 30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ liệu V2._
+
+**Tiếp nối 04/10/2026:** V4 research + ba cải tiến local và sửa mood cards mobile đã triển khai; suite hiện tại60/60. Schema vẫn6. Phần dưới giữ mốc lịch sử V3; trạng thái mới nhất xem `V4_ROADMAP.md` và `V4_IMPLEMENTATION_REPORT.md`.
 
 ## Trạng thái ban đầu
 
@@ -38,11 +40,13 @@ _30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ li
 
 ## Hiện tại
 
-- **CURRENT PHASE:** review V3 local — phases 1–8 đã triển khai.
-- **COMPLETED:** migration schema 6, library, builder, plans, one-off snapshots, alternatives, ảnh food/recipe, local planner. 55/55 tests đạt trong lượt hiện tại.
+- **CURRENT PHASE:** dùng V3 local và thu thập phản hồi — phases 1–8 đã triển khai và review.
+- **COMPLETED:** migration schema 6, library, builder, plans, one-off snapshots, alternatives, ảnh food/recipe, local planner. 55/55 tests đạt ngày 30/09/2026; cập nhật tài liệu ngày 03/10 không chạy lại app tests.
 - **IN PROGRESS:** không còn cho phases 1–8; không có công việc dở dang cho bản local.
 - **NEXT:** dùng thực tế và ghi nhận lỗi/UX; chỉ quyết định remote AI nếu có nhu cầu.
 - **BLOCKERS:** không có cho manual/local planner.
+- **CURRENT STEP:** ghi nhận lỗi/UX từ sử dụng thực tế; checkpoint mới nhất `5e3332d`.
+- **GIT (03/10):** `main` đi trước tham chiếu `origin/main` lưu ở máy 6 commits; chưa fetch để kiểm tra remote trực tiếp. Lượt cập nhật này không push.
 
 ## Bằng chứng và giới hạn kiểm tra
 
@@ -63,4 +67,4 @@ _30/09/2026 · Mở rộng ứng dụng hiện có, giữ plan gốc và dữ li
 
 Đã sửa stale draft khi input/validation đổi, giới hạn tên nhân bản và lọc dụng cụ Hammer Curl. Regression planner đã kiểm chứng trên browser; review lại không còn important trong phạm vi đó. Phiên mới không có lỗi console ở các màn hình đã thử. Hai file backup chuẩn bị được link tải, chưa khẳng định download/restore trên profile người dùng. Báo cáo đầy đủ: `V3_IMPLEMENTATION_REPORT.md`.
 
-Checkpoint code: `b99f8d2` trên `main`, chưa push. Follow-up mobile: tên 160 ký tự không có khoảng trắng đã được test (scroll width 2052→305 tại viewport 320); thêm xuống dòng, nhân bản tên dài qua UI thành công.
+Checkpoint code: `b99f8d2`; sửa mobile và chốt trạng thái tại `5e3332d` trên `main`. Follow-up mobile: tên 160 ký tự không có khoảng trắng đã được test (scroll width 2052→305 tại viewport 320); thêm xuống dòng, nhân bản tên dài qua UI thành công.

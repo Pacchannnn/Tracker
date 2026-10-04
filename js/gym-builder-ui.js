@@ -1,5 +1,5 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, defaultSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy, alternativesFor, muscleMatches } from './custom-workout.js?v=15';
-import { ensureUnchanged } from './data.js?v=15';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, defaultSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy, alternativesFor, muscleMatches } from './custom-workout.js?v=17';
+import { ensureUnchanged } from './data.js?v=17';
 
 export function createGymBuilder(context) {
   const { main, getData, mutate, render, show, startWorkout, helpers } = context;
