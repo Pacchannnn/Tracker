@@ -74,3 +74,9 @@ Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md).
 - Status “đã lưu” chỉ sau write thành công. Conflict giữa tab báo CHƯA LƯU; sao chép phần cần giữ trước khi reload mở bản mới. Nếu Start/Save lỗi, bản nháp đã lưu vẫn còn.
 - Backup đầy đủ cần **dữ liệu JSON + ảnh JSON**. Nhập dữ liệu trước, ảnh sau; xem preview/xác nhận. Link tải chỉ là yêu cầu tải, hãy kiểm tra hai file thật trên máy. Nếu không tải được, dùng Sao chép JSON và nút sao chép JSON ảnh sau chuẩn bị, dán vào hai file .json riêng tư.
 - 74/74 tests. Paired fixture roundtrip đã chạy qua hai origin thử; dữ liệu/snapshots và3 ảnh giữ nguyên metadata/bytes. Mobile CSS đã thử iframe320/360/390 và top-level390; chưa thử điện thoại vật lý/quota thật/file lớn. Báo cáo: `V4_IMPLEMENTATION_REPORT.md`.
+
+## Chọn bài trong Builder — V4 Phase3
+
+Gym → Tạo buổi (hoặc sửa buổi custom) → **Thêm bài bằng bộ chọn**. Lọc tên không dấu/cơ chính/dụng cụ/pattern, chọn nhiều bài rồi **Xác nhận thêm bài**. Đổi filter giữ lựa chọn. **Thay bài** chọn một bài và duyệt so sánh/thông số/ghi chú trước xác nhận. Bài đã có bị chặn trùng; bài custom đang dùng cũng xuất hiện.
+
+Xác nhận tự lưu vào bản nháp; reload → **Tiếp tục bản nháp**. Lựa chọn chưa xác nhận sẽ mất khi rời trang. Lưu kế hoạch/source hoặc Start vẫn là hành động riêng. Schema7 giữ nguyên. Kiểm chứng và giới hạn: [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).

@@ -11,8 +11,8 @@
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:** phase 0, phase 1 và phase2 hoàn tất trong phạm vi local đã kiểm chứng; phase3–8 PLANNED / DECIDE LATER.
-- **CURRENT STEP:** bàn giao Phase 2; dừng tại đây theo yêu cầu. Phase3 shared exercise picker là bước kế tiếp, chưa triển khai.
+- **CURRENT PHASE:** phase 0–3 hoàn tất trong phạm vi local đã kiểm chứng; phase4–8 PLANNED / DECIDE LATER.
+- **CURRENT STEP:** bàn giao Phase 3 Shared Exercise Picker; STOP theo yêu cầu, chưa bắt đầu Phase4.
 - **BLOCKERS:** không có cho scope nhỏ local; các phase lớn cần duyệt product/identity contract.
 - **DECIDE LATER:** My Day thành home hay subview; richer mood/catalog; live-edit semantics; backend/AI/provider/privacy.
 - **KNOWN LIMITATIONS:** live structural editing chưa có; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
@@ -99,6 +99,21 @@ Backup: giữ hai file/data replace + photo add-missing, không giả lập tran
 
 Tests: AND filters, selected items khi đổi filter, duplicate prevention, archived exercises, clear/no results, alternative exclusion, no silent prescription/load changes. Manual: Back+Cable → chọn2 → review/add → replace1 → reload → history cũ nguyên. Done: giảm việc đổi màn hình mà giữ rõ selections. Optional content/media phải có license/source, không copy competitor assets.
 
+### Phase 3 implementation contract — 05/10/2026, IMPLEMENTED / TESTED
+
+Baseline764f225, clean main, schema7,74/74tests. Reuse the current catalog IDs/MUSCLES/PATTERNS/EQUIPMENT, primary-muscle matching and alternativesFor ranking. No new catalog, schema, backend or Phase4 identity changes. Skill design/implementation plan lives here per user preference; proceed inline under the existing implementation authorization.
+
+Choose an inline picker rather than a modal (less focus-management complexity) or a separate library route (would interrupt Builder). `js/exercise-picker.js` owns shared pure search/filter/selection/add/replace/comparison helpers; `js/exercise-picker-ui.js` owns one DOM component for both modes. Library consumes the same filter helper. Search is accent-insensitive; primary muscles follow existing Back/Shoulders expansion. Search/muscle/equipment/pattern combine with AND. Picker filter options derive from active catalog metadata; no equipment still appears with no equipment filter, and UI says metadata missing. Existing custom editor requires equipment.
+
+Add: multiple pending IDs in selection order, kept across filters, already-in-workout disabled, explicit review/count/Confirm. Replace: single pending ID, current/existing IDs blocked, existing alternatives ranking first within filtered candidates; display actual shared-primary/pattern/equipment/notes, no biomechanics claims. Preserve slot ID/order/sets/reps/RIR/rest and replace setup notes by new definition, explicitly preview old/new notes. Candidate archived/deleted after selection rejected at confirmation; no partial Add.
+
+Selection/filter are transient (Cancel/leave/reload drops unconfirmed picks, explained in UI); confirmed Add/Replace/Remove/Reorder use Phase2 Builder draft only, not source-plan Save. Raw input retained; explicit Save source/new plan/Start remain separate. No alternate storage path. Picker uses native buttons/selects, aria-pressed + text selection, status count, Escape/Cancel and return focus to trigger; no focus trap for inline panel.
+
+- [x] 3A Write failing helpers/integration tests: accent search, primary/AND/equipment/pattern/empty, pending preservation, Add duplicate/custom/archived/deleted, Replace prescription/notes/identity, alternatives and Original/history, schema7 draft reload. Run targeted RED, implement minimal helpers, GREEN.
+- [x] 3B Shared UI + Library filter reuse + Builder draft integration; asset19. Verify picker Add/Replace explicit review, keyboard/focus, Phase2 suite; write-failure guarantees covered in Node, UI fault injection NOT VERIFIED.
+- [x] 3C Synthetic-origin browser A–E and narrow320/360/390 Add/Replace, long names, counts/selection/filter/confirm/cancel; Node roundtrip assertions Original/history/source state; no Phase3 browser export/restore repetition. No user-origin writes.
+- [x] 3D Full tests/syntax/diff, update report/docs/private summary, local checkpoints on main; STOP/no push/no Phase4.
+
 ## Phase 4 — flexible live workout
 
 **Goal/value:** máy bận hoặc đổi ý vẫn tập/log được. **Depends:** phase3, approved slot identity/scoping design. **Data:** session slot IDs trong sets; immutable completed history; existing exerciseIndex compatibility. **Migration:** additive identity mapping cho dữ liệu cũ, validate backup và original/custom sessions; không đổi exerciseName snapshot theo template.
@@ -137,3 +152,5 @@ Remote AI/cloud/backend **DECIDE LATER**: provider, server keys, exactdata, cost
 - 04/10 post-change: 60/60 tests, JS syntax và diff checks đạt; browser search/scale/tags/save/reload/mobile đã chạy. Bằng chứng và các test chưa thực hiện: `V4_IMPLEMENTATION_REPORT.md`.
 
 - 05/10 Phase 2: baseline60/60 →74/74; schema6→7 additive. Builder3bài/reorder/raw blank/reload/Continue/Discard; Planner result reload/input invalidation; Start/Save cleanup; two real tabs conflict. Paired backup8770→8771 giữ toàn bộ JSON +3 photo metadata/owners/blob/thumbnail bytes. Narrow iframe320/360/390 không overflow. Code checkpoint7c41470; full evidence/limits trong V4_IMPLEMENTATION_REPORT.md. STOP, không Phase3/push.
+
+- 05/10 Phase 3: schema7→7, baseline74/74 →82/82 tests. Shared inline Add/Replace, AND filters, accent search, pending review, Phase2 draft integration. Browser A–E at disposable8772; Add/Replace confirmations at iframe320/360/390, no horizontal overflow. Code checkpoint b0d31cf. See V4_IMPLEMENTATION_REPORT.md for evidence and limits. STOP/no push/no Phase4.

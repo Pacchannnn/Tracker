@@ -1,5 +1,5 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-04 (V4 research and first local improvements)
+Updated: 2026-10-05 (V4 Phase 3 Shared Exercise Picker)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -120,3 +120,16 @@ update status without regenerating this guide per small edit. Use logical
 local commits; push only when requested. Keep personal docs/backups out of
 the public repository. Bump the same asset/module version on future releases
 to prevent mixing cached old modules with new exports.
+
+V4 PHASE 3 STATUS — 2026-10-05
+CURRENT PHASE: Phase 3 complete; STOP. Main roadmap: V4_ROADMAP.md.
+COMPLETED: shared inline Add/Replace; accent/primary/AND filters; review/pending;
+custom/archived/duplicate gates; confirmed changes reuse Phase2 draft recovery.
+TESTED: 74 baseline -> 82 tests, JS syntax, diff; browser A-E on disposable8772;
+iframe320/360/390 Add/Replace confirm and long names, no horizontal overflow.
+IN PROGRESS: none. BLOCKERS: none for Phase3. Schema7 unchanged.
+KNOWN LIMITATIONS: unconfirmed picker selection transient; physical phones,
+screen readers, UI quota fault injection not verified. Full evidence in report.
+NEXT / DECISIONS NEEDED: approve Phase4 live-edit/slot identity migration contract.
+MODEL / REASONING: GPT-6.1-sol / high for identity and migration work.
+BACKLOG: existing Phase4-8; no backend/AI/photos work added in this phase.
