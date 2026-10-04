@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=18';
+import { validDate } from './data.js?v=19';
 
 export const PHOTO_CATEGORIES = [
   { value: 'daily', label: 'Nhật ký ngày' },

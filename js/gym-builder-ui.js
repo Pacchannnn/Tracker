@@ -1,15 +1,20 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, defaultSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy, alternativesFor, muscleMatches } from './custom-workout.js?v=18';
-import { ensureUnchanged } from './data.js?v=18';
-import { reviewedBuilderDay } from './planning-draft.js?v=18';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy } from './custom-workout.js?v=19';
+import { ensureUnchanged } from './data.js?v=19';
+import { filterExercises, addPickedExercises, replacePickedExercise } from './exercise-picker.js?v=19';
+import { createExercisePicker } from './exercise-picker-ui.js?v=19';
+import { reviewedBuilderDay } from './planning-draft.js?v=19';
 
 export function createGymBuilder(context) {
   const { main, getData, mutate, render, show, startWorkout, helpers, drafts, draftStatus, recoveryCard } = context;
   const { node, button, field, panel, div, p, h2, h3, id, message, confirmAction } = helpers;
-  let editingExercise = null, editingPlanId = null, selectedDayId = null, replacingSlot = null;
+  let editingExercise = null, editingPlanId = null, selectedDayId = null;
   let oneOff = null;
   let oneOffSource = null, recoveryWarning = '';
   const payload = () => ({ day: oneOff, source: oneOffSource });
-  const persist = () => drafts.save('builder', payload()).catch(error => { message(`Chưa lưu bản nháp: ${error.message}`, true); });
+  const persist = async () => {
+    try { await drafts.save('builder', payload()); return true; }
+    catch (error) { message(`Chưa lưu bản nháp: ${error.message}`, true); return false; }
+  };
 
   function recovery() {
     if (oneOff) return false;
@@ -69,9 +74,7 @@ export function createGymBuilder(context) {
       const query = filters.querySelector('[name=query]').value.trim().toLocaleLowerCase('vi');
       const muscle = filters.querySelector('[name=muscle]').value, pattern = filters.querySelector('[name=pattern]').value;
       const tool = filters.querySelector('[name=tool]').value, source = filters.querySelector('[name=source]').value;
-      const exercises = libraryExercises(getData().customExercises, source === 'archived').filter(item =>
-        item.name.toLocaleLowerCase('vi').includes(query) && (!muscle || muscleMatches(item, muscle)) && (!pattern || item.movementPattern === pattern) &&
-        (!tool || item.equipment.includes(tool)) && (source === 'all' || source === 'builtin' && !item.isCustom || source === 'custom' && item.isCustom || source === 'archived' && item.archived));
+      const exercises = filterExercises(libraryExercises(getData().customExercises, source === 'archived'), { query, muscle, pattern, equipment: tool, source });
       if (!exercises.length) results.append(p('Không có bài phù hợp với bộ lọc này.', 'empty'));
       for (const item of exercises) {
         const card = div('list-card', h3(item.name), p(`${item.isCustom ? 'Custom' : 'Bài gốc'} · ${item.primaryMuscles.map(value => labelFor(MUSCLES, value)).join(', ')} · ${labelFor(PATTERNS, item.movementPattern)} · ${item.equipment.map(value => labelFor(EQUIPMENT, value)).join(' / ')}`, 'summary'));
@@ -114,7 +117,7 @@ export function createGymBuilder(context) {
 
   function planEditor(plan) {
     if (recovery()) return;
-    const box = panel(div('row', h2(plan.name), button('← Danh sách kế hoạch', () => { editingPlanId = null; replacingSlot = null; render(); })));
+    const box = panel(div('row', h2(plan.name), button('← Danh sách kế hoạch', () => { editingPlanId = null; render(); })));
     const nameForm = node('form', { class: 'form-grid' }, [field('Tên kế hoạch', 'name', plan.name, { required: true }), node('button', { type: 'submit', class: 'secondary', text: 'Đổi tên kế hoạch' })]);
     nameForm.addEventListener('submit', event => { event.preventDefault(); const name = nameForm.querySelector('input').value.trim(); mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); if (!name || name.length > 160) throw new Error('Tên kế hoạch không hợp lệ.'); current.name = name; current.updatedAt = new Date().toISOString(); }); });
     const addDay = node('form', { class: 'form-grid' }, [field('Tên buổi mới', 'dayName', '', { required: true }), node('button', { type: 'submit', class: 'primary', text: 'Thêm buổi' })]);
@@ -128,7 +131,7 @@ export function createGymBuilder(context) {
     }
     const day = editingThisDraft ? oneOff : structuredClone(selected);
     if (day) selectedDayId = day.id;
-    const nav = div('subtabs', ...plan.days.map(item => { const choice = button(item.name, () => { selectedDayId = item.id; replacingSlot = null; render(); }); choice.setAttribute('aria-pressed', String(item.id === day?.id)); return choice; }));
+    const nav = div('subtabs', ...plan.days.map(item => { const choice = button(item.name, () => { selectedDayId = item.id; render(); }); choice.setAttribute('aria-pressed', String(item.id === day?.id)); return choice; }));
     box.append(nav); main.append(box);
     if (!day) { main.append(panel(p('Thêm một buổi để thiết kế danh sách bài.', 'empty'))); return; }
     const sourcePlan = oneOffSource?.plan || structuredClone(plan);
@@ -137,7 +140,8 @@ export function createGymBuilder(context) {
       try { await drafts.save('builder', payload()); } catch (error) { message(error.message, true); return false; }
       return saveSourceDay();
     };
-    renderDayEditor(day, saveDay, changed => { oneOff = structuredClone(changed); oneOffSource = { planId: plan.id, plan: sourcePlan }; persist(); });
+    renderDayEditor(day, saveDay, changed => { oneOff = structuredClone(changed); oneOffSource = { planId: plan.id, plan: sourcePlan }; return persist(); });
+    if (oneOffSource?.planId === plan.id) main.append(panel(button('Lưu vào buổi nguồn', saveSourceDay)));
     main.append(panel(draftStatus(), div('actions', button('Bắt đầu buổi này', () => {
       try { const editingDraft = oneOffSource?.planId === plan.id && oneOff?.id === day.id; const reviewed = editingDraft ? reviewedBuilderDay(payload(), getData()) : day; startWorkout(reviewed, plan, editingDraft ? 'builder' : null, () => { oneOff = null; oneOffSource = null; }); }
       catch (error) { message(error.message, true); }
@@ -148,17 +152,27 @@ export function createGymBuilder(context) {
   }
 
   function renderDayEditor(day, saveDay, onDraft = () => {}) {
-    const library = libraryExercises(getData().customExercises);
     const box = panel(h2(`Thiết kế buổi · ${day.name}`));
     const rename = node('form', { class: 'form-grid' }, [field('Tên buổi', 'name', day.name, { required: true }), node('button', { type: 'submit', class: 'secondary', text: 'Lưu tên buổi' })]);
     rename.addEventListener('input', () => { day.name = rename.querySelector('input').value; onDraft(day); });
     rename.addEventListener('submit', event => { event.preventDefault(); const name = rename.querySelector('input').value.trim(); if (!name || name.length > 160) { message('Tên buổi phải có 1–160 ký tự.', true); return; } saveDay({ ...day, name }); });
     box.append(rename, p('Giá trị bài mới mặc định: 2 hiệp, 8–12 reps, RIR 2, nghỉ 90 giây. Đây là cấu hình có thể sửa, không phải đơn tập cá nhân hóa.', 'hint'));
-    const filter = field('Tìm bài để thêm', 'addSearch');
-    const add = node('form', { class: 'form-grid' }, [filter, field('Bài tập', 'exerciseId', library[0]?.id || '', { tag: 'select', choices: library.map(item => ({ value: item.id, label: item.name })) }), node('button', { type: 'submit', class: 'primary', text: 'Thêm bài vào buổi' })]);
-    filter.querySelector('input').addEventListener('input', () => { const query = filter.querySelector('input').value.toLocaleLowerCase('vi'); const matches = library.filter(item => item.name.toLocaleLowerCase('vi').includes(query)); add.querySelector('select').replaceChildren(...matches.map(item => node('option', { value: item.id, text: item.name }))); });
-    add.addEventListener('submit', event => { event.preventDefault(); const exercise = library.find(item => item.id === add.querySelector('select').value); if (!exercise) { message('Chọn bài trong thư viện.', true); return; } if (day.exercises.some(item => item.exerciseId === exercise.id)) { message('Bài này đã có trong buổi. Hãy chỉnh số hiệp ở bài đang có.', true); return; } saveDay({ ...day, exercises: [...day.exercises, defaultSlot(exercise, id)] }); });
-    box.append(add);
+    const pickerHost = div('picker-host');
+    const editDraft = async changed => {
+      const saved = await onDraft(changed);
+      if (saved === false) return false;
+      render(); main.querySelector('[data-add-exercise]')?.focus(); return true;
+    };
+    function openPicker(mode, slot, trigger) {
+      const picker = createExercisePicker({ mode, slot, day, catalog: () => libraryExercises(getData().customExercises), helpers,
+        onConfirm: ids => editDraft(mode === 'add' ? addPickedExercises(day, ids, libraryExercises(getData().customExercises), id) :
+          replacePickedExercise(day, slot.id, ids[0], libraryExercises(getData().customExercises))),
+        onClose: () => { pickerHost.replaceChildren(); trigger.focus(); } });
+      pickerHost.replaceChildren(picker.element); picker.focus();
+    }
+    const addTrigger = button('Thêm bài bằng bộ chọn', () => openPicker('add', null, addTrigger), 'primary');
+    addTrigger.dataset.addExercise = '';
+    box.append(addTrigger, pickerHost);
     if (!day.exercises.length) box.append(p('Chưa có bài. Tìm và thêm bài từ thư viện ở trên.', 'empty'));
     day.exercises.forEach((slot, index) => {
       const card = node('details', { class: 'recipe-detail' }, [node('summary', { text: `${index + 1}. ${slot.name} · ${slot.sets} × ${slot.repMin}–${slot.repMax} · RIR ${slot.targetRIR ?? 'chưa định nghĩa'} · ${slot.restSeconds}s` })]);
@@ -167,22 +181,11 @@ export function createGymBuilder(context) {
       const form = node('form', { class: 'form-grid' }, [field('Hiệp', 'sets', slot.sets, { type: 'number', min: 1, max: 20, step: 1, required: true }), field('Reps tối thiểu', 'repMin', slot.repMin, { type: 'number', min: 1, max: 100, step: 1, required: true }), field('Reps tối đa', 'repMax', slot.repMax, { type: 'number', min: 1, max: 100, step: 1, required: true }), field('RIR (số hoặc khoảng)', 'targetRIR', slot.targetRIR ?? ''), field('Nghỉ (giây)', 'restSeconds', slot.restSeconds, { type: 'number', min: 0, max: 1800, step: 1, required: true }), field('Ghi chú bài', 'notes', slot.notes, { tag: 'textarea' }), node('button', { type: 'submit', class: 'primary', text: 'Lưu thông số bài' })]);
       form.addEventListener('input', () => { Object.assign(slot, Object.fromEntries(new FormData(form))); onDraft(day); });
       form.addEventListener('submit', event => { event.preventDefault(); try { const raw = Object.fromEntries(new FormData(form)); const updated = { id: slot.id, ...validateSlot({ ...slot, ...raw, targetRIR: raw.targetRIR === '' ? null : raw.targetRIR }) }; saveDay({ ...day, exercises: day.exercises.map(item => item.id === slot.id ? updated : item) }); } catch (error) { message(error.message, true); } });
-      const up = button('↑ Lên', () => saveDay({ ...day, exercises: moveSlot(day.exercises, index, index - 1) })); up.disabled = index === 0;
-      const down = button('↓ Xuống', () => saveDay({ ...day, exercises: moveSlot(day.exercises, index, index + 1) })); down.disabled = index === day.exercises.length - 1;
-      card.append(form, div('actions', up, down, button('Thay bài', () => { replacingSlot = replacingSlot === slot.id ? null : slot.id; render(); }), button('Bỏ bài khỏi buổi', () => confirmAction(`Bỏ ${slot.name} khỏi template buổi này? Lịch sử không đổi.`, () => saveDay({ ...day, exercises: day.exercises.filter(item => item.id !== slot.id) })), 'danger')));
+      const up = button('↑ Lên', () => editDraft({ ...day, exercises: moveSlot(day.exercises, index, index - 1) })); up.disabled = index === 0;
+      const down = button('↓ Xuống', () => editDraft({ ...day, exercises: moveSlot(day.exercises, index, index + 1) })); down.disabled = index === day.exercises.length - 1;
+      const replaceTrigger = button('Thay bài', () => openPicker('replace', slot, replaceTrigger));
+      card.append(form, div('actions', up, down, replaceTrigger, button('Bỏ bài khỏi buổi', () => confirmAction(`Bỏ ${slot.name} khỏi bản nháp buổi này? Lịch sử không đổi.`, () => editDraft({ ...day, exercises: day.exercises.filter(item => item.id !== slot.id) })), 'danger')));
       box.append(card);
-      if (replacingSlot === slot.id) {
-        const candidates = library.filter(item => !day.exercises.some(existing => existing.exerciseId === item.id));
-        const alternatives = alternativesFor(definition, candidates);
-        const replace = panel(h3(`Thay ${slot.name}`), p('Gợi ý có mục đích tương tự, không hoàn toàn giống nhau. Giữ hiệp/reps/RIR/nghỉ để bạn xem lại. Ghi chú setup được thay bằng ghi chú của bài mới; lưu riêng ghi chú cũ nếu cần.', 'hint'));
-        const applyReplacement = exercise => { replacingSlot = null; saveDay({ ...day, exercises: day.exercises.map(item => item.id === slot.id ? { ...slot, exerciseId: exercise.id, name: exercise.name, notes: exercise.notes || '' } : item) }); };
-        for (const option of alternatives) replace.append(div('list-card', h3(option.exercise.name), p(option.reason, 'hint'), button('Chọn bài thay thế', () => applyReplacement(option.exercise))));
-        if (!alternatives.length) replace.append(p('Chưa có bài tương tự trong thư viện. Có thể tạo bài custom hoặc chọn thủ công.', 'empty'));
-        const manual = node('form', { class: 'form-grid' }, [field('Chọn bài khác thủ công', 'replacement', candidates[0]?.id || '', { tag: 'select', choices: candidates.map(item => ({ value: item.id, label: item.name })) }), node('button', { type: 'submit', class: 'secondary', text: 'Dùng bài đã chọn' })]);
-        manual.addEventListener('submit', event => { event.preventDefault(); const exercise = candidates.find(item => item.id === manual.querySelector('select').value); if (exercise) applyReplacement(exercise); else message('Chưa có bài khác để thay.', true); });
-        replace.append(manual);
-        replace.append(button('Hủy thay bài', () => { replacingSlot = null; render(); })); box.append(replace);
-      }
     });
     main.append(box);
   }
@@ -192,7 +195,7 @@ export function createGymBuilder(context) {
     if (!oneOff) oneOff = { id: id(), name: 'Buổi riêng hôm nay', exercises: [] };
     main.append(panel(h2(oneOffSource ? 'Bản nháp chỉnh buổi custom' : 'Buổi riêng hôm nay'), p('Tự lưu bản nháp trên thiết bị. Chỉ nút lưu kế hoạch mới/cập nhật nguồn hoặc bắt đầu mới chuyển thành dữ liệu chính thức.', 'hint'), draftStatus()));
     if (recoveryWarning) main.append(panel(p(recoveryWarning, 'notice')));
-    renderDayEditor(oneOff, async changed => { oneOff = structuredClone(changed); await persist(); render(); return true; }, changed => { oneOff = structuredClone(changed); persist(); });
+    renderDayEditor(oneOff, async changed => { oneOff = structuredClone(changed); if (!await persist()) return false; render(); return true; }, changed => { oneOff = structuredClone(changed); return persist(); });
     const actions = div('actions', button('Bắt đầu buổi đã duyệt', async () => {
       try { const day = reviewedBuilderDay(payload(), getData()); await startWorkout(day, null, 'builder', () => { oneOff = null; oneOffSource = null; }); }
       catch (error) { message(error.message, true); }
@@ -205,7 +208,7 @@ export function createGymBuilder(context) {
         oneOff = null; oneOffSource = null; render(); message('Đã lưu kế hoạch mới và dọn bản nháp.');
       } catch (error) { message(`Chưa lưu kế hoạch: ${error.message}`, true); }
     }), button('Bỏ bản nháp tạo buổi', () => confirmAction('Bỏ bản nháp tạo buổi? Các kế hoạch và lịch sử đã lưu vẫn còn.', async () => {
-      try { await drafts.discard('builder'); oneOff = null; oneOffSource = null; replacingSlot = null; render(); }
+      try { await drafts.discard('builder'); oneOff = null; oneOffSource = null; render(); }
       catch (error) { message(error.message, true); }
     }), 'danger'));
     if (oneOffSource) actions.append(button('Lưu vào buổi nguồn', saveSourceDay));
@@ -230,11 +233,11 @@ export function createGymBuilder(context) {
   function setOneOff(day, after = () => {}) {
     const apply = async () => {
       try { await drafts.transition('builder', { day: structuredClone(day), source: null }, next => { next.planningDraft.planner = null; });
-        oneOff = structuredClone(day); oneOffSource = null; replacingSlot = null; after();
+        oneOff = structuredClone(day); oneOffSource = null; after();
       } catch (error) { message(`Chưa chuyển bản nháp: ${error.message}`, true); }
     };
     if ((oneOff?.exercises.length && oneOff.id !== day.id) || getData().planningDraft?.builder) confirmAction('Thay buổi chưa lưu trong builder bằng bản nháp này? Lưu buổi cũ thành mẫu trước nếu muốn giữ.', apply);
     else apply();
   }
-  return { libraryView, plansView, oneOffView, setOneOff, checkChoices, reset() { oneOff = null; oneOffSource = null; editingPlanId = null; replacingSlot = null; } };
+  return { libraryView, plansView, oneOffView, setOneOff, checkChoices, reset() { oneOff = null; oneOffSource = null; editingPlanId = null; } };
 }

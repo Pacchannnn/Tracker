@@ -1,4 +1,4 @@
-import { dailyTotals, localDate } from './data.js?v=18';
+import { dailyTotals, localDate } from './data.js?v=19';
 
 const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 

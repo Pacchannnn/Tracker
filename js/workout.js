@@ -1,4 +1,4 @@
-import { setCount } from './program.js?v=18';
+import { setCount } from './program.js?v=19';
 
 export function previousExerciseSets(sessions, workout, exerciseIndex, excludeId = null, exerciseId = null) {
   const latest = [...sessions]

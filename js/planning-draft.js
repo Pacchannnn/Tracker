@@ -1,5 +1,5 @@
-import { validateSlot, libraryExercises, validateWorkoutSnapshot } from './custom-workout.js?v=18';
-import { createPlannerRequest, validatePlannerOutput } from './planner.js?v=18';
+import { validateSlot, libraryExercises, validateWorkoutSnapshot } from './custom-workout.js?v=19';
+import { createPlannerRequest, validatePlannerOutput } from './planner.js?v=19';
 
 export const emptyPlanningDraft = () => ({ revision: 0, builder: null, planner: null });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);

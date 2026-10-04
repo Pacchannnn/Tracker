@@ -228,3 +228,12 @@ dialog::backdrop { background: #2d2d2db0; }
 .food-thumbnail { width: 100%; max-width: 240px; height: 160px; object-fit: cover; border-radius: 8px; }
 .nutrition-photo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .75rem 0; }
 .nutrition-photo-preview { flex-basis: 100%; }
+
+/* Inline Add/Replace picker; match the current paper UI. */
+.exercise-picker { margin-top: 16px; min-width: 0; }
+.picker-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 12px; }
+.picker-results { display: grid; gap: 8px; max-height: 480px; overflow-y: auto; margin-top: 16px; padding-right: 4px; }
+.exercise-picker .list-card, .exercise-picker button, .exercise-picker h3, .exercise-picker p { min-width: 0; overflow-wrap: anywhere; }
+.exercise-picker .list-card button { max-width: 100%; text-align: left; white-space: normal; }
+.exercise-picker button[aria-pressed=true] { background: var(--yellow); }
+.picker-pending { margin: 12px 0; }

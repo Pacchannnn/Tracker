@@ -1,5 +1,5 @@
-import { listPhotos, ownedPhotos, compressPhoto, replaceOwnedPhoto, deleteOwnedPhotos, validatePhotoMeta } from './photo-store.js?v=18';
-import { localDate } from './data.js?v=18';
+import { listPhotos, ownedPhotos, compressPhoto, replaceOwnedPhoto, deleteOwnedPhotos, validatePhotoMeta } from './photo-store.js?v=19';
+import { localDate } from './data.js?v=19';
 
 export function createNutritionPhotos({ helpers, render, registerUrl, ownerExists }) {
   const { node, button, div, p, id, message, confirmAction } = helpers;
