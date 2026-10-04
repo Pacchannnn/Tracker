@@ -11,11 +11,11 @@
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:** phase0 và milestone1 đã hoàn tất; phase2 trở đi PLANNED.
-- **CURRENT STEP:** bàn giao ba cải tiến local và bằng chứng trong `V4_IMPLEMENTATION_REPORT.md`; tiếp theo là recovery/backup gate.
+- **CURRENT PHASE:** phase 0, phase 1 và phase2 hoàn tất trong phạm vi local đã kiểm chứng; phase3–8 PLANNED / DECIDE LATER.
+- **CURRENT STEP:** bàn giao Phase 2; dừng tại đây theo yêu cầu. Phase3 shared exercise picker là bước kế tiếp, chưa triển khai.
 - **BLOCKERS:** không có cho scope nhỏ local; các phase lớn cần duyệt product/identity contract.
 - **DECIDE LATER:** My Day thành home hay subview; richer mood/catalog; live-edit semantics; backend/AI/provider/privacy.
-- **KNOWN LIMITATIONS:** builder/planner pre-start chưa autosave, live structural editing chưa có, large/photo paired restore chưa được chứng minh trên profile thật.
+- **KNOWN LIMITATIONS:** live structural editing chưa có; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
 ## Ràng buộc chung
 
@@ -32,7 +32,7 @@ Done khi nguồn được gắn với claim, feature cũ không bị gọi mới
 
 ## Phase 1 — ba cải tiến nhỏ, local và backward-compatible
 
-**Value:** tìm món ngay khi ghi bữa, tính lượng nấu không nhẩm, chọn hoạt động quen thuộc ít gõ. **Depends:** phase0. **Model/reasoning:** model coding hiện dùng, medium; high nếu xuất hiện persistence conflict. **Schema/migration:** không thêm stored fields, giữ6; scale/search/chip selection là view trước Save.
+**Value:** tìm món ngay khi ghi bữa, tính lượng nấu không nhẩm, chọn hoạt động quen thuộc ít gõ. **Depends:** phase 0. **Model/reasoning:** model coding hiện dùng, medium; high nếu xuất hiện persistence conflict. **Schema/migration:** không thêm stored fields, giữ6; scale/search/chip selection là view trước Save.
 
 ### 1A. Daily food search
 
@@ -65,7 +65,7 @@ Interfaces: `recentJournalTags(entries, limit=8)` newest-date first, unique case
 - [x] Chip `aria-pressed` + visible selected state; input edits đồng bộ; click giữ focus ở chip; Save vẫn explicit. Chưa thử bàn phím ảo trên điện thoại vật lý.
 - [x] Browser chọn/bỏ/tag tự gõ, invalid save, save/reload; empty history vẫn cho tự nhập, keyboard và narrow screen. Sửa thêm mood cards bị ép chữ dọc.
 
-### Gate Phase1
+### Gate Phase 1
 
 - [x] `node --test tests/nutrition.test.js tests/journal.test.js` 11/11 sau red-green; `npm test` toàn bộ60/60.
 - [x] JS syntax checks, `git diff --check`, tự review diff; không đổi schema/program/photo logic (photo modules chỉ đổi import query).
@@ -74,11 +74,24 @@ Interfaces: `recentJournalTags(entries, limit=8)` newest-date first, unique case
 
 ## Phase 2 — reliability và phục hồi công sức
 
-**Goal/value:** pre-start draft sống qua reload; backup có thể kiểm chứng. **Depends:** phase1 review, schema design riêng. **Data/UI:** bounded `planningDraft` + prefs/revision/savedAt trong JSON; resume/discard/save-failed card. Backup checklist/paired counts. **Migration:** schema tiếp theo được chốt lúc làm, mặc định null, giữ V1–6 migration/restore; đừng hard-code rằng V4 phải là schema7 nếu chưa đổi model.
+**Goal/value:** pre-start draft sống qua reload; backup có thể kiểm chứng. **Depends:** phase 1 review, schema design riêng. **Data/UI:** bounded `planningDraft` + prefs/revision/savedAt trong JSON; resume/discard/save-failed card. Backup checklist/paired counts. **Migration:** schema tiếp theo được chốt lúc làm, mặc định null, giữ V1–6 migration/restore; đừng hard-code rằng V4 phải là schema7 nếu chưa đổi model.
 
 Tests: stale two-tab edits, corrupt draft, invalid input retained for recovery, quota error không báo saved, backup roundtrip draft/photos, duplicate import, owner orphan và rollback. Manual: soạn3bài → reload → recover; sửa2tab → conflict rõ; export dữ liệu+ảnh fixtures → restore origin thứ hai → counts/snapshots/owners khớp. Không coi download link là download hoàn tất.
 
 Done: một workflow recover và một restore chứng minh được, kể cả failure path. UI bật saved indicator chỉ sau successful write. Model reasoning high cho persistence.
+
+### Phase 2 implementation contract — 05/10/2026, IMPLEMENTED + TESTED + MANUALLY VERIFIED
+
+Baseline `ed65522`, clean main, schema6,60/60 tests. User đã yêu cầu triển khai Phase 2; task này dừng sau Phase 2.
+
+Minimal design: schema7 thêm `planningDraft: { revision, builder, planner }`. Hai slot độc lập tránh mất Builder khi mở Planner. Slot có savedAt và payload bounded; builder chứa day đang sửa (kể cả strings/invalid input) + source plan snapshot nếu đang sửa custom day. Planner giữ đúng raw preferences của form, result và request fingerprint; đổi input xóa result ngay. Draft không phải plan/session. Dùng updateData/Web Locks, serialize autosaves trong cùng tab, compare envelope trước write và tăng revision; giữ snapshot mong đợi khi tab khác đổi state. Draft corrupt trên disk được giữ nguyên để người dùng export raw/discard; backup import reject corrupt. Missing exercises/plan → cảnh báo và recovery thành one-off, không sửa source. Save/Start + cleanup nằm trong cùng write; failure giữ draft. Không auto-start/auto-activate.
+
+Backup: giữ hai file/data replace + photo add-missing, không giả lập transaction chung. Preview counts bao gồm planning drafts, báo orphan owners, mỗi phần có prepared/restore-success status; download link không chứng minh file đã lưu. Roundtrip fixtures kiểm tra toàn bộ state và photo bytes/metadata; browser dùng origin riêng. Không nâng format ảnh nếu không có field mới.
+
+- [x] 2A `js/planning-draft.js`, data/schema/restore boundary: tests trước cho migration6→7, raw recovery, stale/quota/failure/cleanup/corruption/bounds; run targeted rồi suite.
+- [x] 2B Builder/Planner UI: recovery Continue/Discard, raw form autosave, status/retry, invalid/stale draft gate, atomic transition. Test browser3bài/reorder/reload/discard/planner input change.
+- [x] 2C Backup confidence/roundtrip: domain fixture + IndexedDB fresh factory, duplicate/orphan/rollback tests; browser export qua clipboard → file thật/import clean origin/compare; download-event IAB không hoạt động, không claim tải link thành công.
+- [x] 2D Narrow320/360/390 bằng iframe viewport thực + top-level390, keyboard/runtime, docs + local checkpoint; report IMPLEMENTED/TESTED/MANUALLY VERIFIED/NOT VERIFIED chính xác. No push, no Phase3.
 
 ## Phase 3 — shared exercise picker và alternatives rõ hơn
 
@@ -96,13 +109,13 @@ Tests: logset→reorder→name/ID không nhầm; replace sau partiallog không m
 
 ## Phase 5 — My Day và journal retrieval
 
-**Goal/value:** một trang theo date để nhìn cả ngày, tìm nhật ký cũ. **Depends:** user chọn home/subview, phase1 capture. **Data:** derived join từ existing arrays/IDB metadata, chưa cần schema; activity catalog/energy là milestone khác. **UI:** dates, cards, source-links, local text/tagsearch, paging hơn30entries, photo-only days.
+**Goal/value:** một trang theo date để nhìn cả ngày, tìm nhật ký cũ. **Depends:** user chọn home/subview, phase 1 capture. **Data:** derived join từ existing arrays/IDB metadata, chưa cần schema; activity catalog/energy là milestone khác. **UI:** dates, cards, source-links, local text/tagsearch, paging hơn30entries, photo-only days.
 
 Tests: leap/month/year/timezone boundary, future/empty day, multi workouts/checkins, missing nutrition/photo read errors, independent sources. Manual: chọn ngày cũ → mở food/gym/journal đúngngày → sửa nguồn → summary cậpnhật; clearfilters giữ dữ liệu. Done: không tạo/duplicate records chỉ vì xemngày, không cascade delete sang cácdomain khác.
 
 ## Phase 6 — faster food reuse và cookbook
 
-**Goal/value:** bữa nhiều món và công thức thường nấu ít thao tác. **Depends:** phase1 search/scale; phase2 safety. **Data:** optional favorites/portionbasis + pendingbatch, mỗi loggeditem snapshot; add schema migration từng milestone. **UI:** pinned/recent theo meal → multiadd review → commit count; selectivecopy, recipe search/duplicate/cookingmode.
+**Goal/value:** bữa nhiều món và công thức thường nấu ít thao tác. **Depends:** phase 1 search/scale; phase2 safety. **Data:** optional favorites/portionbasis + pendingbatch, mỗi loggeditem snapshot; add schema migration từng milestone. **UI:** pinned/recent theo meal → multiadd review → commit count; selectivecopy, recipe search/duplicate/cookingmode.
 
 Tests: double-submit batch, exact itemcount, date/meal retained, deletedfood, stale favorite, nullmacro, grams chỉ khi explicit mapping, unit invalid, historical snapshots. Arithmetic yield repartition phải giữ batchtotal, cookedgrams phải có measuredW. Manual: chọn3món → sửaamount1 → saveonce → reload3items; recipe edit/delete không đổi bữa trước. Shoppinglist làm sau, giữ scale và provenance.
 
@@ -122,3 +135,5 @@ Remote AI/cloud/backend **DECIDE LATER**: provider, server keys, exactdata, cost
 
 - 04/10 pre-change: npm test55/55, không thay appcode trong lúc thu thập corpus.
 - 04/10 post-change: 60/60 tests, JS syntax và diff checks đạt; browser search/scale/tags/save/reload/mobile đã chạy. Bằng chứng và các test chưa thực hiện: `V4_IMPLEMENTATION_REPORT.md`.
+
+- 05/10 Phase 2: baseline60/60 →74/74; schema6→7 additive. Builder3bài/reorder/raw blank/reload/Continue/Discard; Planner result reload/input invalidation; Start/Save cleanup; two real tabs conflict. Paired backup8770→8771 giữ toàn bộ JSON +3 photo metadata/owners/blob/thumbnail bytes. Narrow iframe320/360/390 không overflow. Code checkpoint7c41470; full evidence/limits trong V4_IMPLEMENTATION_REPORT.md. STOP, không Phase3/push.

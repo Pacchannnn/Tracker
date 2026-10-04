@@ -28,3 +28,15 @@ Hai thao tác khôi phục không tạo thành một transaction chung giữa lo
 - [MDN canvas.toBlob](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
 
 Về trải nghiệm nhật ký, Tracker chỉ dùng nguyên tắc thao tác nhanh từ thông tin công khai của [DailyBean](https://www.dailybean.app/en) và [FAQ](https://dailybean.app/en/faq). Dấu mực, bố cục giấy, văn bản và luồng ảnh là thiết kế riêng của Tracker; không dùng hình, biểu tượng hoặc bố cục của DailyBean.
+
+## V4 Phase 2 — trạng thái và bằng chứng (05/10/2026)
+
+Settings có trạng thái riêng cho dữ liệu và ảnh: đã chuẩn bị, đã yêu cầu tải (phải kiểm tra file trên máy), đã khôi phục phần tương ứng. Không báo “backup hoàn tất” chỉ vì có link. Data preview đếm cả hai bản nháp pre-start schema7. Photo preview báo số owner món/công thức còn thiếu; giữ ảnh trong gallery và không tự tạo owner. Import cùng ID giữ ảnh hiện tại; preview chỉ là dự kiến, count cuối lấy từ transaction.
+
+Photo export chấp nhận kho rỗng để có file zero-photo rõ ràng. Sau chuẩn bị, có fallback **Sao chép JSON ảnh đã chuẩn bị**; dán vào file .json riêng tư nếu link tải không hoạt động. Sao chép ảnh lớn có thể thất bại do giới hạn clipboard/bộ nhớ; app báo lỗi, chưa kiểm chứng ảnh lớn. Clipboard chứa ảnh riêng tư và cần được quản lý như file backup. Không lưu base64 vào localStorage.
+
+**TESTED:** export/parse/import qua IndexedDB test mới hoàn toàn; cùng ID/metadata/owner/blob/thumbnail bytes; duplicate skip, duplicate-ID package reject, missing owner; injected failure ở lần thêm thứ hai abort cả batch và giữ ảnh cũ. Các tests replace/remove/stale/rollback cũ vẫn đạt. Không sửa transaction vì tests xác nhận cơ chế hiện có đã đáp ứng.
+
+**MANUALLY VERIFIED:** dữ liệu và3 ảnh JPEG synthetic (food, recipe, orphan-food) được nhập vào8770, xuất từ state thật qua clipboard ra hai file, import dữ liệu trước rồi ảnh ở8771 sạch, xuất lại và so sánh toàn bộ state/bytes. Nhập lặp thêm0/giữ3; file invalid bị từ chối và re-export không đổi. Recovery/backup iframe viewport320/360/390 không overflow; top-level390 cũng được kiểm tra.
+
+**NOT VERIFIED:** download-link completion trong Codex IAB (download event timeout), thư viện lớn/gần200MB, quota/storage pressure thật, profile chứa dữ liệu thật, Safari/điện thoại vật lý. Roundtrip là bằng chứng cho fixture local, không chứng minh mọi profile/thiết bị. Hai phần restore vẫn độc lập; giữ bản sao trước restore để phục hồi nếu phần còn lại thất bại.

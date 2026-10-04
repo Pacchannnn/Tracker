@@ -51,10 +51,10 @@ Web chạy trực tiếp bằng Python, không cần npm để mở app. Bộ ki
 
 - **Kế hoạch:** tạo, đổi tên, nhân bản, chọn active, chỉnh/thêm/xóa/sắp buổi. Original Plan luôn còn; bản sao lấy thông số của tuần đang chọn, khoảng nghỉ gốc được ghi trong notes và timer dùng mức thấp của khoảng đó.
 - **Builder:** thêm/thay/bỏ bài, nút lên/xuống, hiệp, reps min/max, RIR hoặc khoảng, giây nghỉ, ghi chú. Bài mới có mặc định chỉnh được (2 hiệp, 8–12, RIR 2, nghỉ 90s), không phải lời khuyên cá nhân.
-- **Buổi riêng:** vào **Tạo buổi**, duyệt rồi bắt đầu hoặc lưu thành kế hoạch mới. Trước khi bắt đầu/lưu mẫu, nội dung editor chỉ giữ trong màn hình; reload sẽ mất phần chưa lưu. Sau khi bắt đầu, bản nháp và history đã có snapshot riêng.
+- **Buổi riêng:** vào **Tạo buổi**, duyệt rồi bắt đầu hoặc lưu thành kế hoạch mới. Trước Start/Save, tên buổi/bài/thông số/thứ tự/notes được tự lưu thành bản nháp riêng. Reload → chọn Tiếp tục hoặc Bỏ; kể cả giá trị đang nhập dở được giữ. Autosave chưa sửa kế hoạch hoặc lịch sử. Sau khi bắt đầu, bản nháp và history đã có snapshot riêng.
 - **Trợ lý lên buổi:** gợi ý LOCAL theo nhóm cơ, dụng cụ, bài yêu cầu/loại trừ và tham số. Luôn là draft; duyệt vào builder để chỉnh/thay bài rồi mới bắt đầu/lưu. Không có remote AI, API key hoặc upload dữ liệu. Các ghi chú ngôn ngữ tự nhiên được giữ để tự duyệt, chưa được thuật toán diễn giải. Xem [AI_PLANNER.md](AI_PLANNER.md).
 - **Ảnh món/công thức:** tạo nội dung trước, dùng **Thêm / thay ảnh** trên card món hoặc trong chi tiết công thức. Thay/gỡ ảnh có xác nhận. Xóa món/công thức giữ macro của nhật ký cũ và giữ ảnh trong Nhật ký & Ảnh để tự quản lý.
-- **Dữ liệu:** schema 6, migration từ V5 chỉ thêm dữ liệu planning rỗng. Sửa/xóa template/plan không sửa completed sessions. Bài custom có tham chiếu được archive thay vì xóa định nghĩa.
+- **Dữ liệu:** schema 7; V5→6 thêm custom planning, V6→7 thêm planningDraft rỗng, giữ dữ liệu cũ. Sửa/xóa template/plan không sửa completed sessions. Bài custom có tham chiếu được archive thay vì xóa định nghĩa.
 - Chỉ thử phục hồi trên origin thử sau khi kiểm tra đã có đủ hai file backup. Không đăng dữ liệu/ảnh hoặc tài liệu cá nhân lên repo public.
 
 Trạng thái triển khai và giới hạn kiểm tra: [V3_ROADMAP.md](V3_ROADMAP.md). Hướng dẫn toàn dự án: [FULL_STEP_BY_STEP_GUIDE.txt](FULL_STEP_BY_STEP_GUIDE.txt).
@@ -64,6 +64,13 @@ Trạng thái triển khai và giới hạn kiểm tra: [V3_ROADMAP.md](V3_ROADM
 - **Nhật ký ngày:** tìm tên món không dấu ngay form ghi ăn; chọn món gần đây, nhập lượng và lưu. Không có kết quả sẽ khóa nút ghi để tránh lưu nhầm.
 - **Công thức:** mở chi tiết → đổi **Số phần định nấu** để xem lượng nguyên liệu và tổng macro tương ứng. Mỗi phần giữ kích thước và macro gốc; lượng ăn ghi trong form bên dưới là thao tác riêng. **Về lượng gốc** khôi phục preview. Không sửa công thức, lời hướng dẫn hay lịch sử.
 - **Nhật ký & Ảnh:** thẻ gần đây có thể chọn/bỏ, đồng bộ với ô nhập và vẫn cần bấm Lưu. Bố cục trạng thái ngày thích ứng theo chiều rộng màn hình.
-- Schema vẫn **6**; không thêm dịch vụ hoặc thư viện runtime. Tải lại các tab Tracker sau cập nhật để nhận bộ asset `v=17`.
+- Phase 1 giữ schema6; Phase 2 hiện dùng **schema7**, không thêm dịch vụ/thư viện runtime. Tải lại mọi tab Tracker sau cập nhật để nhận bộ asset `v=18`.
 
 Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md). Ý tưởng chưa triển khai: [TRACKER_FEATURE_BACKLOG.md](TRACKER_FEATURE_BACKLOG.md), [TRACKER_PRODUCT_IDEAS.md](TRACKER_PRODUCT_IDEAS.md). Trạng thái và bằng chứng: [V4_ROADMAP.md](V4_ROADMAP.md), [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).
+
+## V4 Phase 2: phục hồi và backup
+
+- Builder và Local Planner giữ phần trước Start/Accept qua reload. Có thời điểm lưu và Continue/Discard; không tự bắt đầu hoặc lưu/activate kế hoạch. Đổi input Planner hủy gợi ý cũ ngay.
+- Status “đã lưu” chỉ sau write thành công. Conflict giữa tab báo CHƯA LƯU; sao chép phần cần giữ trước khi reload mở bản mới. Nếu Start/Save lỗi, bản nháp đã lưu vẫn còn.
+- Backup đầy đủ cần **dữ liệu JSON + ảnh JSON**. Nhập dữ liệu trước, ảnh sau; xem preview/xác nhận. Link tải chỉ là yêu cầu tải, hãy kiểm tra hai file thật trên máy. Nếu không tải được, dùng Sao chép JSON và nút sao chép JSON ảnh sau chuẩn bị, dán vào hai file .json riêng tư.
+- 74/74 tests. Paired fixture roundtrip đã chạy qua hai origin thử; dữ liệu/snapshots và3 ảnh giữ nguyên metadata/bytes. Mobile CSS đã thử iframe320/360/390 và top-level390; chưa thử điện thoại vật lý/quota thật/file lớn. Báo cáo: `V4_IMPLEMENTATION_REPORT.md`.

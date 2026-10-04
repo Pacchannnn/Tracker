@@ -3,7 +3,7 @@ Updated: 2026-10-04 (V4 research and first local improvements)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
-photos remain. One localStorage object, schema 6; IndexedDB photo store v1.
+photos remain. One localStorage object, schema 7; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
 Work is on main, local checkpoints only; no automatic GitHub push.
 
@@ -84,34 +84,33 @@ Each step includes model / reasoning guidance, verification and done condition.
   before selecting a provider. No deployment required for local usage.
 
 CURRENT IMPLEMENTATION STATUS
-CURRENT PHASE: V4 phase 0 research and phase 1 local improvements complete.
-CURRENT STEP: handoff; next is planning-draft recovery and paired backup testing.
-V3 phases 1–8 remain implemented. V4_ROADMAP.md has detailed dependencies,
-model/reasoning, acceptance tests and done conditions for phases 2–8 (PLANNED).
-GIT STATUS (2026-10-03): main, 6 commits ahead of cached origin/main; no fetch
-or push performed in this status update. Remote state not checked live.
-COMPLETED: V2 preserved, schema 6, manual planning, snapshots, local planner,
-food/recipe ownership photos; automatic tests and browser workflows.
-IN PROGRESS: none for the small V4 milestone; larger features remain proposals.
-COMPLETED V4: 35-product research, food search, recipe cook-size preview,
-recent journal tag toggles, responsive mood-card fix; schema remains 6.
-LAST TEST RUN: 2026-10-04, 60/60 tests passed; JavaScript syntax checks passed.
-Browser: isolated fixtures, save/edit/reload, keyboard, 320/360/390 px.
-Evidence and test limits: V4_IMPLEMENTATION_REPORT.md / V4_ROADMAP.md.
-NEXT: planning draft recovery + paired backup gate; then shared exercise picker.
-BLOCKERS: none for local use. Remote API/privacy/provider choices remain open.
-DECISIONS NEEDED: whether remote AI or multi-device storage is actually needed;
-which provider/model, allowed data, budget and retention if AI is requested.
-KNOWN LIMITATIONS: unsaved one-off editor/planner preferences are memory-only;
-local algorithm does not interpret free text or medical restrictions; library
-retains original combined exercise names; no PWA cache/cloud sync.
-TEST LIMITATIONS: browser deletion/replacement confirmation paths not exercised;
-Node IndexedDB emulation covers storage removal/replacement/rollback. Real
-device quota failures and large backup downloads are not proven.
+CURRENT PHASE: V4 phases0/1/2 complete in verified local scope.
+CURRENT STEP: Phase 2 handoff; STOP per user instruction, no Phase3 work.
+V4_ROADMAP.md remains the authoritative detailed roadmap.
+COMPLETED: V2/V3 preserved; schema7 planningDraft, raw Builder/Planner recovery,
+revision/Web Lock conflicts, stale result invalidation, atomic Start/Save cleanup,
+two-file backup statuses and orphan preview, clipboard photo-export fallback.
+COMPLETED V4 PHASE1:35-product research, food search, cook-size preview,
+recent journal tags, responsive mood-card fix.
+IN PROGRESS: none in Phase 2; Phase3+ still PLANNED / DECIDE LATER.
+LAST TEST RUN:2026-10-05,74/74 tests; JS syntax and diff checks passed.
+Browser: synthetic origins8770/8771, recovery/Continue/Discard/raw blank,
+Planner stale input, two-tab conflict, source Save/Start, paired roundtrip3 photos.
+Mobile: iframe viewports320/360/390 and top-level390; no horizontal overflow.
+Evidence/limits: V4_IMPLEMENTATION_REPORT.md and PHOTO_STORAGE.md.
+GIT: main, code checkpoint7c41470; docs checkpoint follows. No fetch/push.
+NEXT: Phase3 shared exercise picker after review; GPT-6.1-sol, medium,
+high for persistent identity/conflict decisions. Do not start automatically.
+BLOCKERS: none for verified local scope.
+DECISIONS NEEDED: existing My Day/live-edit/remote AI/cloud choices remain.
+KNOWN LIMITATIONS: one Builder + one Planner slot; no automatic draft merge;
+free text/medical constraints not interpreted by local algorithm; no cloud/PWA.
+NOT VERIFIED: real-device quota, large files, Safari/physical phone/screen reader,
+IAB download-link completion. Clipboard-to-file restore was verified instead.
 
 FEATURE BACKLOG
 Optional weekly muscle distribution, richer specific exercise catalogue,
-saved planner preferences, one-off editor autosave, fixed-batch repartition, shopping
+fixed-batch repartition, shopping
 list, ZIP/streaming photo backup >200 MB, PWA, cloud sync, login if necessary.
 Do not let these delay the usable manual/local workflow.
 
