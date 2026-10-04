@@ -81,5 +81,5 @@ test('picker Add/Replace persist through Phase2 reload without history/source/Or
  await store.save('builder',{day:candidate,source:null});
  const recovered=loadData(storage);assert.deepEqual(recovered.planningDraft.builder.payload.day,candidate);
  assert.deepEqual(recovered.sessions,before.sessions);assert.deepEqual(recovered.plans,before.plans);assert.deepEqual(PROGRAM,original);
- assert.equal(recovered.schemaVersion,7);assert.deepEqual(parseBackup(createBackup(recovered)).data,recovered);
+ assert.equal(recovered.schemaVersion,8);assert.deepEqual(parseBackup(createBackup(recovered)).data,recovered);
 });

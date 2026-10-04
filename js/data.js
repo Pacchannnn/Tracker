@@ -1,7 +1,8 @@
-import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=19';
-import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=19';
+import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=20';
+import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=20';
+import { validateIdentityData, sessionGeneration } from './session-identity.js?v=20';
 export const STORAGE_KEY = 'vshape-tracker';
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 export const emptyData = () => ({
   schemaVersion: SCHEMA_VERSION,
   settings: { week: 1, calories: 2400, protein: 120 },
@@ -16,6 +17,8 @@ function migrateData(data) {
   if (data?.schemaVersion === 4) data = { ...data, schemaVersion: 5, journalEntries: [] };
   if (data?.schemaVersion === 5) data = { ...data, schemaVersion: 6, customExercises: [], plans: [], activePlanId: null };
   if (data?.schemaVersion === 6) data = { ...data, schemaVersion: 7, planningDraft: emptyPlanningDraft() };
+  // Additive foundation: never activate identity on drafts handled by legacy live writers.
+  if (data?.schemaVersion === 7) data = { ...data, schemaVersion: 8 };
   return data;
 }
 
@@ -114,10 +117,12 @@ export function loadData(storage) {
     throw new Error('Định dạng dữ liệu lưu không được hỗ trợ. Không ghi đè dữ liệu cũ.');
   }
   validatePlanningData(data);
+  validateIdentityData(data);
   return data;
 }
 
 export function saveData(storage, data) {
+  validateIdentityData(data);
   try { storage.setItem(STORAGE_KEY, JSON.stringify(data)); }
   catch { throw new Error('Không thể lưu trên trình duyệt. Kiểm tra dung lượng hoặc quyền lưu trữ.'); }
 }
@@ -175,12 +180,13 @@ function validateBackupData(data) {
   if (!isObject(data.exerciseNotes) || !Object.values(data.exerciseNotes).every(value => typeof value === 'string')) throw new Error('Ghi chú bài tập không hợp lệ.');
   validatePlanningData(data);
   validatePlanningDraft(data.planningDraft);
+  validateIdentityData(data);
   const validSession = item => isObject(item) && isId(item.id) && (['A', 'B', 'C', 'D'].includes(item.workout) || (item.workout === 'CUSTOM' && !!validateWorkoutSnapshot(item.workoutSnapshot))) &&
     validDate(item.date) && Number.isInteger(item.week) && item.week >= 1 && item.week <= 12 && Array.isArray(item.sets) &&
     item.sets.every(set => isObject(set) && isId(set.id) && Number.isInteger(set.exerciseIndex) && set.exerciseIndex >= 0 &&
       typeof set.exerciseName === 'string' && Number.isInteger(set.setNumber) && set.setNumber > 0 && isNumber(set.weight) &&
       Number.isInteger(set.reps) && set.reps > 0 && isNumber(set.rir) && set.rir <= 10 && (!set.unit || ['kg', 'lb'].includes(set.unit)) &&
-      (item.workout !== 'CUSTOM' || (item.workoutSnapshot.exercises[set.exerciseIndex]?.exerciseId === set.exerciseId &&
+      (sessionGeneration(item) === 'structured' || item.workout !== 'CUSTOM' || (item.workoutSnapshot.exercises[set.exerciseIndex]?.exerciseId === set.exerciseId &&
         item.workoutSnapshot.exercises[set.exerciseIndex].name === set.exerciseName && set.setNumber <= item.workoutSnapshot.exercises[set.exerciseIndex].sets)));
   if (!data.sessions.every(validSession) || (data.draft !== null && data.draft !== undefined && !validSession(data.draft))) throw new Error('Có buổi tập hoặc hiệp không hợp lệ trong bản sao lưu.');
   if (!data.foods.every(food => isObject(food) && isId(food.id) && validMacros(food))) throw new Error('Có thực phẩm không hợp lệ trong bản sao lưu.');
@@ -223,7 +229,7 @@ export function parseBackup(text) {
   const wrapped = isObject(parsed) && Object.hasOwn(parsed, 'data');
   if (wrapped && parsed.schemaVersion !== parsed.data?.schemaVersion) throw new Error('Phiên bản vỏ và dữ liệu không khớp.');
   const data = migrateData(wrapped ? parsed.data : parsed);
-  if (wrapped && ![1, 2, 3, 4, 5, 6, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
+  if (wrapped && ![1, 2, 3, 4, 5, 6, 7, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
   validateBackupData(data);
   return {
     data: structuredClone(data),

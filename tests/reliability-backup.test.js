@@ -80,7 +80,7 @@ test('representative V6 backup migration preserves every existing domain, wrappe
   const storage = storageFor(old), before = storage.getItem(STORAGE_KEY);
   const migrated = loadData(storage);
   for (const key of Object.keys(old).filter(key => key !== 'schemaVersion')) assert.deepEqual(migrated[key], old[key]);
-  assert.equal(migrated.schemaVersion, 7);
+  assert.equal(migrated.schemaVersion, 8);
   assert.deepEqual(migrated.planningDraft, { revision: 0, builder: null, planner: null });
   assert.deepEqual(parseBackup(JSON.stringify(old)).data, migrated);
   assert.deepEqual(parseBackup(JSON.stringify({ schemaVersion: 6, exportedAt: '2026-10-04T10:00:00Z', data: old })).data, migrated);

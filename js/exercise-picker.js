@@ -1,4 +1,4 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, muscleMatches, alternativesFor, defaultSlot } from './custom-workout.js?v=19';
+import { MUSCLES, PATTERNS, EQUIPMENT, muscleMatches, alternativesFor, defaultSlot } from './custom-workout.js?v=20';
 
 const searchable = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLocaleLowerCase('vi').trim();
 export function filterExercises(catalog, { query = '', muscle = '', equipment = '', pattern = '', source = 'all' } = {}) {

@@ -1,17 +1,24 @@
-import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=19';
-import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=19';
-import { createDraftStore } from './planning-draft.js?v=19';
-import { navigationGroup } from './navigation.js?v=19';
-import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=19';
-import { weeklySummary, exerciseHistory } from './progress.js?v=19';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=19';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=19';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=19';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=19';
-import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=19';
-import { createGymBuilder } from './gym-builder-ui.js?v=19';
-import { createPlannerUI } from './planner-ui.js?v=19';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=19';
+import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=20';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=20';
+import { createDraftStore } from './planning-draft.js?v=20';
+import { navigationGroup } from './navigation.js?v=20';
+import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=20';
+import { weeklySummary, exerciseHistory } from './progress.js?v=20';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=20';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=20';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=20';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=20';
+import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=20';
+import { createGymBuilder } from './gym-builder-ui.js?v=20';
+import { createPlannerUI } from './planner-ui.js?v=20';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=20';
+import { legacyWriterAllowed, displaySessionSlots, sessionGeneration } from './session-identity.js?v=20';
+
+// BRIDGE ONLY — NOT 4B-2 CUTOVER. Imported identity sessions must not reach index writers.
+const structuredReadOnlyMessage = 'Buổi này dùng định dạng mới và hiện chỉ xem được. Giữ bản sao lưu; chỉnh sửa sẽ được hỗ trợ ở bước tiếp theo.';
+function requireLegacyWorkout(session) {
+  if (!session || !legacyWriterAllowed(session)) throw new Error(structuredReadOnlyMessage);
+}
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -331,12 +338,20 @@ function workoutView() {
     main.append(box); return;
   }
   const draft = data.draft;
+  if (!legacyWriterAllowed(draft)) {
+    const box = panel(h2(sessionTitle(draft)), p(structuredReadOnlyMessage, 'warning'));
+    if (sessionGeneration(draft) === 'structured') for (const slot of displaySessionSlots(draft)) box.append(p(`${slot.snapshot.name} · ${slot.snapshot.sets} hiệp · ${slot.snapshot.reps} · ${{ active: 'Đang dùng', removed: 'Đã dừng', replaced: 'Đã đổi bài' }[slot.status]}`, 'summary'));
+    for (const set of draft.sets) box.append(p(`${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`));
+    box.append(button('Mở sao lưu', () => show('settings')));
+    main.append(box); return;
+  }
   const workout = { title: draft.workoutSnapshot?.name || PROGRAM[draft.workout].title, exercises: sessionExercises(draft) };
   const header = panel(h2(draft.workoutSnapshot ? workout.title : `Buổi ${draft.workout} · ${workout.title}`), p(`${draft.workoutSnapshot?.planName || `Original Plan · tuần ${draft.week}`} · ${draft.date} · ${draft.sets.length} hiệp đã ghi`, 'summary'), p('Ghi DB theo mỗi tay; barbell tính cả thanh. Với máy, ghi đúng đơn vị và tên máy trong ghi chú buổi. Theo MASTER_PLAN.md.', 'hint'));
   if (draft.workoutSnapshot) header.append(p('Buổi này giữ thông số đã duyệt lúc bắt đầu. Sửa/xóa kế hoạch sau đó không đổi nội dung buổi.', 'hint'));
   if (draft.workout === 'B' || draft.workout === 'D') header.append(p('Điều kiện bài chân: chỉ thực hiện khi đã được phép trở lại tập sức mạnh và không có hạn chế riêng sau mổ; không tập xuyên qua đau/sưng/mất vững. Xem MASTER_PLAN.md.', 'warning'));
   const details = div('form-grid', field('Ngày tập', 'date', draft.date, { type: 'date' }), field('Ghi chú buổi', 'notes', draft.notes));
   details.querySelectorAll('input').forEach(input => input.addEventListener('change', () => mutate(next => {
+    requireLegacyWorkout(next.draft);
     if (next.draft?.id !== draft.id) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại.');
     const date = details.querySelector('[name=date]').value;
     if (!validDate(date)) throw new Error('Ngày tập không hợp lệ.');
@@ -399,7 +414,7 @@ function exerciseBlock(item, index, draft, isNext = false) {
       restTimer = { exercise: item.name, planRest: item.rest, duration: rest, remaining: rest, endAt: Date.now() + rest * 1000, running: true };
       render();
     }));
-    line.append(button('Xóa', () => confirmAction(`Xóa hiệp ${set.setNumber} của bài này?`, () => mutate(next => { next.draft.sets = next.draft.sets.filter(item => item.id !== set.id); }, 'Đã xóa hiệp.')), 'danger'));
+    line.append(button('Xóa', () => confirmAction(`Xóa hiệp ${set.setNumber} của bài này?`, () => mutate(next => { requireLegacyWorkout(next.draft); next.draft.sets = next.draft.sets.filter(item => item.id !== set.id); }, 'Đã xóa hiệp.')), 'danger'));
     list.append(line);
   }
   wrapper.append(list);
@@ -431,6 +446,7 @@ function exerciseBlock(item, index, draft, isNext = false) {
       event.preventDefault();
       const values = Object.fromEntries(new FormData(form));
       const done = await mutate(next => {
+        requireLegacyWorkout(next.draft);
         const set = validateSet(values);
         if (next.draft?.id !== draft.id) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại buổi tập.');
         if (edit) {
@@ -484,9 +500,11 @@ async function completeWorkout() {
   if (!data.draft?.sets.length) { message('Hãy ghi ít nhất một hiệp trước khi hoàn thành.', true); return; }
   const draftId = data.draft.id;
   const saved = await mutate(next => {
+    requireLegacyWorkout(next.draft);
     if (next.draft?.id !== draftId || !next.draft.sets.length) throw new Error('Bản nháp đã đổi ở tab khác. Hãy mở lại buổi tập.');
     const session = { ...next.draft, updatedAt: new Date().toISOString() };
     const index = next.sessions.findIndex(item => item.id === session.id);
+    if (index >= 0) requireLegacyWorkout(next.sessions[index]);
     if (index >= 0) next.sessions[index] = session;
     else next.sessions.push(session);
     next.draft = null;
@@ -503,11 +521,13 @@ function historyView() {
     const list = node('ul', { class: 'history-list' });
     for (const set of session.sets) list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }));
     box.append(list, div('actions', button('Mở để sửa', () => {
+      if (!legacyWriterAllowed(session)) { message(structuredReadOnlyMessage, true); return; }
       const expectedDraft = data.draft ? structuredClone(data.draft) : null;
       const open = async () => { if (await mutate(next => {
         if (expectedDraft) ensureUnchanged(next.draft, expectedDraft);
         else if (next.draft) throw new Error('Một tab khác đang có bản nháp. Hãy kiểm tra trước khi mở buổi cũ.');
         const current = next.sessions.find(item => item.id === session.id);
+        requireLegacyWorkout(current);
         ensureUnchanged(current, session);
         next.draft = structuredClone(current);
       }, 'Đã mở buổi để sửa.')) show('workout'); };

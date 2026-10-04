@@ -19,7 +19,7 @@ test('schema6 migrates additively and migration does not rewrite storage', () =>
   old.settings.week = 5; old.exerciseNotes = { 'A:0': 'keep' };
   const h = harness(); h.storage.setItem(STORAGE_KEY, JSON.stringify(old));
   const next = loadData(h.storage);
-  assert.equal(next.schemaVersion, 7);
+  assert.equal(next.schemaVersion, 8);
   assert.deepEqual(next.planningDraft, { revision: 0, builder: null, planner: null });
   for (const key of Object.keys(old).filter(key => key !== 'schemaVersion')) assert.deepEqual(next[key], old[key]);
   assert.equal(JSON.parse(h.storage.getItem(STORAGE_KEY)).schemaVersion, 6);
