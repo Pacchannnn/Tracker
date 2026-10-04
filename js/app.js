@@ -1,16 +1,17 @@
-import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=17';
-import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged } from './data.js?v=17';
-import { navigationGroup } from './navigation.js?v=17';
-import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=17';
-import { weeklySummary, exerciseHistory } from './progress.js?v=17';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=17';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=17';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos } from './photo-store.js?v=17';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=17';
-import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=17';
-import { createGymBuilder } from './gym-builder-ui.js?v=17';
-import { createPlannerUI } from './planner-ui.js?v=17';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=17';
+import { PROGRAM, programDay, setCount, targetRir, nextWorkout, weekGuidance } from './program.js?v=18';
+import { emptyData, loadData, updateData, validateSet, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=18';
+import { createDraftStore } from './planning-draft.js?v=18';
+import { navigationGroup } from './navigation.js?v=18';
+import { previousSetFor, previousExerciseSets, nextIncompleteExercise, restSeconds } from './workout.js?v=18';
+import { weeklySummary, exerciseHistory } from './progress.js?v=18';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=18';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=18';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=18';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=18';
+import { snapshotWorkout, sessionExercises, sessionTitle, nextPlanDay } from './custom-workout.js?v=18';
+import { createGymBuilder } from './gym-builder-ui.js?v=18';
+import { createPlannerUI } from './planner-ui.js?v=18';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=18';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -29,6 +30,13 @@ let restoreSafetyUrl = null;
 let restorePreview = null;
 let photoBackupUrl = null;
 let photoRestorePreview = null;
+const backupState = { data: 'Chưa chuẩn bị file dữ liệu.', photos: 'Chưa chuẩn bị file ảnh.' };
+function backupStatus(kind) { return p(backupState[kind], 'hint'); }
+function setBackupStatus(kind, text) {
+  backupState[kind] = text;
+  const target = document.querySelector(`[data-backup-status=${kind}]`);
+  if (target) target.textContent = text;
+}
 let selectedProgram = 'A';
 let focusMode = false;
 let focusIndex = 0;
@@ -100,10 +108,43 @@ function confirmAction(question, accept) {
   cancel.focus();
 }
 
-const gymBuilder = createGymBuilder({ main, getData: () => data, mutate, render, show, startWorkout: startCustomWorkout,
+const drafts = createDraftStore({ getData: () => data, write: async change => data = await updateData(localStorage, navigator.locks, change) });
+window.addEventListener('beforeunload', event => {
+  if (['saving', 'error'].includes(drafts.status().state)) { event.preventDefault(); event.returnValue = ''; }
+});
+function draftStatus() {
+  const status = p('', 'hint'); status.setAttribute('role', 'status');
+  let connected = false;
+  const unsubscribe = drafts.subscribe(value => {
+    if (status.isConnected) connected = true;
+    else if (connected) { unsubscribe(); return; }
+    status.textContent = value.state === 'saving' ? 'Đang lưu bản nháp…' : value.state === 'saved' ? `Bản nháp đã lưu${value.savedAt ? ` lúc ${new Date(value.savedAt).toLocaleString('vi-VN')}` : ' / chuyển thành dữ liệu đã lưu'}.` : value.state === 'error' ? `CHƯA LƯU: ${value.message} Giữ màn hình và thử lưu lại; có thể mất phần mới nhập nếu đóng ngay.` : 'Bản nháp tự lưu khi bạn thay đổi nội dung.';
+    status.classList.toggle('error', value.state === 'error');
+  });
+  queueMicrotask(() => { connected = status.isConnected; });
+  return status;
+}
+function recoveryCard(kind, resume, afterDiscard) {
+  let saved, error;
+  try { saved = drafts.recover(kind); } catch (problem) { error = problem.message; }
+  if (!saved && !error) return false;
+  const box = panel(h2(kind === 'builder' ? 'Khôi phục bản nháp tạo buổi' : 'Khôi phục bản nháp planner'),
+    p(error || `Có phần đang soạn, lưu lúc ${new Date(saved.savedAt).toLocaleString('vi-VN')}. Tiếp tục để xem/chỉnh; chưa bắt đầu hoặc lưu kế hoạch.`, error ? 'notice error' : 'hint'));
+  if (saved) box.append(button('Tiếp tục bản nháp', () => resume(saved), 'primary'));
+  if (error) {
+    const blob = new Blob([JSON.stringify(data.planningDraft, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob); photoUrls.push(url);
+    box.append(node('a', { href: url, download: 'tracker-corrupt-draft.json', text: 'Giữ bản sao bản nháp lỗi', class: 'secondary' }));
+  }
+  box.append(button('Bỏ bản nháp này', () => confirmAction('Bỏ bản nháp đang soạn này? Kế hoạch và lịch sử đã lưu vẫn còn.', async () => {
+    try { await drafts.discard(kind); afterDiscard(); } catch (problem) { message(problem.message, true); }
+  }), 'danger'));
+  main.append(box); return true;
+}
+const gymBuilder = createGymBuilder({ main, getData: () => data, mutate, render, show, startWorkout: startCustomWorkout, drafts, draftStatus, recoveryCard,
   helpers: { node, button, field, panel, div, p, h2, h3, id, message, confirmAction } });
-const plannerView = createPlannerUI({ main, getData: () => data, helpers: { node, button, field, panel, div, p, h2, h3, id, message },
-  checkChoices: gymBuilder.checkChoices, render, useDraft: day => gymBuilder.setOneOff(day, () => show('builder')) });
+const plannerView = createPlannerUI({ main, getData: () => data, helpers: { node, button, field, panel, div, p, h2, h3, id, message, confirmAction }, drafts, draftStatus, recoveryCard,
+  checkChoices: gymBuilder.checkChoices, render, useDraft: day => gymBuilder.setOneOff(day, () => { plannerView.reset(); show('builder'); }) });
 const nutritionPhoto = createNutritionPhotos({ helpers: { node, button, div, p, id, message, confirmAction }, render,
   registerUrl: url => photoUrls.push(url), ownerExists: (type, ownerId) => {
     const latest = loadData(localStorage); return (type === 'food' ? latest.foods : latest.recipes).some(item => item.id === ownerId);
@@ -165,6 +206,10 @@ function latestCheckin(key) { return [...data.checkins].filter(item => item[key]
 function currentWeekCount() { const start = weekStart(); return data.sessions.filter(item => item.date >= start && item.date <= localDate()).length; }
 
 function dashboardView() {
+  for (const [kind, label, target] of [['builder', 'Tạo buổi', 'builder'], ['planner', 'Planner', 'planner']]) {
+    try { if (drafts.recover(kind)) main.append(panel(h2(`${label}: có bản nháp chưa hoàn tất`), button('Mở bản nháp', () => show(target)))); }
+    catch { main.append(panel(p(`${label}: bản nháp cần phục hồi.`, 'notice'), button('Kiểm tra bản nháp', () => show(target)))); }
+  }
   const today = nextWorkoutInfo();
   const weight = latestCheckin('weight');
   const waist = latestCheckin('waist');
@@ -231,19 +276,22 @@ function originalProgramView() {
   main.append(days, div('program-detail', details, guidance));
 }
 
-async function startCustomWorkout(day, plan = null) {
+async function startCustomWorkout(day, plan = null, planningKind = null, afterSuccess = () => {}) {
   let snapshot;
   try { snapshot = snapshotWorkout(day, plan); } catch (error) { message(error.message, true); return; }
   data = loadData(localStorage);
-  if (data.draft?.workoutSnapshot?.dayId === day.id && data.draft.workoutSnapshot.planId === (plan?.id ?? null)) { show('workout'); return; }
+  if (!planningKind && data.draft?.workoutSnapshot?.dayId === day.id && data.draft.workoutSnapshot.planId === (plan?.id ?? null)) { show('workout'); return; }
   const expected = data.draft ? structuredClone(data.draft) : null;
   const start = async () => {
-    const done = await mutate(next => {
+    const change = next => {
       if (expected) ensureUnchanged(next.draft, expected); else if (next.draft) throw new Error('Tab khác đã mở buổi tập. Hãy kiểm tra bản nháp.');
       if (plan) ensureUnchanged(next.plans.find(item => item.id === plan.id), plan);
       next.draft = { id: id(), workout: 'CUSTOM', workoutSnapshot: structuredClone(snapshot), date: localDate(), week: next.settings.week, sets: [], notes: '' };
-    }, 'Đã mở buổi custom với snapshot riêng.');
-    if (done) { restTimer = null; focusIndex = 0; show('workout'); }
+    };
+    let done;
+    if (planningKind) try { await drafts.commit(planningKind, change); done = true; } catch (error) { message(error.message, true); }
+    else done = await mutate(change, 'Đã mở buổi custom với snapshot riêng.');
+    if (done) { afterSuccess(); restTimer = null; focusIndex = 0; show('workout'); }
   };
   if (expected) confirmAction('Bắt đầu buổi này sẽ thay bản nháp đang có. Tiếp tục?', start); else start();
 }
@@ -1166,13 +1214,16 @@ function settingsView() {
   box.append(form);
   main.append(box);
   const backup = panel(h2('Sao lưu dữ liệu'), p('Để sao lưu đủ, tải HAI file: dữ liệu chữ/số và ảnh. Hai file đều riêng tư. Khôi phục JSON chỉ thay dữ liệu chữ/số; khôi phục ảnh chỉ thêm ảnh chưa có.', 'hint'), div('actions', button('Chuẩn bị file dữ liệu JSON', exportData, 'primary'), button('Sao chép JSON', copyData)), div('actions', node('span', { id: 'backup-link' })), p('Nếu trình duyệt không tải file dữ liệu, dùng Sao chép JSON và lưu nội dung vào file .json riêng tư.', 'hint'));
+  const dataStatus = backupStatus('data'); dataStatus.dataset.backupStatus = 'data'; dataStatus.setAttribute('role', 'status'); backup.append(dataStatus);
   const fileField = field('Chọn file JSON để khôi phục', 'restoreFile', '', { type: 'file' });
   fileField.querySelector('input').setAttribute('accept', '.json,application/json');
   fileField.querySelector('input').addEventListener('change', previewRestore);
   backup.append(h3('Khôi phục dữ liệu'), p('Kiểm tra file và xem trước trước khi thay thế dữ liệu hiện tại.', 'hint'), fileField, div('restore-preview'));
   main.append(backup);
   renderRestorePreview();
-  const photos = panel(h2('Sao lưu ảnh'), p('Ảnh JPEG đã nén được đóng gói trong file JSON riêng. File này có thể lớn hơn kho ảnh do mã hóa base64; tối đa 200 MB ảnh. Không đưa file ảnh cá nhân lên GitHub.', 'hint'), div('actions', button('Chuẩn bị file ảnh', exportPhotos, 'primary')), node('span', { id: 'photo-backup-link' }));
+  const photos = panel(h2('Sao lưu ảnh'), p('Ảnh JPEG đã nén được đóng gói trong file JSON riêng. Nếu không tải được, có thể sao chép JSON sau khi chuẩn bị và lưu vào file riêng tư. File này có thể lớn hơn kho ảnh do mã hóa base64; tối đa 200 MB ảnh. Không đưa file ảnh cá nhân lên GitHub.', 'hint'), div('actions', button('Chuẩn bị file ảnh', exportPhotos, 'primary')), node('span', { id: 'photo-backup-link' }));
+  const photoStatus = backupStatus('photos'); photoStatus.dataset.backupStatus = 'photos'; photoStatus.setAttribute('role', 'status'); photos.append(photoStatus);
+  photos.append(p('Checklist: giữ file dữ liệu và file ảnh cùng lần sao lưu; kiểm tra cả hai thực sự tồn tại trên máy. Liên kết tải chỉ là file đã chuẩn bị. Khôi phục dữ liệu trước, rồi ảnh; hai phần không có transaction chung.', 'hint'));
   const photoFile = field('Chọn file ảnh Tracker để khôi phục', 'photoRestoreFile', '', { type: 'file' });
   photoFile.querySelector('input').setAttribute('accept', '.json,application/json');
   photoFile.querySelector('input').addEventListener('change', previewPhotoRestore);
@@ -1184,13 +1235,18 @@ function settingsView() {
 async function exportPhotos() {
   try {
     const records = await listPhotos();
-    if (!records.length) throw new Error('Chưa có ảnh để sao lưu.');
     const packed = await createPhotoBackup(records);
     if (photoBackupUrl) URL.revokeObjectURL(photoBackupUrl);
     photoBackupUrl = URL.createObjectURL(new Blob([packed], { type: 'application/json' }));
-    document.querySelector('#photo-backup-link').replaceChildren(node('a', { href: photoBackupUrl, download: `tracker-photos-${localDate()}.json`, class: 'primary', text: `Tải file ảnh (${records.length} ảnh)` }));
+    const link = node('a', { href: photoBackupUrl, download: `tracker-photos-${localDate()}.json`, class: 'primary', text: `Tải file ảnh (${records.length} ảnh)` });
+    link.addEventListener('click', () => setBackupStatus('photos', 'Đã yêu cầu trình duyệt tải file ảnh; hãy kiểm tra file trên máy.'));
+    document.querySelector('#photo-backup-link').replaceChildren(link, button('Sao chép JSON ảnh đã chuẩn bị', async () => {
+      try { await navigator.clipboard.writeText(packed); setBackupStatus('photos', 'Đã sao chép JSON ảnh đã chuẩn bị; dán vào file .json riêng tư và kiểm tra file.'); }
+      catch { message('Không sao chép được ảnh. Hãy dùng liên kết tải file.', true); }
+    }));
+    setBackupStatus('photos', `Đã chuẩn bị file: ${records.length} ảnh. Chưa xác nhận tải về.`);
     message('File ảnh đã sẵn sàng. Hãy tải và giữ cùng bản sao dữ liệu.');
-  } catch (error) { message(error.message || 'Không xuất được ảnh.', true); }
+  } catch (error) { setBackupStatus('photos', `Không chuẩn bị được file mới: ${error.message}`); message(error.message || 'Không xuất được ảnh.', true); }
 }
 
 async function previewPhotoRestore(event) {
@@ -1200,7 +1256,7 @@ async function previewPhotoRestore(event) {
     if (file.size > 280_000_000) throw new Error('File ảnh vượt 280 MB.');
     const parsed = parsePhotoBackup(await file.text());
     const existing = new Set((await listPhotos()).map(item => item.id));
-    photoRestorePreview = { ...parsed, addCount: parsed.photos.filter(item => !existing.has(item.id)).length };
+    photoRestorePreview = { ...parsed, addCount: parsed.photos.filter(item => !existing.has(item.id)).length, orphans: orphanPhotoOwners(parsed.photos, loadData(localStorage)).length };
     renderPhotoRestorePreview();
     message('Đã kiểm tra file ảnh. Xem trước trước khi nhập.');
   } catch (error) { photoRestorePreview = null; renderPhotoRestorePreview(); message(error.message, true); }
@@ -1213,9 +1269,11 @@ function renderPhotoRestorePreview() {
   if (!photoRestorePreview) return;
   const selected = photoRestorePreview;
   box.append(h3('Xem trước ảnh'), p(`Xuất lúc: ${selected.exportedAt}`, 'hint'), p(`${selected.photos.length} ảnh trong file · ${selected.addCount} ảnh mới dự kiến thêm · ${(selected.bytes / 1_000_000).toFixed(1)} MB dữ liệu ảnh`, 'summary'));
+  if (selected.orphans) box.append(p(`${selected.orphans} ảnh có món/công thức chủ sở hữu chưa tồn tại. Nhập dữ liệu trước nếu có; ảnh vẫn có thể giữ trong gallery, không tự tạo chủ sở hữu.`, 'notice'));
   box.append(div('actions', button('Hủy', () => { photoRestorePreview = null; renderPhotoRestorePreview(); }), button('Thêm ảnh từ file', async () => {
     try {
       const result = await addMissingPhotos(selected.photos);
+      setBackupStatus('photos', `Đã khôi phục phần ảnh: thêm ${result.added}, giữ ${result.skipped} ID đã có. Phần dữ liệu khôi phục riêng.`);
       photoRestorePreview = null;
       renderPhotoRestorePreview();
       message(`Đã thêm ${result.added} ảnh; giữ nguyên ${result.skipped} ảnh đã có.`);
@@ -1242,7 +1300,7 @@ function renderRestorePreview() {
   if (!restorePreview) { if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl); restoreSafetyUrl = null; return; }
   const counts = restorePreview.counts;
   box.append(h3('Xem trước bản khôi phục'), p(`Xuất lúc: ${restorePreview.exportedAt || 'Không có thông tin (file kiểu cũ)'}`, 'hint'),
-    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · ${counts.journal} nhật ký · ${counts.customExercises} bài custom · ${counts.plans} kế hoạch · có cài đặt`, 'summary'));
+    p(`${counts.sessions} buổi tập · ${counts.sets} hiệp · ${counts.foods} thực phẩm · ${counts.entries} bữa ăn · ${counts.checkins} check-in · ${counts.cardio} cardio · ${counts.knee} ghi gối · ${counts.savedMeals} bữa lưu · ${counts.recipes} công thức · ${counts.journal} nhật ký · ${counts.customExercises} bài custom · ${counts.plans} kế hoạch · ${counts.planningDrafts} bản nháp trước Start · có cài đặt`, 'summary'));
   if (restoreSafetyUrl) URL.revokeObjectURL(restoreSafetyUrl);
   restoreSafetyUrl = URL.createObjectURL(new Blob([createBackup(data)], { type: 'application/json' }));
   box.append(node('a', { href: restoreSafetyUrl, download: `tracker-before-restore-${localDate()}.json`, class: 'secondary', text: 'Tải bản sao dữ liệu hiện tại' }));
@@ -1258,10 +1316,9 @@ async function restoreData() {
   if (!restorePreview) return;
   const selected = restorePreview;
   const done = await mutate(next => {
-    if (JSON.stringify(next) !== selected.baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
-    for (const key of ['schemaVersion', 'settings', 'sessions', 'foods', 'entries', 'checkins', 'draft', 'exerciseNotes', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes', 'journalEntries', 'customExercises', 'plans', 'activePlanId']) next[key] = structuredClone(selected.data[key] ?? null);
+    restoreBackupData(next, selected.data, selected.baseline);
   }, 'Đã khôi phục dữ liệu từ file.');
-  if (done) { restorePreview = null; renderRestorePreview(); }
+  if (done) { drafts.reset(); gymBuilder.reset(); plannerView.reset(); restorePreview = null; renderRestorePreview(); setBackupStatus('data', 'Đã khôi phục phần dữ liệu. Ảnh chưa được khôi phục bằng thao tác này.'); }
 }
 
 async function copyData() {
@@ -1275,12 +1332,15 @@ function exportData() {
     const blob = new Blob([createBackup(loadData(localStorage))], { type: 'application/json' });
     backupUrl = URL.createObjectURL(blob);
     const link = node('a', { href: backupUrl, download: `tracker-backup-${localDate()}.json`, class: 'primary', text: 'Tải file JSON' });
+    link.addEventListener('click', () => setBackupStatus('data', 'Đã yêu cầu trình duyệt tải file dữ liệu; hãy kiểm tra file trên máy.'));
     document.querySelector('#backup-link').replaceChildren(link);
+    setBackupStatus('data', 'Đã chuẩn bị file dữ liệu và planning drafts. File này không chứa ảnh; chưa xác nhận tải về.');
     message('File đã sẵn sàng. Chọn “Tải file JSON” để lưu.');
   } catch (error) { message(`Không thể xuất dữ liệu: ${error.message}`, true); }
 }
 
 try { data = loadData(localStorage); }
 catch (error) { data = emptyData(); message(error.message, true); document.querySelectorAll('button').forEach(button => button.disabled = true); throw error; }
+drafts.reset();
 updateNavigation();
 render();

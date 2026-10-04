@@ -1,11 +1,26 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, defaultSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy, alternativesFor, muscleMatches } from './custom-workout.js?v=17';
-import { ensureUnchanged } from './data.js?v=17';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, defaultSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy, alternativesFor, muscleMatches } from './custom-workout.js?v=18';
+import { ensureUnchanged } from './data.js?v=18';
+import { reviewedBuilderDay } from './planning-draft.js?v=18';
 
 export function createGymBuilder(context) {
-  const { main, getData, mutate, render, show, startWorkout, helpers } = context;
+  const { main, getData, mutate, render, show, startWorkout, helpers, drafts, draftStatus, recoveryCard } = context;
   const { node, button, field, panel, div, p, h2, h3, id, message, confirmAction } = helpers;
   let editingExercise = null, editingPlanId = null, selectedDayId = null, replacingSlot = null;
   let oneOff = null;
+  let oneOffSource = null, recoveryWarning = '';
+  const payload = () => ({ day: oneOff, source: oneOffSource });
+  const persist = () => drafts.save('builder', payload()).catch(error => { message(`Chưa lưu bản nháp: ${error.message}`, true); });
+
+  function recovery() {
+    if (oneOff) return false;
+    return recoveryCard('builder', saved => {
+      oneOff = structuredClone(saved.payload.day); oneOffSource = saved.payload.source;
+      if (oneOffSource && JSON.stringify(getData().plans.find(plan => plan.id === oneOffSource.planId)) !== JSON.stringify(oneOffSource.plan)) {
+        oneOffSource = null; recoveryWarning = 'Kế hoạch nguồn đã đổi hoặc bị xóa. Khôi phục thành buổi riêng; bạn có thể lưu thành kế hoạch mới.';
+      }
+      show('builder');
+    }, () => { oneOff = null; oneOffSource = null; render(); });
+  }
 
   function checkChoices(label, name, choices, selected = []) {
     const box = node('fieldset', { class: 'choice-fieldset' }, [node('legend', { text: label })]);
@@ -98,29 +113,45 @@ export function createGymBuilder(context) {
   }
 
   function planEditor(plan) {
+    if (recovery()) return;
     const box = panel(div('row', h2(plan.name), button('← Danh sách kế hoạch', () => { editingPlanId = null; replacingSlot = null; render(); })));
     const nameForm = node('form', { class: 'form-grid' }, [field('Tên kế hoạch', 'name', plan.name, { required: true }), node('button', { type: 'submit', class: 'secondary', text: 'Đổi tên kế hoạch' })]);
     nameForm.addEventListener('submit', event => { event.preventDefault(); const name = nameForm.querySelector('input').value.trim(); mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); if (!name || name.length > 160) throw new Error('Tên kế hoạch không hợp lệ.'); current.name = name; current.updatedAt = new Date().toISOString(); }); });
     const addDay = node('form', { class: 'form-grid' }, [field('Tên buổi mới', 'dayName', '', { required: true }), node('button', { type: 'submit', class: 'primary', text: 'Thêm buổi' })]);
     addDay.addEventListener('submit', event => { event.preventDefault(); const name = addDay.querySelector('input').value.trim(); mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); if (!name || name.length > 160) throw new Error('Nhập tên buổi.'); const day = { id: id(), name, exercises: [] }; current.days.push(day); current.updatedAt = new Date().toISOString(); selectedDayId = day.id; }); });
     box.append(nameForm, addDay);
-    const day = plan.days.find(item => item.id === selectedDayId) || plan.days[0];
+    const selected = plan.days.find(item => item.id === selectedDayId) || plan.days[0];
+    const editingThisDraft = oneOffSource?.planId === plan.id && oneOff?.id === selected?.id;
+    if (oneOff && !editingThisDraft && (oneOff.exercises.length || oneOffSource || getData().planningDraft.builder)) {
+      main.append(panel(p('Builder còn bản nháp khác. Tiếp tục hoặc bỏ bản nháp đó trước khi chỉnh buổi này.', 'notice'), button('Mở bản nháp đang có', () => show('builder'))));
+      return;
+    }
+    const day = editingThisDraft ? oneOff : structuredClone(selected);
     if (day) selectedDayId = day.id;
     const nav = div('subtabs', ...plan.days.map(item => { const choice = button(item.name, () => { selectedDayId = item.id; replacingSlot = null; render(); }); choice.setAttribute('aria-pressed', String(item.id === day?.id)); return choice; }));
     box.append(nav); main.append(box);
     if (!day) { main.append(panel(p('Thêm một buổi để thiết kế danh sách bài.', 'empty'))); return; }
-    const saveDay = async changed => mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); const index = current.days.findIndex(item => item.id === day.id); current.days[index] = structuredClone(changed); current.updatedAt = new Date().toISOString(); }, 'Đã lưu buổi custom.');
-    renderDayEditor(day, saveDay);
-    main.append(panel(div('actions', button('Bắt đầu buổi này', () => startWorkout(day, plan), 'primary'),
+    const sourcePlan = oneOffSource?.plan || structuredClone(plan);
+    const saveDay = async changed => {
+      oneOff = structuredClone(changed); oneOffSource = { planId: plan.id, plan: sourcePlan };
+      try { await drafts.save('builder', payload()); } catch (error) { message(error.message, true); return false; }
+      return saveSourceDay();
+    };
+    renderDayEditor(day, saveDay, changed => { oneOff = structuredClone(changed); oneOffSource = { planId: plan.id, plan: sourcePlan }; persist(); });
+    main.append(panel(draftStatus(), div('actions', button('Bắt đầu buổi này', () => {
+      try { const editingDraft = oneOffSource?.planId === plan.id && oneOff?.id === day.id; const reviewed = editingDraft ? reviewedBuilderDay(payload(), getData()) : day; startWorkout(reviewed, plan, editingDraft ? 'builder' : null, () => { oneOff = null; oneOffSource = null; }); }
+      catch (error) { message(error.message, true); }
+    }, 'primary'),
       button('Đưa buổi lên', () => mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); const from = current.days.findIndex(item => item.id === day.id); current.days = moveSlot(current.days, from, from - 1); })),
       button('Đưa buổi xuống', () => mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); const from = current.days.findIndex(item => item.id === day.id); current.days = moveSlot(current.days, from, from + 1); })),
       button('Xóa buổi', () => confirmAction(`Xóa template buổi ${day.name}? Lịch sử đã tập không đổi.`, () => mutate(next => { const current = next.plans.find(item => item.id === plan.id); ensureUnchanged(current, plan); current.days = current.days.filter(item => item.id !== day.id); selectedDayId = null; }, 'Đã xóa template buổi.')), 'danger'))));
   }
 
-  function renderDayEditor(day, saveDay) {
+  function renderDayEditor(day, saveDay, onDraft = () => {}) {
     const library = libraryExercises(getData().customExercises);
     const box = panel(h2(`Thiết kế buổi · ${day.name}`));
     const rename = node('form', { class: 'form-grid' }, [field('Tên buổi', 'name', day.name, { required: true }), node('button', { type: 'submit', class: 'secondary', text: 'Lưu tên buổi' })]);
+    rename.addEventListener('input', () => { day.name = rename.querySelector('input').value; onDraft(day); });
     rename.addEventListener('submit', event => { event.preventDefault(); const name = rename.querySelector('input').value.trim(); if (!name || name.length > 160) { message('Tên buổi phải có 1–160 ký tự.', true); return; } saveDay({ ...day, name }); });
     box.append(rename, p('Giá trị bài mới mặc định: 2 hiệp, 8–12 reps, RIR 2, nghỉ 90 giây. Đây là cấu hình có thể sửa, không phải đơn tập cá nhân hóa.', 'hint'));
     const filter = field('Tìm bài để thêm', 'addSearch');
@@ -134,6 +165,7 @@ export function createGymBuilder(context) {
       const definition = libraryExercises(getData().customExercises, true).find(item => item.id === slot.exerciseId);
       if (definition) card.append(p(`${definition.primaryMuscles.map(value => labelFor(MUSCLES, value)).join(', ')} · ${labelFor(PATTERNS, definition.movementPattern)}`, 'hint'));
       const form = node('form', { class: 'form-grid' }, [field('Hiệp', 'sets', slot.sets, { type: 'number', min: 1, max: 20, step: 1, required: true }), field('Reps tối thiểu', 'repMin', slot.repMin, { type: 'number', min: 1, max: 100, step: 1, required: true }), field('Reps tối đa', 'repMax', slot.repMax, { type: 'number', min: 1, max: 100, step: 1, required: true }), field('RIR (số hoặc khoảng)', 'targetRIR', slot.targetRIR ?? ''), field('Nghỉ (giây)', 'restSeconds', slot.restSeconds, { type: 'number', min: 0, max: 1800, step: 1, required: true }), field('Ghi chú bài', 'notes', slot.notes, { tag: 'textarea' }), node('button', { type: 'submit', class: 'primary', text: 'Lưu thông số bài' })]);
+      form.addEventListener('input', () => { Object.assign(slot, Object.fromEntries(new FormData(form))); onDraft(day); });
       form.addEventListener('submit', event => { event.preventDefault(); try { const raw = Object.fromEntries(new FormData(form)); const updated = { id: slot.id, ...validateSlot({ ...slot, ...raw, targetRIR: raw.targetRIR === '' ? null : raw.targetRIR }) }; saveDay({ ...day, exercises: day.exercises.map(item => item.id === slot.id ? updated : item) }); } catch (error) { message(error.message, true); } });
       const up = button('↑ Lên', () => saveDay({ ...day, exercises: moveSlot(day.exercises, index, index - 1) })); up.disabled = index === 0;
       const down = button('↓ Xuống', () => saveDay({ ...day, exercises: moveSlot(day.exercises, index, index + 1) })); down.disabled = index === day.exercises.length - 1;
@@ -156,18 +188,53 @@ export function createGymBuilder(context) {
   }
 
   function oneOffView() {
+    if (recovery()) return;
     if (!oneOff) oneOff = { id: id(), name: 'Buổi riêng hôm nay', exercises: [] };
-    main.append(panel(h2('Buổi riêng hôm nay'), p('Buổi này độc lập với kế hoạch đang dùng. Trước khi bắt đầu, các thay đổi ở bộ tạo buổi chỉ nằm trong màn hình này; lưu thành mẫu nếu muốn giữ qua reload.', 'hint')));
-    renderDayEditor(oneOff, async changed => { oneOff = structuredClone(changed); render(); return true; });
-    main.append(panel(div('actions', button('Bắt đầu buổi đã duyệt', () => startWorkout(oneOff), 'primary'), button('Lưu thành kế hoạch mới', () => mutate(next => {
-      if (!oneOff.exercises.length) throw new Error('Thêm bài trước khi lưu mẫu.'); const now = new Date().toISOString(); next.plans.push({ id: id(), name: oneOff.name, days: [structuredClone(oneOff)], createdAt: now, updatedAt: now });
-    }, 'Đã lưu mẫu riêng. Kế hoạch active vẫn do bạn chọn.')), button('Tạo lại buổi trống', () => confirmAction('Bỏ các thay đổi chưa lưu trong bộ tạo buổi?', () => { oneOff = null; replacingSlot = null; render(); }), 'danger'))));
+    main.append(panel(h2(oneOffSource ? 'Bản nháp chỉnh buổi custom' : 'Buổi riêng hôm nay'), p('Tự lưu bản nháp trên thiết bị. Chỉ nút lưu kế hoạch mới/cập nhật nguồn hoặc bắt đầu mới chuyển thành dữ liệu chính thức.', 'hint'), draftStatus()));
+    if (recoveryWarning) main.append(panel(p(recoveryWarning, 'notice')));
+    renderDayEditor(oneOff, async changed => { oneOff = structuredClone(changed); await persist(); render(); return true; }, changed => { oneOff = structuredClone(changed); persist(); });
+    const actions = div('actions', button('Bắt đầu buổi đã duyệt', async () => {
+      try { const day = reviewedBuilderDay(payload(), getData()); await startWorkout(day, null, 'builder', () => { oneOff = null; oneOffSource = null; }); }
+      catch (error) { message(error.message, true); }
+    }, 'primary'), button('Lưu thành kế hoạch mới', async () => {
+      try {
+        await drafts.commit('builder', next => {
+          const day = reviewedBuilderDay(payload(), next); if (!day.name || !day.exercises.length) throw new Error('Buổi cần tên và ít nhất một bài.');
+          const now = new Date().toISOString(); next.plans.push({ id: id(), name: day.name, days: [day], createdAt: now, updatedAt: now });
+        });
+        oneOff = null; oneOffSource = null; render(); message('Đã lưu kế hoạch mới và dọn bản nháp.');
+      } catch (error) { message(`Chưa lưu kế hoạch: ${error.message}`, true); }
+    }), button('Bỏ bản nháp tạo buổi', () => confirmAction('Bỏ bản nháp tạo buổi? Các kế hoạch và lịch sử đã lưu vẫn còn.', async () => {
+      try { await drafts.discard('builder'); oneOff = null; oneOffSource = null; replacingSlot = null; render(); }
+      catch (error) { message(error.message, true); }
+    }), 'danger'));
+    if (oneOffSource) actions.append(button('Lưu vào buổi nguồn', saveSourceDay));
+    actions.append(button('Thử lưu bản nháp lại', persist));
+    main.append(panel(actions));
+  }
+
+  async function saveSourceDay() {
+    try {
+      await drafts.commit('builder', next => {
+        const day = reviewedBuilderDay(payload(), next), source = oneOffSource;
+        const current = next.plans.find(plan => plan.id === source?.planId);
+        ensureUnchanged(current, source?.plan);
+        const index = current.days.findIndex(item => item.id === day.id);
+        if (index < 0) throw new Error('Buổi nguồn không còn. Hãy lưu thành kế hoạch mới.');
+        current.days[index] = day; current.updatedAt = new Date().toISOString();
+      });
+      oneOff = null; oneOffSource = null; render(); message('Đã lưu buổi nguồn và dọn bản nháp.'); return true;
+    } catch (error) { message(`Chưa lưu buổi nguồn: ${error.message}`, true); return false; }
   }
 
   function setOneOff(day, after = () => {}) {
-    const apply = () => { oneOff = structuredClone(day); replacingSlot = null; after(); };
-    if (oneOff?.exercises.length && oneOff.id !== day.id) confirmAction('Thay buổi chưa lưu trong builder bằng bản nháp này? Lưu buổi cũ thành mẫu trước nếu muốn giữ.', apply);
+    const apply = async () => {
+      try { await drafts.transition('builder', { day: structuredClone(day), source: null }, next => { next.planningDraft.planner = null; });
+        oneOff = structuredClone(day); oneOffSource = null; replacingSlot = null; after();
+      } catch (error) { message(`Chưa chuyển bản nháp: ${error.message}`, true); }
+    };
+    if ((oneOff?.exercises.length && oneOff.id !== day.id) || getData().planningDraft?.builder) confirmAction('Thay buổi chưa lưu trong builder bằng bản nháp này? Lưu buổi cũ thành mẫu trước nếu muốn giữ.', apply);
     else apply();
   }
-  return { libraryView, plansView, oneOffView, setOneOff, checkChoices };
+  return { libraryView, plansView, oneOffView, setOneOff, checkChoices, reset() { oneOff = null; oneOffSource = null; editingPlanId = null; replacingSlot = null; } };
 }

@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=17';
+import { validDate } from './data.js?v=18';
 
 export const PHOTO_CATEGORIES = [
   { value: 'daily', label: 'Nhật ký ngày' },
@@ -108,6 +108,10 @@ export async function deletePhoto(id) {
 
 export function ownedPhotos(records, ownerType, ownerId) {
   return records.filter(item => item.ownerType === ownerType && item.ownerId === ownerId);
+}
+
+export function orphanPhotoOwners(records, data) {
+  return records.filter(item => item.ownerType && !(item.ownerType === 'food' ? data.foods : data.recipes).some(owner => owner.id === item.ownerId));
 }
 
 // Replace only this owner's records in one transaction; unrelated journal photos stay intact.

@@ -1,12 +1,24 @@
-import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=17';
-import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=17';
+import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=18';
+import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=18';
+import { plannerPayload, recoverPlannerResult } from './planning-draft.js?v=18';
 
-export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft, render }) {
-  const { node, field, panel, p, h2, h3, div, button, message, id } = helpers;
+export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft, render, drafts, draftStatus, recoveryCard }) {
+  const { node, field, panel, p, h2, h3, div, button, message, id, confirmAction } = helpers;
   let preferences = null, result = null;
-  return function plannerView() {
+  let warning = '', inputRevision = 0;
+  const persist = () => drafts.save('planner', plannerPayload(preferences, result, preferences)).catch(error => { message(`Chưa lưu planner: ${error.message}`, true); });
+  const clearResult = () => { result = null; persist(); render(); };
+  function plannerView() {
+    if (!preferences && recoveryCard('planner', saved => {
+      preferences = saved.payload.preferences;
+      try { result = recoverPlannerResult(saved.payload, getData()); }
+      catch (error) { result = null; warning = `Gợi ý cũ cần tạo lại: ${error.message}`; }
+      render();
+    }, () => { preferences = null; result = null; render(); })) return;
     const library = libraryExercises(getData().customExercises);
     const box = panel(h2('Giúp mình lên buổi tập'), p('AI chưa kết nối. Đây là gợi ý LOCAL theo bộ lọc, luôn là bản nháp. Bạn duyệt/chỉnh rồi mới bắt đầu hoặc lưu.', 'hint'));
+    box.append(draftStatus());
+    if (warning) box.append(p(warning, 'notice'));
     const raw = preferences || { count: 4, sets: 2, repMin: 8, repMax: 12, targetRIR: '2', restSeconds: 90, workSeconds: 40 };
     const form = node('form', { class: 'journal-form' }, [
       field('Tên buổi / loại buổi', 'name', raw.name || 'Buổi gợi ý'),
@@ -28,15 +40,17 @@ export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft
       p('Nếu có hạn chế sức khỏe bằng văn bản, local planner sẽ báo cần builder thủ công thay vì đoán bài phù hợp.', 'hint'),
       node('button', { type: 'submit', class: 'primary', text: result ? 'Tạo lại gợi ý' : 'Tạo bản nháp local' })
     ]);
-    form.addEventListener('submit', event => {
+    const capture = () => { const fields = new FormData(form); return { ...Object.fromEntries(fields), muscles: fields.getAll('muscles'), equipment: fields.getAll('equipment'), include: fields.getAll('include'), exclude: fields.getAll('exclude') }; };
+    form.addEventListener('submit', async event => {
       event.preventDefault(); const fields = new FormData(form);
       preferences = { ...Object.fromEntries(fields), muscles: fields.getAll('muscles'), equipment: fields.getAll('equipment'), include: fields.getAll('include'), exclude: fields.getAll('exclude') };
       result = null;
-      try { const request = createPlannerRequest(preferences); result = suggestWorkout(request, library, id); if (result.status === 'draft') result = validatePlannerOutput(result, request, library); render(); main.querySelector('.planner-result')?.scrollIntoView({ block: 'start' }); }
-      catch (error) { result = null; render(); message(error.message, true); }
+      const revision = ++inputRevision;
+      try { const request = createPlannerRequest(preferences); result = suggestWorkout(request, library, id); if (result.status === 'draft') result = validatePlannerOutput(result, request, library); await persist(); if (revision === inputRevision) { render(); main.querySelector('.planner-result')?.scrollIntoView({ block: 'start' }); } }
+      catch (error) { result = null; await persist(); if (revision === inputRevision) { render(); message(error.message, true); } }
     });
     box.append(form);
-    if (result?.status === 'conflict') box.append(div('planner-result', h3('Điều kiện đang xung đột'), ...result.conflicts.map(text => p(text, 'notice error')), button('Hủy gợi ý', () => { result = null; render(); })));
+    if (result?.status === 'conflict') box.append(div('planner-result', h3('Điều kiện đang xung đột'), ...result.conflicts.map(text => p(text, 'notice error')), button('Hủy gợi ý', clearResult)));
     if (result?.status === 'draft') {
       const draft = panel(h2(`BẢN NHÁP · ${result.workout.name}`), p(`Ước tính ${Math.ceil(result.estimatedSeconds / 60)} phút theo tham số của bạn.`, 'summary'));
       draft.classList.add('planner-result');
@@ -44,14 +58,19 @@ export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft
       draft.append(...result.warnings.map(text => p(text, 'hint')),
         div('actions', button('Chấp nhận & mở bộ chỉnh', () => useDraft(result.workout), 'primary'),
           button('Chỉnh / thay bài trước khi tập', () => useDraft(result.workout)),
-          button('Hủy gợi ý', () => { result = null; render(); })),
+          button('Hủy gợi ý', clearResult)),
         p('Mở builder chỉ chuyển bản nháp. Chưa lưu kế hoạch, chưa thay kế hoạch active và chưa bắt đầu buổi.', 'hint'));
       box.append(draft);
     }
     const contract = node('details', {}, [node('summary', { text: 'Xem dữ liệu planner có cấu trúc' })]);
-    form.addEventListener('input', () => { result = null; box.querySelector('.planner-result')?.remove(); contract.hidden = true; });
+    form.addEventListener('input', () => { inputRevision++; preferences = capture(); result = null; box.querySelector('.planner-result')?.remove(); contract.hidden = true; form.querySelector('[type=submit]').textContent = 'Tạo bản nháp local'; persist(); });
     if (preferences) { try { contract.append(node('pre', { class: 'contract-preview', text: JSON.stringify({ request: createPlannerRequest(preferences), output: result }, null, 2) })); } catch { contract.append(p('Cần sửa input trước khi tạo request hợp lệ.')); } }
     else contract.append(p('Request/output sẽ hiện sau khi tạo gợi ý. Không gửi dữ liệu ra mạng.'));
-    box.append(contract); main.append(box);
-  };
+    box.append(contract, div('actions', button('Thử lưu planner lại', () => { preferences = capture(); persist(); }), button('Bỏ bản nháp planner', () => confirmAction('Bỏ lựa chọn và gợi ý đang soạn trong planner?', async () => {
+      try { await drafts.discard('planner'); preferences = null; result = null; warning = ''; render(); }
+      catch (error) { message(error.message, true); }
+    }), 'danger'))); main.append(box);
+  }
+  plannerView.reset = () => { preferences = null; result = null; warning = ''; inputRevision++; };
+  return plannerView;
 }

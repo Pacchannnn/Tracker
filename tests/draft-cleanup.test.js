@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { representativeState } from './fixtures/representative-state.js';
+import { createDraftStore, reviewedBuilderDay } from '../js/planning-draft.js';
+import { loadData, updateData, STORAGE_KEY } from '../js/data.js';
+import { snapshotWorkout } from '../js/custom-workout.js';
+
+test('Start and Save Plan cleanup are atomic; failed validation keeps recoverable inputs', async () => {
+  const original = representativeState(); let data = structuredClone(original);
+  let disk = JSON.stringify(data), failing = false;
+  const storage = { getItem: () => disk, setItem: (_, value) => { if (failing) throw new Error('quota'); disk = value; } };
+  const store = createDraftStore({ getData: () => data, write: async change => data = await updateData(storage, { request: (_, work) => work() }, change) });
+  const payload = structuredClone(original.planningDraft.builder.payload);
+  payload.day.exercises[0].sets = '';
+  await store.save('builder', payload);
+  const before = disk;
+  await assert.rejects(store.commit('builder', next => { reviewedBuilderDay(payload, next); }));
+  assert.equal(disk, before);
+  assert.equal(store.recover('builder').payload.day.exercises[0].sets, '');
+  const valid = original.planningDraft.builder.payload;
+  await store.save('builder', valid);
+  failing = true;
+  await assert.rejects(store.commit('builder', next => { next.draft.workoutSnapshot = snapshotWorkout(reviewedBuilderDay(valid, next)); }));
+  assert.ok(loadData(storage).planningDraft.builder);
+  failing = false;
+  await store.commit('builder', next => { next.draft.workoutSnapshot = snapshotWorkout(reviewedBuilderDay(valid, next)); });
+  assert.equal(loadData(storage).planningDraft.builder, null);
+  assert.equal(loadData(storage).draft.workoutSnapshot.name, valid.day.name);
+  await store.save('builder', valid);
+  const count = data.plans.length;
+  await store.commit('builder', next => { next.plans.push({ id: 'new-plan', name: 'New plan', days: [reviewedBuilderDay(valid, next)], createdAt: '2026-10-05T00:00:00Z', updatedAt: '2026-10-05T00:00:00Z' }); });
+  assert.equal(loadData(storage).plans.length, count + 1);
+  assert.equal(loadData(storage).planningDraft.builder, null);
+  assert.deepEqual(loadData(storage).sessions, original.sessions);
+});

@@ -1,11 +1,12 @@
-import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=17';
+import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=18';
+import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=18';
 export const STORAGE_KEY = 'vshape-tracker';
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 export const emptyData = () => ({
   schemaVersion: SCHEMA_VERSION,
   settings: { week: 1, calories: 2400, protein: 120 },
   sessions: [], foods: [], entries: [], checkins: [], draft: null, exerciseNotes: {}, cardioEntries: [], kneeEntries: [], savedMeals: [], recipes: [], journalEntries: [],
-  customExercises: [], plans: [], activePlanId: null
+  customExercises: [], plans: [], activePlanId: null, planningDraft: emptyPlanningDraft()
 });
 
 function migrateData(data) {
@@ -14,6 +15,7 @@ function migrateData(data) {
   if (data?.schemaVersion === 3) data = { ...data, schemaVersion: 4, savedMeals: [], recipes: [] };
   if (data?.schemaVersion === 4) data = { ...data, schemaVersion: 5, journalEntries: [] };
   if (data?.schemaVersion === 5) data = { ...data, schemaVersion: 6, customExercises: [], plans: [], activePlanId: null };
+  if (data?.schemaVersion === 6) data = { ...data, schemaVersion: 7, planningDraft: emptyPlanningDraft() };
   return data;
 }
 
@@ -172,6 +174,7 @@ function validateBackupData(data) {
   if (!['sessions', 'foods', 'entries', 'checkins', 'cardioEntries', 'kneeEntries', 'savedMeals', 'recipes', 'journalEntries'].every(key => Array.isArray(data[key]))) throw new Error('Bản sao lưu thiếu danh sách dữ liệu cần thiết.');
   if (!isObject(data.exerciseNotes) || !Object.values(data.exerciseNotes).every(value => typeof value === 'string')) throw new Error('Ghi chú bài tập không hợp lệ.');
   validatePlanningData(data);
+  validatePlanningDraft(data.planningDraft);
   const validSession = item => isObject(item) && isId(item.id) && (['A', 'B', 'C', 'D'].includes(item.workout) || (item.workout === 'CUSTOM' && !!validateWorkoutSnapshot(item.workoutSnapshot))) &&
     validDate(item.date) && Number.isInteger(item.week) && item.week >= 1 && item.week <= 12 && Array.isArray(item.sets) &&
     item.sets.every(set => isObject(set) && isId(set.id) && Number.isInteger(set.exerciseIndex) && set.exerciseIndex >= 0 &&
@@ -220,7 +223,7 @@ export function parseBackup(text) {
   const wrapped = isObject(parsed) && Object.hasOwn(parsed, 'data');
   if (wrapped && parsed.schemaVersion !== parsed.data?.schemaVersion) throw new Error('Phiên bản vỏ và dữ liệu không khớp.');
   const data = migrateData(wrapped ? parsed.data : parsed);
-  if (wrapped && ![1, 2, 3, 4, 5, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
+  if (wrapped && ![1, 2, 3, 4, 5, 6, SCHEMA_VERSION].includes(parsed.schemaVersion)) throw new Error('Phiên bản bản sao lưu không tương thích.');
   validateBackupData(data);
   return {
     data: structuredClone(data),
@@ -237,7 +240,15 @@ export function parseBackup(text) {
       recipes: data.recipes.length,
       journal: data.journalEntries.length,
       customExercises: data.customExercises.length,
-      plans: data.plans.length
+      plans: data.plans.length,
+      planningDrafts: ['builder', 'planner'].filter(kind => data.planningDraft[kind]).length
     }
   };
+}
+
+export function restoreBackupData(next, incoming, baseline) {
+  validateBackupData(incoming);
+  if (JSON.stringify(next) !== baseline) throw new Error('Dữ liệu hiện tại đã đổi sau lúc xem trước. Hãy kiểm tra lại file trước khi khôi phục.');
+  for (const key of Object.keys(next)) delete next[key];
+  Object.assign(next, structuredClone(incoming));
 }

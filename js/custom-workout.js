@@ -1,4 +1,4 @@
-import { PROGRAM, programDay } from './program.js?v=17';
+import { PROGRAM, programDay } from './program.js?v=18';
 
 export const MUSCLES = [
   ['chest', 'Ngực'], ['back', 'Lưng'], ['lats', 'Xô'], ['upper-back', 'Lưng trên'],
