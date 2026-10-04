@@ -116,6 +116,8 @@ Selection/filter are transient (Cancel/leave/reload drops unconfirmed picks, exp
 
 ## Phase 4 — flexible live workout
 
+**PHASE 4A CONTRACT DESIGNED — NOT IMPLEMENTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md): đề xuất schema8 additive, slot/set ownership và4 implementation milestones, chờ user duyệt. Phase4 chưa DONE; không code/migrate trong task4A.
+
 **Goal/value:** máy bận hoặc đổi ý vẫn tập/log được. **Depends:** phase3, approved slot identity/scoping design. **Data:** session slot IDs trong sets; immutable completed history; existing exerciseIndex compatibility. **Migration:** additive identity mapping cho dữ liệu cũ, validate backup và original/custom sessions; không đổi exerciseName snapshot theo template.
 
 **UI:** “Chỉ hôm nay”, Add/Replace/Reorder, sau hoàn thành có giữ riêng hoặc save-as-new-template; update source template qua diff và confirmation riêng. Cần chọn contract replace bài đã log: giữ slot cũ và thêm slot mới, hay chỉ cho replace chưa log.
