@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema 8 · V4 Phase 4B-2 · 167 tests.** Tải lại mọi tab để nhận asset/module `v=23`. Start mới và logging dùng ownership theo occurrence của buổi tập; lịch sử có kiểm tra xung đột trước khi ghi đè. Dữ liệu cũ được giữ, chỉ khởi tạo identity khi lưu thay đổi an toàn đầu tiên. Chưa có Add/Remove/Reorder/Replace khi đang tập. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · V4 Phase4B-3 · 180 tests.** Tải lại mọi tab để nhận asset/module `v=26`. Đã có Add/Remove/Reorder trong buổi đang tập hợp lệ; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử vẫn có guard/CAS và không có structural controls. Live Replace chưa triển khai. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -27,6 +27,14 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 6. Vào **Nhật ký & Ảnh** để đánh dấu trạng thái ngày, thẻ và ghi chú. Ảnh lưu cục bộ trong trình duyệt; ảnh tiến độ có ngày, góc chụp, cân/eo tùy chọn. Ảnh được nén, file gốc trên thiết bị không bị sửa.
 7. Vào **Cài đặt & sao lưu** để chuẩn bị và tải **hai file**: dữ liệu JSON và ảnh JSON. Giữ cả hai file riêng tư. Nếu trình duyệt không tải file dữ liệu, dùng **Sao chép JSON**. Xác nhận cả hai file thực sự tồn tại trước khi xóa dữ liệu trình duyệt.
 8. Để khôi phục, chọn file dữ liệu JSON, xem trước, giữ bản sao an toàn rồi xác nhận thay thế. Sau đó chọn file ảnh, xem trước và thêm ảnh còn thiếu. Nhập ảnh không xóa hoặc ghi đè ảnh hiện có.
+
+## Chỉnh bài trong buổi hôm nay
+
+- **Thêm bài:** dùng Shared Picker tìm/lọc/chọn nhiều bài, duyệt/chỉnh hiệp/reps/RIR/nghỉ rồi Confirm. Mặc định2 hiệp,8–12,RIR2,90s là cấu hình chỉnh được; không lấy từ MASTER_PLAN và không chọn tạ tự động. Lựa chọn/review chưa Confirm sẽ mất khi hủy/rời trang. Bài đang active bị chặn trùng; tối đa100 mục kể cả bài đã dừng.
+- **Bỏ bài:** xác nhận giữ mọi hiệp đã ghi. Bài vẫn hiện **Dừng bài**, không ghi thêm vào đó; có thể sửa đúng hiệp cũ. Thêm lại cùng bài tạo mục mới, không mở lại mục cũ.
+- **Di chuyển lên/xuống:** đổi vị trí với bài active kế bên; vị trí bài inactive giữ nguyên. Hiệp đã ghi thuộc cùng mục. Timer đang chạy giữ label/nghỉ đã chọn; không hứa khôi phục timer sau reload.
+- Có hiệp chưa lưu: **Quay lại**, **Lưu hiệp** (chỉ khi hợp lệ) hoặc **Bỏ phần nhập chưa lưu**. Lưu qua dialog chỉ lưu hiệp; phải duyệt/chọn thao tác cấu trúc lại. Ngày/ghi chú/setup đang sửa phải lưu/hủy theo flow hiện có trước.
+- Không còn bài active: Add vẫn có; Complete chỉ thành công khi có ít nhất1 hiệp. Không tự xóa hoặc hoàn thành draft. Không có các nút cấu trúc khi sửa lịch sử.
 
 ## Lưu buổi và xử lý xung đột
 

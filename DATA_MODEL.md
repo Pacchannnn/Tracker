@@ -2,11 +2,23 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
-## Phase 4B-2 runtime identity and guarded writes — schema8 unchanged
+## Phase 4B-3 live structural commands — schema8 unchanged
+
+No entity/field/schema migration is added. js/session-structure.js validates live structure eligibility; session-runtime persists every structural command through the existing queue/epoch/updateData/Web Lock. A structured draft with a history editing baseline (including unknown), an ID already in completed history, raw legacy ownership or malformed identity cannot structurally mutate. Legacy first-write activation remains the4B-2 path.
+
+Add captures accepted exercise definition, editable prescription and setup-note text. Before writing, the latest library definition must remain exactly equal, available/unarchived, setup text unchanged and exercise ID absent from active occurrences. Validate the entire batch before append: new UUID, null sourceSlotId/replacesSlotId, active status and frozen accepted display snapshot. Append registry/order in selection order without fabricating sets. The100-slot technical Add cap counts active/removed/replaced; existing imported >100 records remain intact, and non-Add commands still work.
+
+Remove only marks the exact active slot removed. Registry/order/snapshot/target and every saved set field/array order remain unchanged; inactive owners cannot receive new logs but existing exact set correction/delete retains4B-2 behavior. Adding that catalog ID later creates a new UUID; it never reopens the old tombstone. Reorder swaps neighboring active positions in order only; inactive positions, registry ordinal and saved sets stay fixed. Focus/next use slotId/current order; timer keeps its captured label/duration.
+
+Each successful structural command increments revision once; canceled/invalid/stale/quota failure adds zero persisted revisions. Capture full baseline at enqueue; structural commands compare that captured envelope again at execution, then latest disk against the reviewed expected envelope inside the lock. Other queued commands reject if any slots/order changed since enqueue; established log/log queue serialization remains while structure is unchanged. No structural replay/merge occurs after either tab changes the review. Unrelated domains are loaded fresh and retained.
+
+Live UI uses the Phase3 Shared Picker with optional review. Valid unsaved sets offer Back / explicit Save / Discard; invalid sets offer Back / Discard only, including visible bad number input with empty value. Save uses canonical writers sequentially, retains review, advances only its own accepted baseline and requires another explicit structural action. Other dirty metadata/setup forms use existing block/save/cancel flow. Failed Add retains pending selections/raw prescription fields. Complete/history preserve final order and zero-log tombstones without performance; reopened history offers no structural controls. Source PROGRAM/plans/activePlan/planningDraft stay separate and deep-equal in tests. Backup8 roundtrips all IDs/status/order/revision/sets; photo DB1/format1 unchanged.4B-4 live Replace is NOT IMPLEMENTED.
+
+## Historical Phase 4B-2 runtime identity and guarded writes — schema8 unchanged
 
 7→8 only bumps schemaVersion in memory; completed records, live draft, planningDraft and every other domain stay unchanged. Load never writes. updateData/Web Lock first successful write persists8; no automatic8→7 downgrade. Existing1→7 chain retained. Runtime Start now creates a complete structured draft atomically; legacy records remain raw until a safe user mutation.
 
-New optional sessionStructure: `{revision: safe integer >=0, basis: started|legacy-snapshot|legacy-program, slots:[], order:[]}`. Slots registry: `{id,exerciseId:null|ID,sourceSlotId:null|ID,replacesSlotId:null|ID,status:active|removed|replaced,snapshot:{name,sets,reps,rest,rir,notes,setupNote}}`. Sets target is positive integer; other snapshot values are raw display strings. Registry ordinal stays immutable; order is exact permutation including tombstones. Replacement refers to earlier registry entry marked replaced, at most one successor, no cycle. No structural commands/UI yet.
+New optional sessionStructure: `{revision: safe integer >=0, basis: started|legacy-snapshot|legacy-program, slots:[], order:[]}`. Slots registry: `{id,exerciseId:null|ID,sourceSlotId:null|ID,replacesSlotId:null|ID,status:active|removed|replaced,snapshot:{name,sets,reps,rest,rir,notes,setupNote}}`. Sets target is positive integer; other snapshot values are raw display strings. Registry ordinal stays immutable; order is exact permutation including tombstones. Replacement refers to earlier registry entry marked replaced, at most one successor, no cycle. At that checkpoint structural commands/UI were deferred;4B-3 above now implements Add/Remove/Reorder.
 
 Session occurrence UUID != catalog ID != source template occurrence; deterministic legacy-slot:index IDs are scoped to session. Duplicate exercise occurrences are distinct. Structured saved sets require slotId, compatible exerciseIndex registry ordinal, immutable name/known exercise ID, unique ID and owner/setNumber. Original materialization preserves over-target legacy logs and exact PROGRAM+week ranges/unilateral/unknowns; custom derives display fields from frozen workoutSnapshot. Canonical Original catalog match may differ source occurrence (B:4→A:3).
 
@@ -22,7 +34,7 @@ Previous performance uses exact exercise ID. Original legacy fallback requires e
 
 Reviewed independent recovery copies get new session/slot/set UUIDs and remap order, set owners and replacement links; baseline is stripped. Source is not resurrected or overwritten. Raw ambiguous candidates cannot be converted by guessing: preserve/export or explicitly reopen a valid source. Candidate exports are diagnostic/review files, not full Settings backups.
 
-Strict structure applies at load/write/backup. Legacy load/write validation remains compatible; old strict backup checks still handle legacy records. Data backup8 preserves structures/baselines losslessly and accepts raw/wrapped1–7; malformed structure/future schema/wrapper mismatch reject without replacing disk. Photo DB1/format1 unchanged. See PHASE4_LIVE_WORKOUT_CONTRACT.md and V4_IMPLEMENTATION_REPORT.md for evidence and the remaining4B-3/4 boundary.
+Strict structure applies at load/write/backup. Legacy load/write validation remains compatible; old strict backup checks still handle legacy records. Data backup8 preserves structures/baselines losslessly and accepts raw/wrapped1–7; malformed structure/future schema/wrapper mismatch reject without replacing disk. Photo DB1/format1 unchanged. See PHASE4_LIVE_WORKOUT_CONTRACT.md and V4_IMPLEMENTATION_REPORT.md for evidence and the remaining4B-4 boundary.
 
 ## Existing domains (unchanged)
 

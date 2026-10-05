@@ -1,8 +1,12 @@
 # Tracker — Phase 4A: Flexible Live Workout Contract
 
-05/10/2026 · **CONTRACT APPROVED. 4B-1 FOUNDATION + 4B-2 CUTOVER IMPLEMENTED / TESTED; 4B-3/4 NOT IMPLEMENTED. Phase4 NOT DONE.**
+05/10/2026 · **CONTRACT APPROVED. 4B-1 FOUNDATION + 4B-2 CUTOVER + 4B-3 ADD/REMOVE/REORDER IMPLEMENTED / TESTED; 4B-4 NOT IMPLEMENTED. Phase4 NOT DONE.**
 
-### Implementation evidence — 4B-2 boundary (05/10/2026)
+### Implementation evidence — 4B-3 boundary (05/10/2026)
+
+Approved product semantics below are unchanged. Schema8 stays8; no new photo format. Code fe3f8b9 implements live Shared Picker Add/review/atomic batch/cap100, Remove tombstones and active-position Reorder. History/raw ambiguous/recovery controls remain restricted. Full captured structural baseline is rechecked at queue execution; latest full envelope is guarded inside Web Locks. Saved-set ownership/source snapshots remain unchanged. Dirty valid/invalid inputs require explicit Back/Save/Discard; Save does not auto replay structural intent. Review fixed queue replay, boundary focus, visible badInput and Save focus.167→180/180 tests,46 JS syntax checks, actual browser A–H/all-inactive/two-tab/backup and iframe320/360/390 verified on separate synthetic8776. See current report for precise evidence and NOT VERIFIED limits. **STOP before4B-4 Replace. Phase4 NOT DONE.** Older sections are historical evidence; contract requirements below remain intact.
+
+### Historical implementation evidence — 4B-2 boundary (05/10/2026)
 
 Approved semantics below remain unchanged. Schema8 stays8. Runtime Start UUID/frozen snapshots, atomic safe legacy activation, canonical slot writers/readers, revision + full reviewed envelope inside Web Locks, same-tab queue/epoch, exact historyEditBase reopen/Complete CAS and explicit recovery copies are implemented. Ambiguous raw ownership is preserved; malformed structured imports fail closed. Baseline136 →167 passing tests;43 JS syntax checks; browser A–G, real two-tab stale/CAS conflicts and320/360/390 widths. Review found and fixed dirty-form rerender loss and empty-duplicate Quick Fill selection. See current report for evidence and limits. **STOP before4B-3 Add/Remove/Reorder and4B-4 Replace.** Audit and older implementation sections below describe their historical checkpoint, not current runtime.
 

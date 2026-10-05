@@ -1,5 +1,5 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-05 (V4 Phase 4B-2 runtime cutover)
+Updated: 2026-10-05 (V4 Phase 4B-3 live Add/Remove/Reorder)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -154,7 +154,7 @@ NOT VERIFIED: physical phone/Safari/screen reader/real quota/large photo/downloa
 BACKLOG:4B-3 Add/Remove/Reorder,4B-4 Replace, Phase5-8. Photos DB/format1 unchanged.
 CODE CHECKPOINT:09676c2 main; no push. Full evidence V4_IMPLEMENTATION_REPORT.md.
 
-V4 PHASE 4B-2 — CURRENT STATUS — 2026-10-05
+V4 PHASE 4B-2 — HISTORICAL STATUS — 2026-10-05
 CURRENT PHASE:4A approved;4B-1/2 DONE; Phase4 NOT DONE; schema8 unchanged.
 CURRENT STEP: handoff; STOP before4B-3/4. Roadmap V4_ROADMAP.md.
 [DONE]1 Runtime command/store: atomic UUID Start and safe legacy first write;
@@ -180,3 +180,26 @@ MODEL/REASONING:GPT-6.1-sol/high. No automatic template promotion or push.
 BACKLOG:4B-4 Replace; remaining Phase5-8; existing feature backlog unchanged.
 CODE CHECKPOINT:41dc047; docs checkpoint follows in git log/handoff.
 Private docs stay ignored.
+
+V4 PHASE 4B-3 — CURRENT STATUS — 2026-10-05
+CURRENT PHASE:4A approved;4B-1/2/3 IMPLEMENTED / TESTED; Phase4 NOT DONE.
+CURRENT STEP: handoff; STOP before4B-4 Replace. Schema8 unchanged.
+[DONE]1 Structural runtime/validation/atomic batch/100-cap/tombstone/order.
+ Depends4B-2. Model GPT-6.1-sol/high. Done: snapshots/sets/sources preserved.
+[DONE]2 Shared Picker review/live controls/dirty gate/all-inactive/history UI.
+ Depends1. Same model/high. Done: no input loss or automatic structural replay.
+[DONE]3 Concurrency/quota/backup/source/progress and full regression.
+ Depends1-2. Same model/high. Tested167->180;46JS syntax; browser A-H plus
+ all-inactive, actual two-tab stale/manual retry, clipboard-file-import deep
+ equality.320/360/390 frames no horizontal overflow; keyboard/focus checked.
+[DONE]4 Independent review/fixes/docs/local code/docs checkpoints.
+ Depends1-3. Same model/high. Code fe3f8b9; docs checkpoint in git log.
+IN PROGRESS:none. BLOCKERS:none in this scope. KNOWN BUGS:no remaining
+ failure found in tested flows. NOT VERIFIED: physical phone/Safari/reader,
+ real quota/storage pressure, large photo backup and completed IAB download.
+DECISIONS NEEDED: new task for4B-4 when ready; remote AI/backend DECIDE LATER.
+NEXT:4B-4 live Replace per approved contract (new successor occurrence,
+ preserved predecessor logs, explicit reviewed prescription, guards/tests).
+MODEL/REASONING:GPT-6.1-sol/high. No automatic4B-4 work or template promotion.
+BACKLOG:4B-4 Replace and remaining Phase5-8. Photos DB1/format1 unchanged.
+PRIVATE DATA:MASTER_PLAN/TONG_KET/.local stay ignored. No push/fetch/reset.

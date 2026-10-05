@@ -8,7 +8,20 @@
 
 ## Trạng thái và quy ước
 
-### Phase 4B-2 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
+### Phase 4B-3 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
+
+Approved contract/user request is the design; no new product decision. Baseline clean main74d9dac, schema8,167/167 tests. Inline execution on user-selected main; no push.
+
+1. [DONE] Runtime structural commands/tests: live structured-only availability, accepted definition/prescription/setup snapshots, atomic multi-Add/cap100, Remove tombstones, active-position Reorder. Files js/session-structure.js, js/session-runtime.js, tests/session-structure.test.js. Red→green: command Add appends two slots but no sets; Remove preserves logs; Reorder swaps active order only. Model GPT-6.1-sol/high.
+2. [DONE] Extend same Shared Picker with optional prescription review; integrate live UI and reuse dirty-form/save/block/pending helpers. Files js/exercise-picker-ui.js, js/live-workout-ui.js, js/session-ui.js, js/app.js. Depends1. Dirty valid/invalid Back/Save/Discard, no auto structural replay after Save; history has no controls; focus/timer stable. Same model/high.
+3. [DONE] Race/quota/immutable intent/backup/progress/source isolation tests; full regression. Depends1–2. Actual browser A–H/all-inactive/two-tab on separate synthetic origin;320/360/390 and keyboard. Same model/high.
+4. [DONE] Independent read-only review, fixes, fresh tests/syntax/diff, implementation evidence/docs and separate local code/docs checkpoints. Depends1–3. Done only when all24 user invariants pass; final32-item report. Same model/high.
+
+Risk controls: no history structural mutation; no legacy guess or >100 truncation; candidate changes reject whole batch; slots/sets never reorder physically; other dirty forms retain existing block behavior. Schema8 stays8. STOP before4B-4 Replace; no template promotion/catalog expansion.
+
+Results:167→180/180 tests;46 JS syntax checks and clean diff. Browser A–H/all-inactive on synthetic8776; actual two-tab stale Add/Remove/Reorder/log, explicit reviewed retry; final history and clipboard→file→preview→restore deep equality. Actual iframe320/360/390: client/scroll305/305,345/345,375/375; standalone warn/error logs empty. Review fixes: strict captured structural baseline at queue execution, downstream structural stale rejection, boundary focus fallback, number badInput dirty detection and focus after gate Save. Asset26. Code fe3f8b9; separate docs checkpoint. Photos/schema unchanged. No push.
+
+### Historical Phase 4B-2 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
 
 Verified baseline: clean main54d0fa5, schema8,136/136 tests. Approved4B-2 only:
 1. [DONE] Runtime command/store tests → atomic Start/legacy activation, exact set writers, revision/full-baseline guards and same-tab queue/epoch.
@@ -31,11 +44,11 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–3 hoàn tất;4A approved;4B-1/2 IMPLEMENTED/TESTED; Phase4 NOT DONE;4B-3/4 NOT IMPLEMENTED.
-- **CURRENT STEP:** bàn giao4B-2, schema8; STOP trước4B-3/4 theo yêu cầu.
-- **BLOCKERS:** không có trong scope4B-2; structural controls chờ task tiếp theo.
-- **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live-edit semantics đã duyệt ở contract; chưa triển khai controls.
-- **KNOWN LIMITATIONS:** live structural editing chưa có; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
+- **CURRENT PHASE:**0–3 hoàn tất;4A approved;4B-1/2/3 IMPLEMENTED / TESTED; Phase4 NOT DONE;4B-4 NOT IMPLEMENTED.
+- **CURRENT STEP:** bàn giao4B-3, schema8; STOP trước4B-4 Replace. IN PROGRESS: none.
+- **BLOCKERS:** không có trong scope4B-3. KNOWN BUGS: không còn lỗi trong các luồng đã kiểm tra; không bảo đảm mọi thiết bị/path.
+- **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live Add/Remove/Reorder đã triển khai; Replace cần task riêng.
+- **KNOWN LIMITATIONS:** chưa có live Replace; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
 ## Ràng buộc chung
 
@@ -136,13 +149,13 @@ Selection/filter are transient (Cancel/leave/reload drops unconfirmed picks, exp
 
 ## Phase 4 — flexible live workout
 
-**4A APPROVED;4B-1/2 IMPLEMENTED/TESTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md). Schema8 additive foundation and guarded runtime cutover verified. Phase4 NOT DONE. No structural UI yet. Evidence in current V4_IMPLEMENTATION_REPORT.md and local Git checkpoints.
+**4A APPROVED;4B-1/2/3 IMPLEMENTED / TESTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md). Schema8 additive foundation and guarded runtime cutover verified. Phase4 NOT DONE. Live Add/Remove/Reorder available only for valid open canonical sessions; history structural edits remain disabled. Evidence in current V4_IMPLEMENTATION_REPORT.md and local Git checkpoints.
 
 **Goal/value:** máy bận hoặc đổi ý vẫn tập/log được. **Depends:** phase3, approved slot identity/scoping design. **Data:** session slot IDs trong sets; immutable completed history; existing exerciseIndex compatibility. **Migration:** additive identity mapping cho dữ liệu cũ, validate backup và original/custom sessions; không đổi exerciseName snapshot theo template.
 
-**Remaining UI per approved contract:** “Chỉ hôm nay”, Add/Remove/Reorder in4B-3; Replace closes old+new continuation in4B-4. No source-template promotion/undo/event sourcing in these milestones; template promotion belongs to later backlog.
+**Implemented4B-3:** “Chỉ thay đổi buổi hôm nay”, Shared Picker Add/review, tombstone Remove and active-position Reorder. **Remaining4B-4:** Replace closes old+new continuation. No source-template promotion/undo/event sourcing in these milestones; template promotion belongs to later backlog.
 
-Remaining tests: log→reorder ownership unchanged, Add/Remove confirmation/dirty-form/stale commands in4B-3; partial-log replacement/source-stale/backup in4B-4. No copytemplate gate in this approved scope. Runtime activation is complete; next task authorization precedes structural controls. Model/reasoning: GPT-6.1-sol/high for4B-3 and4B-4; no template promotion or Replace in4B-3.
+Completed4B-3 tests: atomic Add/100-cap/current definition, tombstone logs, active-order ownership, dirty gates, queue/multi-tab races, history/source/backup/mobile. Remaining4B-4 tests: partial-log replacement, predecessor/successor ownership, source-stale/backup and review/cancel/mobile. No copytemplate gate. STOP before Replace; separate user task required. Model/reasoning: GPT-6.1-sol/high for4B-3 and4B-4; no template promotion or Replace in4B-3.
 
 ## Phase 5 — My Day và journal retrieval
 
