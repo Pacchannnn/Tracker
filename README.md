@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · V4 Phase4B-1 foundation ·136 tests.** Tải lại mọi tab để nhận asset/module `v=20`. Workout đang dùng luồng ghi cũ; chưa có Add/Remove/Replace/Reorder khi đang tập. Structure mới chỉ là foundation cho bước sau; bản ghi structured nhập từ backup tạm thời chỉ xem được. Migration giữ nguyên lịch sử/draft cũ, không tự gán ownership. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema 8 · V4 Phase 4B-2 · 167 tests.** Tải lại mọi tab để nhận asset/module `v=23`. Start mới và logging dùng ownership theo occurrence của buổi tập; lịch sử có kiểm tra xung đột trước khi ghi đè. Dữ liệu cũ được giữ, chỉ khởi tạo identity khi lưu thay đổi an toàn đầu tiên. Chưa có Add/Remove/Reorder/Replace khi đang tập. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -27,6 +27,15 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 6. Vào **Nhật ký & Ảnh** để đánh dấu trạng thái ngày, thẻ và ghi chú. Ảnh lưu cục bộ trong trình duyệt; ảnh tiến độ có ngày, góc chụp, cân/eo tùy chọn. Ảnh được nén, file gốc trên thiết bị không bị sửa.
 7. Vào **Cài đặt & sao lưu** để chuẩn bị và tải **hai file**: dữ liệu JSON và ảnh JSON. Giữ cả hai file riêng tư. Nếu trình duyệt không tải file dữ liệu, dùng **Sao chép JSON**. Xác nhận cả hai file thực sự tồn tại trước khi xóa dữ liệu trình duyệt.
 8. Để khôi phục, chọn file dữ liệu JSON, xem trước, giữ bản sao an toàn rồi xác nhận thay thế. Sau đó chọn file ảnh, xem trước và thêm ảnh còn thiếu. Nhập ảnh không xóa hoặc ghi đè ảnh hiện có.
+
+## Lưu buổi và xử lý xung đột
+
+- Ngày/ghi chú buổi có nút **Lưu ngày & ghi chú** riêng. Lưu hiệp trước khi đổi chế độ, timer hoặc màn hình; phần đang nhập chưa lưu sẽ chặn thao tác có thể làm mất nó. Hủy sửa hoặc bỏ draft là thao tác rõ ràng.
+- Nếu lần tập trước có cùng bài ở nhiều mục, chọn **lần xuất hiện trước** trước khi dùng số cũ; mục chưa ghi hiệp không có số để điền. Không gộp các mục dù tên/bài giống nhau.
+- Khi tab khác đổi dữ liệu, app giữ input và chặn lệnh stale. Giữ phần cần dùng, đưa ô về giá trị ban đầu rồi mở lại **Buổi đang tập** để review bản mới; tự nhập/lưu lại. App không tự replay hoặc merge.
+- Mở lịch sử tạo candidate riêng; nguồn chỉ thay sau Complete nếu còn giống baseline. Nguồn đổi/xóa: giữ/export candidate, xem/mở lại nguồn mới nhất hoặc xác nhận **Lưu bản sao lịch sử riêng**. Bản sao là một buổi mới và được tính thêm vào thống kê.
+- **Xuất bản nháp riêng / Sao chép bản nháp JSON** chỉ giữ candidate để review; không phải backup toàn bộ app để khôi phục ở Settings. Dùng Settings để xuất backup đầy đủ.
+- Legacy mơ hồ chỉ sửa hiệp có ID duy nhất hoặc ngày/ghi chú; không đoán ownership để ghi hiệp mới. Structured hỏng hoặc schema tương lai bị từ chối.
 
 ## Giới hạn hiện tại
 
@@ -66,7 +75,7 @@ Trạng thái triển khai và giới hạn kiểm tra: [V3_ROADMAP.md](V3_ROADM
 - **Nhật ký ngày:** tìm tên món không dấu ngay form ghi ăn; chọn món gần đây, nhập lượng và lưu. Không có kết quả sẽ khóa nút ghi để tránh lưu nhầm.
 - **Công thức:** mở chi tiết → đổi **Số phần định nấu** để xem lượng nguyên liệu và tổng macro tương ứng. Mỗi phần giữ kích thước và macro gốc; lượng ăn ghi trong form bên dưới là thao tác riêng. **Về lượng gốc** khôi phục preview. Không sửa công thức, lời hướng dẫn hay lịch sử.
 - **Nhật ký & Ảnh:** thẻ gần đây có thể chọn/bỏ, đồng bộ với ô nhập và vẫn cần bấm Lưu. Bố cục trạng thái ngày thích ứng theo chiều rộng màn hình.
-- Mốc lịch sử: Phase1 schema6, Phase2–3 schema7. Hiện Phase4B-1 dùng schema8 additive; không thêm dịch vụ/thư viện runtime. Tải lại mọi tab Tracker để nhận asset/module `v=20`.
+- Mốc lịch sử: Phase1 schema6, Phase2–3 schema7. Hiện Phase4B-2 giữ schema8; không thêm dịch vụ/thư viện runtime. Tải lại mọi tab Tracker để nhận asset/module `v=23`.
 
 Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md). Ý tưởng chưa triển khai: [TRACKER_FEATURE_BACKLOG.md](TRACKER_FEATURE_BACKLOG.md), [TRACKER_PRODUCT_IDEAS.md](TRACKER_PRODUCT_IDEAS.md). Trạng thái và bằng chứng: [V4_ROADMAP.md](V4_ROADMAP.md), [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).
 

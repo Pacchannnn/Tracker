@@ -1,8 +1,12 @@
 # Tracker — Phase 4A: Flexible Live Workout Contract
 
-05/10/2026 · **CONTRACT APPROVED. 4B-1 FOUNDATION IMPLEMENTED / TESTED; 4B-2–4 NOT IMPLEMENTED. Phase4 NOT DONE.**
+05/10/2026 · **CONTRACT APPROVED. 4B-1 FOUNDATION + 4B-2 CUTOVER IMPLEMENTED / TESTED; 4B-3/4 NOT IMPLEMENTED. Phase4 NOT DONE.**
 
-### Implementation evidence — 4B-1 boundary
+### Implementation evidence — 4B-2 boundary (05/10/2026)
+
+Approved semantics below remain unchanged. Schema8 stays8. Runtime Start UUID/frozen snapshots, atomic safe legacy activation, canonical slot writers/readers, revision + full reviewed envelope inside Web Locks, same-tab queue/epoch, exact historyEditBase reopen/Complete CAS and explicit recovery copies are implemented. Ambiguous raw ownership is preserved; malformed structured imports fail closed. Baseline136 →167 passing tests;43 JS syntax checks; browser A–G, real two-tab stale/CAS conflicts and320/360/390 widths. Review found and fixed dirty-form rerender loss and empty-duplicate Quick Fill selection. See current report for evidence and limits. **STOP before4B-3 Add/Remove/Reorder and4B-4 Replace.** Audit and older implementation sections below describe their historical checkpoint, not current runtime.
+
+### Historical implementation evidence — 4B-1 boundary
 
 Approved product semantics below remain unchanged. Current request explicitly limits activation:7→8 does **not** materialize/enrich live drafts or completed history. Constructors/materializers/validators/adapters are foundation APIs only; current Start and all live writers stay legacy until4B-2. New historyEditBase supports model/backup validation but is not added to runtime history edits yet. Imported structured/non-null baseline drafts are read-only; old writer handlers have generation compatibility guards. **BRIDGE ONLY — NOT4B-2 CUTOVER.** Migration/backup chain1–8,136tests, current Original/custom/one-off/reopen/Builder/picker browser regressions verified. Full evidence in V4_IMPLEMENTATION_REPORT.md; code09676c2. Sections using future wording are the approved design for remaining milestones, not a claim of implemented runtime actions.
 

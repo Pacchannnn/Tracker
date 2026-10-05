@@ -1,5 +1,5 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-05 (V4 Phase 4B-1 identity foundation)
+Updated: 2026-10-05 (V4 Phase 4B-2 runtime cutover)
 
 CURRENT PROJECT STATE
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -83,7 +83,7 @@ Each step includes model / reasoning guidance, verification and done condition.
   Research current official hosting docs, storage/SQLite/privacy/HTTPS/backup
   before selecting a provider. No deployment required for local usage.
 
-CURRENT IMPLEMENTATION STATUS
+HISTORICAL PHASE 2 IMPLEMENTATION STATUS
 CURRENT PHASE: V4 phases0/1/2 complete in verified local scope.
 CURRENT STEP: Phase 2 handoff; STOP per user instruction, no Phase3 work.
 V4_ROADMAP.md remains the authoritative detailed roadmap.
@@ -134,7 +134,7 @@ NEXT / DECISIONS NEEDED: approve Phase4 live-edit/slot identity migration contra
 MODEL / REASONING: GPT-6.1-sol / high for identity and migration work.
 BACKLOG: existing Phase4-8; no backend/AI/photos work added in this phase.
 
-V4 PHASE 4B-1 STATUS — 2026-10-05
+HISTORICAL V4 PHASE 4B-1 STATUS — 2026-10-05
 CURRENT PHASE: 4A contract approved; 4B-1 IMPLEMENTED/TESTED; Phase4 NOT DONE.
 CURRENT STEP: foundation handoff; STOP before4B-2. Main roadmap V4_ROADMAP.md.
 COMPLETED: additive7->8, identity validators/adapters/materialization, ambiguous
@@ -153,3 +153,30 @@ KNOWN LIMITATIONS/BUGS: normal legacy history overwrite still lacks new CAS unti
 NOT VERIFIED: physical phone/Safari/screen reader/real quota/large photo/download.
 BACKLOG:4B-3 Add/Remove/Reorder,4B-4 Replace, Phase5-8. Photos DB/format1 unchanged.
 CODE CHECKPOINT:09676c2 main; no push. Full evidence V4_IMPLEMENTATION_REPORT.md.
+
+V4 PHASE 4B-2 — CURRENT STATUS — 2026-10-05
+CURRENT PHASE:4A approved;4B-1/2 DONE; Phase4 NOT DONE; schema8 unchanged.
+CURRENT STEP: handoff; STOP before4B-3/4. Roadmap V4_ROADMAP.md.
+[DONE]1 Runtime command/store: atomic UUID Start and safe legacy first write;
+ canonical slot ownership, exact edits/deletes/date/notes, queue/epoch/guards.
+ Depends4B-1. Model GPT-6.1-sol/high. Done: no mixed ownership or stale replay.
+[DONE]2 Readers/focus/QuickFill: order/active/saved existence, duplicate choices,
+ including empty duplicates. Depends1. Same model/high. Done: no inferred owner.
+[DONE]3 History reopen/Complete CAS and confirmed copy/export/latest recovery.
+ Depends1. Same model/high. Done: source unchanged until successful atomic CAS.
+[DONE]4 Runtime UI/recovery/Phase2/3 integration and dirty-form protections.
+ Depends1-3. Same model/high. Done: input preserved on failed/stale operations.
+[DONE]5 Tests/review/mobile/docs/checkpoints. Depends1-4. Same model/high.
+ TESTED136->167 tests;43JS syntax/diff; actual A-G synthetic8774; real two-tab
+ source changed/deleted and stale guards;320/360/390 no overflow; keyboard;
+ quota/corruption automated; browser metadata/reload/unknown/ambiguous/backup.
+IN PROGRESS:none. BLOCKERS:none in approved scope. KNOWN BUGS:no remaining
+ failure found in tested flows; physical phone/Safari/reader/real quota/huge
+ photo backup and IAB completed-download unverified. Photos unchanged.
+DECISIONS NEEDED: request4B-3 when ready; backend/remote AI remain DECIDE LATER.
+NEXT:4B-3 Add/Remove/Reorder with current-candidate guard, slot/order ownership,
+ dirty-input gates, race/legacy/history/backup/mobile tests; no Replace until4B-4.
+MODEL/REASONING:GPT-6.1-sol/high. No automatic template promotion or push.
+BACKLOG:4B-4 Replace; remaining Phase5-8; existing feature backlog unchanged.
+CODE CHECKPOINT:41dc047; docs checkpoint follows in git log/handoff.
+Private docs stay ignored.

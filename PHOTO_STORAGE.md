@@ -1,8 +1,8 @@
 # Ảnh cục bộ và sao lưu
 
-## V4 Phase 4B-1 — schema8 compatibility
+## V4 Phase 4B-2 — schema8 runtime compatibility
 
-Data JSON now uses schema8; raw/wrapped1–7 migrate additively. Identity/session snapshots/historyEditBase are preserved losslessly and malformed structure fails validation. Photo IndexedDB version1 and photo backup format1 are unchanged; no image migration or new photo feature. Full backup still requires two files. Existing photo bytes/owners/rollback tests pass; this milestone's browser roundtrip checks data JSON only.
+Data JSON remains schema8, preserving mixed legacy/structured sessions and editing baselines; raw/wrapped1–7 migrate additively. Identity/session snapshots/historyEditBase are preserved losslessly and malformed structure fails validation. Photo IndexedDB version1 and photo backup format1 are unchanged; no image migration or new photo feature. Full backup still requires two files. Existing photo bytes/owners/rollback tests pass; this milestone's browser roundtrip checks data JSON only.
 
 ## Quyết định lưu trữ
 

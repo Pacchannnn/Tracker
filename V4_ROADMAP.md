@@ -8,7 +8,18 @@
 
 ## Trạng thái và quy ước
 
-### Phase 4B-1 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
+### Phase 4B-2 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
+
+Verified baseline: clean main54d0fa5, schema8,136/136 tests. Approved4B-2 only:
+1. [DONE] Runtime command/store tests → atomic Start/legacy activation, exact set writers, revision/full-baseline guards and same-tab queue/epoch.
+2. [DONE] Canonical focus/readers and explicit previous-occurrence selection; history baseline CAS/copy recovery tests.
+3. [DONE] Replace4B-1 compatibility bridge with guarded runtime UI; keep Phase2/3/source templates unchanged.
+4. [DONE] Full/syntax/diff checks; synthetic browser flows A–G;320/360/390 affected UI; docs and separate local code/docs checkpoints.
+Risks: old live/history drafts have no provable baseline; ambiguous records must stay legacy; queued commands must not replay after restore; revision alone cannot detect old writers/restored state. Schema stays8. STOP before4B-3/4; no push.
+
+Results:136→167 tests pass;43 JS syntax/diff checks; browser A–G on8774, real two-tab stale/CAS source changed/deleted, metadata/reload, unknown/ambiguous recovery, Phase2/3 regression and320/360/390 no overflow. Review fixes: prevent dirty-form loss and require occurrence selection when a duplicate has no saved sets. Asset23; no schema/photo changes. Separate local code/docs checkpoints; no push.
+
+### Historical Phase 4B-1 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
 
 Baseline verified: schema7, 82/82 tests, clean main at df8418a. Approved scope:
 1. [DONE] Identity helpers + strict validators; deterministic legacy candidates and explicit ambiguity.
@@ -20,9 +31,9 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–3 hoàn tất;4A contract approved;4B-1 foundation IMPLEMENTED/TESTED; Phase4 NOT DONE;4B-2 NOT IMPLEMENTED.
-- **CURRENT STEP:** bàn giao4B-1, schema8; STOP trước4B-2 theo yêu cầu.
-- **BLOCKERS:** không có cho4B-1; runtime identity activation chờ task4B-2 riêng.
+- **CURRENT PHASE:**0–3 hoàn tất;4A approved;4B-1/2 IMPLEMENTED/TESTED; Phase4 NOT DONE;4B-3/4 NOT IMPLEMENTED.
+- **CURRENT STEP:** bàn giao4B-2, schema8; STOP trước4B-3/4 theo yêu cầu.
+- **BLOCKERS:** không có trong scope4B-2; structural controls chờ task tiếp theo.
 - **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live-edit semantics đã duyệt ở contract; chưa triển khai controls.
 - **KNOWN LIMITATIONS:** live structural editing chưa có; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
@@ -125,13 +136,13 @@ Selection/filter are transient (Cancel/leave/reload drops unconfirmed picks, exp
 
 ## Phase 4 — flexible live workout
 
-**4A APPROVED;4B-1 IMPLEMENTED/TESTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md). Schema8 additive and identity model/helpers/backup verified; live writer cutover pending4B-2. Phase4 NOT DONE. No structural UI yet. Evidence/report and code09676c2.
+**4A APPROVED;4B-1/2 IMPLEMENTED/TESTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md). Schema8 additive foundation and guarded runtime cutover verified. Phase4 NOT DONE. No structural UI yet. Evidence in current V4_IMPLEMENTATION_REPORT.md and local Git checkpoints.
 
 **Goal/value:** máy bận hoặc đổi ý vẫn tập/log được. **Depends:** phase3, approved slot identity/scoping design. **Data:** session slot IDs trong sets; immutable completed history; existing exerciseIndex compatibility. **Migration:** additive identity mapping cho dữ liệu cũ, validate backup và original/custom sessions; không đổi exerciseName snapshot theo template.
 
 **Remaining UI per approved contract:** “Chỉ hôm nay”, Add/Remove/Reorder in4B-3; Replace closes old+new continuation in4B-4. No source-template promotion/undo/event sourcing in these milestones; template promotion belongs to later backlog.
 
-Remaining tests: guarded canonical log/edit/delete/focus/Complete/history CAS in4B-2; then log→reorder ownership unchanged and partial-log replacement/source-stale/backup in4B-3/4. No copytemplate gate in this approved scope. Runtime activation and user approval of next task precede structural controls.
+Remaining tests: log→reorder ownership unchanged, Add/Remove confirmation/dirty-form/stale commands in4B-3; partial-log replacement/source-stale/backup in4B-4. No copytemplate gate in this approved scope. Runtime activation is complete; next task authorization precedes structural controls. Model/reasoning: GPT-6.1-sol/high for4B-3 and4B-4; no template promotion or Replace in4B-3.
 
 ## Phase 5 — My Day và journal retrieval
 
