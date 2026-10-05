@@ -8,7 +8,20 @@
 
 ## Trạng thái và quy ước
 
-### Phase 4B-3 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
+### Phase 4B-4 execution — 05–06/10/2026 (IMPLEMENTED / TESTED; STOP)
+
+Approved4A contract + explicit4B-4 request define this milestone. Verified clean main08e533f, schema8,180/180 tests. Continue on main; local code/docs checkpoints, no push.
+
+1. [DONE] Replace runtime + tests: remaining from exact source ownership; accepted raw source prescription retained (including ranges/unilateral/unknown); new candidate notes/setup; atomic close+successor, cap100, insert-after/link, chain/Remove/corrections. Depends4B-3. Model GPT-6.1-sol/high. Done: zero/partial/edited/complete/chain invariants pass.
+2. [DONE] Shared Picker live Replace review + existing dirty gate; current/active exclusions, edited N new sets, fresh review after Save, successor focus, link-based live/history labels. Depends1. Same model/high. Done: no Builder semantic change or copied performance/setup.
+3. [DONE] Full queue/multitab/candidate/quota/backup/consumer/source regression; actual browser A–I +320/360/390/keyboard using synthetic origin only. Depends1–2. Same model/high. Done: critical stale remaining2→1 rejects, no half-close, old/new ownership exact.
+4. [DONE] Independent review/fixes, fresh full tests/syntax/diff; update evidence/docs/private summary, code/docs checkpoints. Depends1–3. Same model/high. Mark Phase4 implemented/tested only after all30 gates pass. STOP before Phase5 My Day.
+
+Risks: never reuse old slot identity or transfer sets; candidate/source review must remain exact through queue/lock; no target0, schema9, Undo, template promotion, source edits or backend/AI.
+
+Results:180→197/197 tests,47 JS syntax checks and clean diff;17 new groups, original180 assertions retained. Browser A–I synthetic8778, two actual tabs remaining2→1 stale/review/retry, opposite stale log, injected storage failure exact state, actual export old-set/source isolation and chain restore.320/360/390 iframe picker/review/edited target/dirty/error/history; successful successor focus at each width,48px Confirm above nav. Review fixed decimal/whitespace timer parsing and preserved untouched imported prescriptions. Standalone console clean; iframe harness observer error recorded as limitation. Code61de602; separate docs checkpoint. All30 gates passed; Phase4 IMPLEMENTED / TESTED. STOP before Phase5 My Day.
+
+### Historical Phase 4B-3 execution — 05/10/2026 (IMPLEMENTED / TESTED; STOP)
 
 Approved contract/user request is the design; no new product decision. Baseline clean main74d9dac, schema8,167/167 tests. Inline execution on user-selected main; no push.
 
@@ -44,11 +57,11 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–3 hoàn tất;4A approved;4B-1/2/3 IMPLEMENTED / TESTED; Phase4 NOT DONE;4B-4 NOT IMPLEMENTED.
-- **CURRENT STEP:** bàn giao4B-3, schema8; STOP trước4B-4 Replace. IN PROGRESS: none.
-- **BLOCKERS:** không có trong scope4B-3. KNOWN BUGS: không còn lỗi trong các luồng đã kiểm tra; không bảo đảm mọi thiết bị/path.
-- **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live Add/Remove/Reorder đã triển khai; Replace cần task riêng.
-- **KNOWN LIMITATIONS:** chưa có live Replace; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
+- **CURRENT PHASE:**0–4 IMPLEMENTED / TESTED;4A approved;4B-1/2/3/4 DONE in documented local scope.
+- **CURRENT STEP:** bàn giao4B-4/Phase4, schema8; STOP trước Phase5 My Day. IN PROGRESS: none.
+- **BLOCKERS:** none in4B-4 scope. KNOWN BUGS: no remaining app bug in exercised flows; iframe harness observer error recorded, see report.
+- **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live Add/Remove/Reorder/Replace đã triển khai. Phase5 cần task riêng.
+- **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
 ## Ràng buộc chung
 
@@ -149,13 +162,11 @@ Selection/filter are transient (Cancel/leave/reload drops unconfirmed picks, exp
 
 ## Phase 4 — flexible live workout
 
-**4A APPROVED;4B-1/2/3 IMPLEMENTED / TESTED** (05/10/2026). Xem [PHASE4_LIVE_WORKOUT_CONTRACT.md](PHASE4_LIVE_WORKOUT_CONTRACT.md). Schema8 additive foundation and guarded runtime cutover verified. Phase4 NOT DONE. Live Add/Remove/Reorder available only for valid open canonical sessions; history structural edits remain disabled. Evidence in current V4_IMPLEMENTATION_REPORT.md and local Git checkpoints.
+**IMPLEMENTED / TESTED** (06/10/2026):4A approved;4B-1 identity8,4B-2 runtime/CAS,4B-3 Add/Remove/Reorder,4B-4 Replace done. Approved [contract](PHASE4_LIVE_WORKOUT_CONTRACT.md) unchanged; code61de602 and current [37-item report](V4_IMPLEMENTATION_REPORT.md) record evidence. Schema8/photo1 retained.
 
-**Goal/value:** máy bận hoặc đổi ý vẫn tập/log được. **Depends:** phase3, approved slot identity/scoping design. **Data:** session slot IDs trong sets; immutable completed history; existing exerciseIndex compatibility. **Migration:** additive identity mapping cho dữ liệu cũ, validate backup và original/custom sessions; không đổi exerciseName snapshot theo template.
+Chỉ buổi hôm nay: Add review, Remove tombstone, active Reorder, Replace closes old + appends successor with reviewed remaining/prescription. No source-template promotion, Undo/event sourcing/backend/AI/catalog expansion. Historical ownership and source isolation preserved; history structural controls absent.
 
-**Implemented4B-3:** “Chỉ thay đổi buổi hôm nay”, Shared Picker Add/review, tombstone Remove and active-position Reorder. **Remaining4B-4:** Replace closes old+new continuation. No source-template promotion/undo/event sourcing in these milestones; template promotion belongs to later backlog.
-
-Completed4B-3 tests: atomic Add/100-cap/current definition, tombstone logs, active-order ownership, dirty gates, queue/multi-tab races, history/source/backup/mobile. Remaining4B-4 tests: partial-log replacement, predecessor/successor ownership, source-stale/backup and review/cancel/mobile. No copytemplate gate. STOP before Replace; separate user task required. Model/reasoning: GPT-6.1-sol/high for4B-3 and4B-4; no template promotion or Replace in4B-3.
+All30 final gates pass:197 tests (180 existing),47 syntax checks, browser0/partial/edited/complete/chain/dirty/race/failure/history/backup,320/360/390 iframe no horizontal overflow. Physical devices/Safari/screen-reader/nativequota NOT VERIFIED; harness observer limitation in report. Dependencies and detailed done conditions retained in execution plan above. Model/reasoning used/recommended for comparable runtime work: GPT-6.1-sol/high. **STOP; do not automatically begin Phase5.**
 
 ## Phase 5 — My Day và journal retrieval
 
@@ -189,3 +200,5 @@ Remote AI/cloud/backend **DECIDE LATER**: provider, server keys, exactdata, cost
 - 05/10 Phase 2: baseline60/60 →74/74; schema6→7 additive. Builder3bài/reorder/raw blank/reload/Continue/Discard; Planner result reload/input invalidation; Start/Save cleanup; two real tabs conflict. Paired backup8770→8771 giữ toàn bộ JSON +3 photo metadata/owners/blob/thumbnail bytes. Narrow iframe320/360/390 không overflow. Code checkpoint7c41470; full evidence/limits trong V4_IMPLEMENTATION_REPORT.md. STOP, không Phase3/push.
 
 - 05/10 Phase 3: schema7→7, baseline74/74 →82/82 tests. Shared inline Add/Replace, AND filters, accent search, pending review, Phase2 draft integration. Browser A–E at disposable8772; Add/Replace confirmations at iframe320/360/390, no horizontal overflow. Code checkpoint b0d31cf. See V4_IMPLEMENTATION_REPORT.md for evidence and limits. STOP/no push/no Phase4.
+
+- 06/10 Phase4B-4:180→197 tests; schema8 unchanged;47 syntax checks; code61de602; source/ownership/atomicity/two-tab/backup/mobile evidence in current report. Phase4 complete in tested local scope; STOP before5.

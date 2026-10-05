@@ -2,7 +2,19 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
-## Phase 4B-3 live structural commands — schema8 unchanged
+## Phase 4B-4 live Replace — schema8 unchanged (06/10/2026)
+
+No stored fields or migrations added. Command replace uses the same canonical queue, full reviewed baseline and Web Lock as4B-3. Only valid live active sources with remaining=max(0,target minus saved set count for exact source slotId) qualify. Close old status=replaced and append fresh UUID successor atomically; sourceSlotId=null, replacesSlotId=old.id, active snapshot. Insert successor after old in order, retain registry ordinal, old snapshot and every saved set. One-successor/cycle/dangling validators remain strict; cap100 counts all tombstones and imports>100 remain intact.
+
+Review defaults sets to remaining and retains raw source reps/RIR/rest verbatim, including unilateral/ranges/unknown/imported prescription text. Edited fields use Builder numeric bounds and documented reps/rest grammar. Internal placeholder validation values for unchanged text never enter stored snapshots. Candidate notes/setup come from its exact accepted definition, never predecessor setup/performance. Latest candidate definition, availability and setup are compared under the lock; source plan deletion does not invalidate frozen session snapshots. Edited target differs from remaining → N hiệp mới. Decimal minute/whitespace rest is parsed accurately by the existing timer helper; minimum range behavior remains.
+
+Dirty Save before opening requires choosing Replace again; Save after opening marks old review unusable and offers explicit Duyệt lại phần còn lại. Fresh review rebuilds latest remaining and requires choosing/confirming again. Cancel removes picker/recheck panel while keeping unrelated unsaved input. Same-tab queued stale structural intents and downstream log/Complete reject; no merge/replay. Failure adds zero persisted revisions; success adds one.
+
+Chains A→B→C budget only immediate predecessor. Remove successor or correct/delete closed old set never reopen ancestors or rebudget accepted successor. Live/history Thay cho labels use replacesSlotId, independent of display order. Zero-log predecessors remain structural rows without performance. History editor has no structural controls; exact corrections/date-note/CAS/recovery retained. Quick Fill uses exact catalog occurrence selection and does not copy predecessor logs to a different successor. Backup8 roundtrips complete IDs/order/status/links/sets/revision; photos DB1/format1 unchanged. Original PROGRAM, private master, plans, activePlanId, custom definitions and unrelated domains remain separate.
+
+Verification:180→197 tests,47 syntax checks, exact exported browser comparisons and chain restore, real two-tab remaining2→1 stale rejection,320/360/390 iframe UI. Code61de602. Detailed limits in V4_IMPLEMENTATION_REPORT.md. Phase4 implemented/tested; STOP before Phase5.
+
+## Historical Phase 4B-3 live structural commands — schema8 unchanged
 
 No entity/field/schema migration is added. js/session-structure.js validates live structure eligibility; session-runtime persists every structural command through the existing queue/epoch/updateData/Web Lock. A structured draft with a history editing baseline (including unknown), an ID already in completed history, raw legacy ownership or malformed identity cannot structurally mutate. Legacy first-write activation remains the4B-2 path.
 
@@ -34,7 +46,7 @@ Previous performance uses exact exercise ID. Original legacy fallback requires e
 
 Reviewed independent recovery copies get new session/slot/set UUIDs and remap order, set owners and replacement links; baseline is stripped. Source is not resurrected or overwritten. Raw ambiguous candidates cannot be converted by guessing: preserve/export or explicitly reopen a valid source. Candidate exports are diagnostic/review files, not full Settings backups.
 
-Strict structure applies at load/write/backup. Legacy load/write validation remains compatible; old strict backup checks still handle legacy records. Data backup8 preserves structures/baselines losslessly and accepts raw/wrapped1–7; malformed structure/future schema/wrapper mismatch reject without replacing disk. Photo DB1/format1 unchanged. See PHASE4_LIVE_WORKOUT_CONTRACT.md and V4_IMPLEMENTATION_REPORT.md for evidence and the remaining4B-4 boundary.
+Strict structure applies at load/write/backup. Legacy load/write validation remains compatible; old strict backup checks still handle legacy records. Data backup8 preserves structures/baselines losslessly and accepts raw/wrapped1–7; malformed structure/future schema/wrapper mismatch reject without replacing disk. Photo DB1/format1 unchanged. See PHASE4_LIVE_WORKOUT_CONTRACT.md and V4_IMPLEMENTATION_REPORT.md for evidence and historical4B boundaries.
 
 ## Existing domains (unchanged)
 

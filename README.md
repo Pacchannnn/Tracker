@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · V4 Phase4B-3 · 180 tests.** Tải lại mọi tab để nhận asset/module `v=26`. Đã có Add/Remove/Reorder trong buổi đang tập hợp lệ; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử vẫn có guard/CAS và không có structural controls. Live Replace chưa triển khai. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · Phase4 Flexible Live Workout IMPLEMENTED / TESTED · 197 tests.** Tải lại mọi tab để nhận asset/module `v=28`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo 37 mục](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -31,6 +31,7 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 ## Chỉnh bài trong buổi hôm nay
 
 - **Thêm bài:** dùng Shared Picker tìm/lọc/chọn nhiều bài, duyệt/chỉnh hiệp/reps/RIR/nghỉ rồi Confirm. Mặc định2 hiệp,8–12,RIR2,90s là cấu hình chỉnh được; không lấy từ MASTER_PLAN và không chọn tạ tự động. Lựa chọn/review chưa Confirm sẽ mất khi hủy/rời trang. Bài đang active bị chặn trùng; tối đa100 mục kể cả bài đã dừng.
+- **Đổi phần còn lại:** chọn một bài trong Shared Picker, duyệt số hiệp còn lại/reps/RIR/nghỉ/ghi chú rồi xác nhận. Luôn giữ mục cũ với logs riêng và tạo mục mới; không chuyển tạ hoặc logs. Nếu đổi target khác remaining, review ghi rõ **N hiệp mới**. Ghi đủ hiệp thì Replace bị khóa; dùng Thêm bài nếu muốn tập thêm. Bỏ successor không mở lại bài cũ. Sau Save trong dirty gate phải duyệt lại remaining; không tự replay.
 - **Bỏ bài:** xác nhận giữ mọi hiệp đã ghi. Bài vẫn hiện **Dừng bài**, không ghi thêm vào đó; có thể sửa đúng hiệp cũ. Thêm lại cùng bài tạo mục mới, không mở lại mục cũ.
 - **Di chuyển lên/xuống:** đổi vị trí với bài active kế bên; vị trí bài inactive giữ nguyên. Hiệp đã ghi thuộc cùng mục. Timer đang chạy giữ label/nghỉ đã chọn; không hứa khôi phục timer sau reload.
 - Có hiệp chưa lưu: **Quay lại**, **Lưu hiệp** (chỉ khi hợp lệ) hoặc **Bỏ phần nhập chưa lưu**. Lưu qua dialog chỉ lưu hiệp; phải duyệt/chọn thao tác cấu trúc lại. Ngày/ghi chú/setup đang sửa phải lưu/hủy theo flow hiện có trước.

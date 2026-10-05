@@ -1,3 +1,84 @@
+# Tracker V4 — Phase4B-4 Live Replace / Phase4 release
+
+06/10/2026 · **4A approved;4B-1/2/3/4 IMPLEMENTED / TESTED. All30 final gates passed in documented local scope. STOP before Phase5 My Day.** Work started05/10, completed06/10. Schema8 stays8. Code checkpoint61de602; separate docs checkpoint follows in local main Git log. No push/fetch/reset/history rewrite. Older reports below are historical.
+
+## 4B-4 report — all37 requested items
+
+1. **Baseline → final tests:** clean main08e533f,180/180 →197/197,0failed/skipped/todo.17 new test groups in tests/session-replace.test.js; existing180 tests/assertions retained. TDD RED missing Replace helpers/command → GREEN; new imported-prescription and decimal/whitespace timer regressions reproduced before fixes.
+2. **Schema:**8→8; no entity/field/migration added. Existing1–8 migration/legacy/backup suite passes. Photo IndexedDB/backup format1 unchanged.
+3. **Replace architecture:** existing canonical command/store queue + Web Lock; session-structure validates proposal, runtime clones/validates complete candidate, increments and persists once. Always close-old + append successor, including0logs. No source/template write.
+4. **Replace0:** old ID/catalog/source/ordinal/snapshot/order entry retained, status replaced; fresh successor UUID/sourceSlotId=null/replacesSlotId=old.id/active. No fabricated sets. Cancel/Escape returns focus and writes nothing; browser reopen/Confirm/reload retained0/3 old row.
+5. **Partial:** actual UI logged25kg and27kg source sets, then default successor1, logged31kg there, reload/Complete. Actual exports deep-equal every old set and old snapshot except closed status; new set has successor owner. Earlier browser run also exercised explicit old history set correction25→26 separately.
+6. **Remaining:** max(0,source.snapshot.sets minus saved count with exact source.slotId). Count includes saved overrun; no display-position/setNumber/max/ancestor aggregation.3target/2saved→1;3/3 and3/4→0.
+7. **Successor review:** raw source reps/RIR/rest retained, including ranges/unilateral/unknown/imported free text. User may edit target/prescription/notes before Confirm; edited values use current Builder bounds and documented text grammar. Source snapshot never rewritten. Unchanged imported values are retained, not coerced to internal validation placeholders.
+8. **Edited target labels:** remaining1→accepted3 says **3 hiệp mới**, with source remaining1. Browser Confirm/log/reload/Complete retained3target and old2logs. Empty/invalid prescription rejected, no automatic volume addition.
+9. **Load/setup isolation:** successor set fields start blank, including after previous performance exists; no auto Quick Fill from predecessor. New candidate definition notes/setup accepted separately, latest equality guarded. Old setup/technique shown read-only; old actual load/reps/RIR untouched.
+10. **Shared Picker:** same Phase3 module with optional liveReplace metadata/review callback. Single pending choice, accent-insensitive search, muscle/equipment/movement AND, ranking/alternatives, manual choice, clear/no-results/selected state retained. Current source omitted; other active catalog IDs disabled. Closed IDs can create distinct occurrences. No equivalence/medical claim.
+11. **Candidate changes:** exact definition/setup snapshot captured on review; archived/deleted/edited/setup-changed candidate rejects inside locked mutation. Failed review retained safely; user must reopen/review latest. Automated custom/long Vietnamese/missing-equipment cases pass; missing equipment appears unfiltered and excludes equipment-specific filters.
+12. **Registry/order:** successor appended at registry end; existing ordinal and set.exerciseIndex unchanged. Insert new ID immediately after old in order; later active Reorder can break adjacency without breaking identity. Cap100 counts all active/removed/replaced entries;99→100 allowed,100/101 extension rejected without truncating imports.
+13. **replacesSlotId:** exact old UUID link, no positional inference. Existing validators reject dangling links/cycles/duplicate successor; whole invalid candidate fails closed without repair/deletion.
+14. **Chain A→B→C:** automated and actual browser: A3/log1→B2/log1→C1; each catalog/snapshot/log owner independent. C remaining only from B. Reorder/reload keeps chain; link-based labels follow predecessor despite nonadjacent rows.
+15. **Remove successor:** C removed while A/B remain replaced; all links/logs/snapshots kept. No reopening. Closed old set correction/delete does not rebudget/reopen successor. To train old exercise again, Add creates fresh occurrence.
+16. **All complete:** Replace disabled with “Đã ghi đủ hiệp; dùng Thêm bài nếu muốn tập thêm.” No target0. Browser3saved showed disabled Replace; Add/Confirm still worked. Overrun4 automated.
+17. **Dirty gate:** valid Back/Save/Discard; invalid Back/Discard, no Save. Actual Back/Escape retained input, explicit Discard reset only unsaved set fields. Save before picker requires choosing Replace again; Save during picker marks review stale, keeps fields, offers Duyệt lại phần còn lại. No old intent replay. Cancel also removes recheck panel without clearing unrelated fields. Existing dirty metadata/setup block behavior retained.
+18. **Focus/timer:** successful Replace focuses successor UUID and empty weight input; nextIncomplete follows active order. Verified focus at320/360/390, scroll into view. Existing running timer kept Pulldown/2min or Fixture row/1.5min label through Replace; explicit future successor rest action used30s. Decimal1.5min=90s/0.5min=30s and whitespace now parsed correctly; ranges use minimum. No timer reload promise.
+19. **Atomic write/revision:** one Replace command, one cloned whole-session validation, one persistence write, revision+1. Close/new never split into separate writes. Cancel/validation/stale/quota/unsupported lock/overflow add0 persisted revisions. Disk remains old or full replaced state.
+20. **Same-tab queue:** captured immutable full baseline and candidate, execution check and locked latest guard reused. Queued log→Replace and Replace→Complete reject second stale intent; no lost logs/resurrection/merge. Unrelated concurrent food note retained. Existing log/log serialization behavior unchanged when structure unchanged.
+21. **Multitab tests:** eight two-client first-writer pairs: log/Replace,Replace/log,Reorder/Replace,Remove/Replace,Replace/Complete,Complete/Replace,Discard/Replace,Start-switch/Replace. Second stale rejects, exact winning bytes preserved. Separate same-tab pairs cover remaining required sequences. Actual standalone tabs also verified stale log after Replace keeps input34kg.
+22. **Critical remaining race:** actual tab B reviewed2remaining, tab A logged second source set; B old Confirm rejected and pending review remained. No target2 successor written. Explicit cancel/reload/review showed1remaining, manual Confirm succeeded. Same scenario automated with disk comparison.
+23. **Failure/quota:** automated quota/storage/overflow/unsupported-lock/raw/unknown/history/malformed/restore-epoch tests preserve bytes/status/revision, no half successor. Owned synthetic browser failure harness threw on fitness setItem; error/no false Saved/pending retained, source active/6registry/revision1; actual exported entire state deep-equal baseline. Disable test fault and explicit new review/Confirm worked. This is simulated persistence failure, not genuine storage pressure.
+24. **History/ownership:** Complete retains final registry/order/status/snapshots/links and exact old/new sets. Actual history2old+1new, chain A/B logs separate;0log predecessor/successor show Chưa ghi hiệp, no fake performance. Thay cho labels read links, not adjacency.
+25. **History editor restriction:** actual reopen had0Add and0Replace; controls function also restricts Remove/Reorder. Exact closed old set correction/Complete exercised; existing history changed/deleted-source CAS/unknown-base/recovery suite passes. Full old CAS browser matrix from4B-2 not repeated this milestone.
+26. **Quick Fill/consumers:** replacement does not redirect predecessor performance; exact occurrence selection remains when same catalog ID repeats, including empty duplicate. exerciseHistory counts old/new saved data once;0logs excluded. Existing progress, focus, Phase2 recovery/backup and Phase3 Builder tests retained. Actual Builder Replace kept same slot/order/2sets/8–12/RIR2/90s and recovered after reload; live semantics separate.
+27. **Source isolation:** automated PROGRAM and every non-session domain deep comparisons; actual before/after exports kept plans/activePlanId/customExercises/planningDraft/settings/Nutrition/Journal/Progress and prior history unchanged. Additional actual custom-source deletion test proves frozen snapshot Replace/Complete still work after plan removed. Private MASTER_PLAN and program definitions not edited/staged; private project summary updated separately.
+28. **Backup/restore:** backup8 preserves UUIDs/source IDs/link chain/ordinal/order/status/raw snapshots/sets/revision. Actual Settings clipboard→ignored synthetic file→chooser preview→backup checkbox→explicit restore→reload→clipboard export deep-equal entire chain dataset. Failure exports also exact. Photo format/storage unchanged; full image-blob restore not repeated in this milestone.
+29. **Actually tested browser:** synthetic127.0.0.1:8778 ONLY; A0Cancel/reopen/Confirm/reload, B2old→1new/Complete, Cedited3target/log/reload/Complete, Dcomplete-disabled/Add, Echain/Reorder/reload/Remove, Fvalid/invalid dirty Back/Save/Discard, Gtwo real tabs critical/opposite stale, Hstorage fault and manual retry, IComplete/history reopen/correction. Also no-results/clear, source-isolation exports, chain backup restore, timer and Builder/recovery regression. User8765 origin untouched; no private photos uploaded.
+30. **Actually tested mobile:** same-origin iframe content boxes320/360/390, actual document client/scroll305/305,345/345,375/375 (scrollbars consume15px). All3picker/filter/review/edited target/dirty/history tested; conflict at360/390, valid Save at320, valid Discard360, invalid/noSave390. Separate successful Confirm/focus at all3;48px Confirm above bottom nav, successor weight empty and visible. Screenshots .local/b4-mobile-review.png, b4-mobile-history.png, b4-mobile-success.png. Iframes, not physical phones.
+31. **Actually tested accessibility:** Tab between Confirm/Cancel; Enter/Space activate real buttons, Escape cancels picker/dialog; aria-pressed pending state, disabled complete-source Replace, explicit field labels, visible focus ring, Cancel source focus and success successor focus observed. Confirm viewport bounds at360/390 above nav;320 screenshot and focused weight bounds inspected. No screen-reader/WCAG certification claim.
+32. **Final checks:**197/197 tests,0fail/skipped/todo;47JS syntax checks; git diff --check clean. Actual export audit checks old sets/snapshot/source/prior-history isolation,2+1ownership, failure exactstate and chain restore. Fresh standalone warning/error logs empty. Iframe harness logs captured a MutationObserver.observe Node error; app/harness source contains no MutationObserver. Browser instrumentation is suspected, not proven; do not claim every iframe console clean.
+33. **Files:** created tests/session-replace.test.js. Behavior edits js/session-structure.js,session-runtime.js,live-workout-ui.js,exercise-picker-ui.js,session-readers.js,session-ui.js,workout.js. index/import URLs26→28; remaining JS edits cache-only. Updated README,DATA_MODEL,PHASE4_LIVE_WORKOUT_CONTRACT evidence,V4_ROADMAP,this report,FULL_STEP_BY_STEP_GUIDE and ignored private TONG_KET. No CSS/dependency/schema/program/photo logic changes. All synthetic fixtures/exports/screenshots ignored under .local.
+34. **Git:** local main code61de602; separate docs checkpoint in Git log/final handoff. Final tracked status inspected after commit. No push/fetch/reset/branch split/history rewrite; no private master/summary/test data staged. Local origin/main reference is only a cached comparison, not remote verification.
+35. **NOT VERIFIED:** physical devices/mobile Safari/other browser engines, screen reader, genuine nativequota/storage pressure, crash/power-loss durability, huge photo backup, direct IAB downloaded-file completion and every possible form/candidate timing. Clipboard file/restore is verified. Iframe observer error attribution remains unproven; standalone exercised app has no captured errors. No deployment/backend/remoteAI performed.
+36. **Phase4 DONE gate:** all30 required gates passed in this verified local scope (matrix below);4Aapproved +4B-1/2/3/4 implemented/tested. No claim that NOT VERIFIED device scenarios passed. No open identity/ownership/atomicity blocker found after review fixes.
+37. **Exact next step:** Phase5 My Day + journal retrieval proposal/design per V4_ROADMAP, after user request and home/subview decision. Recommend GPT-6.1-sol/high for date/source integration. **STOP here; no Phase5 code**, Nutrition6/WeeklyReview/backend/AI/PWA/Undo/catalog/template promotion started.
+
+## 30-gate release evidence
+
+| Gate | Result / evidence |
+| --- | --- |
+|1 Schema8 |PASS; model/migration suite unchanged |
+|2 Close-old + successor |PASS; Replace0/partial runtime + browser |
+|3 Same0/partial rule |PASS; independent UUID/logs in both |
+|4 Old identity immutable |PASS; deep snapshot/ID/ordinal comparison |
+|5 Old sets never move |PASS; unit and actual export deep equality |
+|6 Fresh successorUUID |PASS; UUID test + exported owners |
+|7 Correct link |PASS; chain/link validators |
+|8 Insert after old |PASS; exact order test |
+|9 Remaining correct |PASS; partial/overrun/chain/race |
+|10 Edited label |PASS; browser1→3 hiệp mới |
+|11 No load/setup copy |PASS; independent candidate review/empty form |
+|12 Complete disabled |PASS; browser3saved + automated overrun4 |
+|13 A→B→C |PASS; browser/backup/test |
+|14 Remove no reopen |PASS; browser old A/B stay closed |
+|15 One successor |PASS; invalid duplicate chain rejected |
+|16 Dirty gate |PASS; valid/invalid/manual fresh review |
+|17 Atomic |PASS; one-write/runtime/storage failure |
+|18 Revision+1 |PASS; cancellation/failure+0 persisted |
+|19 Stale budget reject |PASS; real two tabs2→1 |
+|20 Same-tab queue |PASS; first command wins, second stale |
+|21 Multitab |PASS;8pairs + actual both directions |
+|22 No half-close |PASS; exact failure export/state |
+|23 History owners |PASS; actual2old+1new/chain |
+|24 History controls absent |PASS; reopen restriction/correction |
+|25 Backup exact |PASS; actual chain restore deep-equal |
+|26 Sources unchanged |PASS; full domain compare + deleted custom source |
+|27 Mobile3widths |PASS; actual iframe UI/focus/nooverflow |
+|28 Full suite |PASS;197/197 +47syntax |
+|29 No template promotion |PASS; source isolation + scope diff |
+|30 No Phase5 |PASS; no implementation diff;STOP |
+
+## Historical Phase4B-3 report (older checkpoint)
+
 # Tracker V4 — Phase 4B-3 Live Add / Remove / Reorder
 
 05/10/2026 · **4B-3 IMPLEMENTED / TESTED. Schema8 unchanged. Phase4 NOT DONE.4B-4 NOT IMPLEMENTED; STOP.** Local main; code checkpoint fe3f8b9, separate docs checkpoint in Git log. No push/fetch/reset. Older reports below are historical evidence.

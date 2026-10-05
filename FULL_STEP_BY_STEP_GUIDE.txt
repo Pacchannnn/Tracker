@@ -1,7 +1,10 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-05 (V4 Phase 4B-3 live Add/Remove/Reorder)
+Updated: 2026-10-06 (Phase4B-4 / Phase4 complete; STOP before5)
 
 CURRENT PROJECT STATE
+Phase4 Flexible Live Workout IMPLEMENTED / TESTED;197 tests /47 syntax checks.
+Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
+Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
 photos remain. One localStorage object, schema 8; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
@@ -203,3 +206,26 @@ NEXT:4B-4 live Replace per approved contract (new successor occurrence,
 MODEL/REASONING:GPT-6.1-sol/high. No automatic4B-4 work or template promotion.
 BACKLOG:4B-4 Replace and remaining Phase5-8. Photos DB1/format1 unchanged.
 PRIVATE DATA:MASTER_PLAN/TONG_KET/.local stay ignored. No push/fetch/reset.
+
+V4 PHASE 4B-4 — CURRENT STATUS — 2026-10-06
+CURRENT PHASE:4A approved;4B-1/2/3/4 IMPLEMENTED / TESTED. Phase4 DONE in verified scope.
+CURRENT STEP: handoff; STOP before Phase5 My Day. Schema8/photo1 unchanged.
+COMPLETED: atomic close-old + successor; remaining review/edit; no copied logs/load/setup;
+ link-based chain/history; cap100; dirty Save requires fresh review; candidate/baseline guards.
+IN PROGRESS: none. BLOCKERS: none in4B-4.
+TESTED:180->197 fullsuite;47syntax; actual8778 browserA-I, real2tab remaining2->1,
+ opposite stale log, quota simulation exact state, old-set/source deep comparison,
+ chain clipboard-file-preview-confirmed restore exact,320/360/390 iframe UI/keyboard.
+REVIEW FIXES: decimal/whitespace timer and unchanged imported prescription retention.
+KNOWN LIMITATIONS: physical phones/Safari/screen reader/nativequota not verified;
+ iframe harness observer error captured; fresh standalone app logs empty.
+GIT: main code61de602; docs checkpoint in git log. No push/fetch/reset/private staging.
+NEXT: Phase5 My Day + journal retrieval only when user requests. Decide home/subview
+ at approved design review. Dependencies: Phase1/2/4, existing local arrays/photo metadata.
+DONE CONDITIONS/TESTS: date boundaries, empty/multiple source days, missing photos/errors,
+ source navigation/edit updates, no fabricated/cascaded records; detailed V4_ROADMAP.
+MODEL/REASONING: GPT-6.1-sol/high recommended; no automatic Phase5 implementation.
+DECISIONS: home vs subview; remote AI/backend/privacy DECIDE LATER.
+BACKLOG: Phase5/6 food reuse/7 reviews/8 experiments; future template promotion,
+ remote integration/auth/cloud remain separately authorized work. No generic Undo.
+See V4_IMPLEMENTATION_REPORT.md for all37 required report items and30-gate evidence.

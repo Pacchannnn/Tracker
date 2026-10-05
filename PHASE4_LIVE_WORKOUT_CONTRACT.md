@@ -1,8 +1,12 @@
 # Tracker — Phase 4A: Flexible Live Workout Contract
 
-05/10/2026 · **CONTRACT APPROVED. 4B-1 FOUNDATION + 4B-2 CUTOVER + 4B-3 ADD/REMOVE/REORDER IMPLEMENTED / TESTED; 4B-4 NOT IMPLEMENTED. Phase4 NOT DONE.**
+06/10/2026 · **CONTRACT APPROVED. 4B-1/2/3/4 IMPLEMENTED / TESTED. Phase4 IMPLEMENTED / TESTED; STOP before Phase5.**
 
-### Implementation evidence — 4B-3 boundary (05/10/2026)
+### Implementation evidence — 4B-4 release (05–06/10/2026)
+
+Approved contract semantics below are unchanged. Code61de602 adds reviewed close-old + fresh successor Replace to the canonical runtime and the same Shared Picker. Exact old identity/snapshot/logs stay; remaining uses only source slotId count. Insert-after/order/link/chain/cap100/source isolation and one atomic revision/write verified. Edited target says N hiệp mới; candidate notes/setup separate; unchanged raw prescriptions retained. Dirty Save invalidates Replace review rather than updating old budget/replaying; fresh manual review required. Link-based history shows old/new ownership and zero-log rows; history has no structural controls. Review reproduced/fixed decimal/whitespace timer parsing and untouched imported prescription validation.180→197/197 tests,47 JS syntax checks, browser A–I on synthetic8778, critical two actual tabs, exact chain backup restore and320/360/390 iframe checks. Photo DB/format1 and schema8 unchanged. All30 user4B-4 gates passed in documented scope; no template promotion or Phase5 code. See current report for precise evidence and NOT VERIFIED limits, including iframe harness observer error. Older boundary statements below are historical, not current feature status.
+
+### Historical implementation evidence — 4B-3 boundary (05/10/2026)
 
 Approved product semantics below are unchanged. Schema8 stays8; no new photo format. Code fe3f8b9 implements live Shared Picker Add/review/atomic batch/cap100, Remove tombstones and active-position Reorder. History/raw ambiguous/recovery controls remain restricted. Full captured structural baseline is rechecked at queue execution; latest full envelope is guarded inside Web Locks. Saved-set ownership/source snapshots remain unchanged. Dirty valid/invalid inputs require explicit Back/Save/Discard; Save does not auto replay structural intent. Review fixed queue replay, boundary focus, visible badInput and Save focus.167→180/180 tests,46 JS syntax checks, actual browser A–H/all-inactive/two-tab/backup and iframe320/360/390 verified on separate synthetic8776. See current report for precise evidence and NOT VERIFIED limits. **STOP before4B-4 Replace. Phase4 NOT DONE.** Older sections are historical evidence; contract requirements below remain intact.
 
