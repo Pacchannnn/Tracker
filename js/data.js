@@ -1,6 +1,6 @@
-import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=28';
-import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=28';
-import { validateIdentityData, sessionGeneration } from './session-identity.js?v=28';
+import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=29';
+import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=29';
+import { validateIdentityData, sessionGeneration } from './session-identity.js?v=29';
 export const STORAGE_KEY = 'vshape-tracker';
 export const SCHEMA_VERSION = 8;
 export const emptyData = () => ({
@@ -102,7 +102,10 @@ export function validateKnee(raw) {
 
 export function dailyTotals(entries, date) {
   return entries.filter(entry => entry.date === date).reduce((total, entry) => {
-    for (const key of ['calories', 'protein', 'carbs', 'fat']) total[key] += entry.food[key] * entry.servings;
+    for (const key of ['calories', 'protein', 'carbs', 'fat']) {
+      const value = entry.food[key];
+      total[key] = total[key] === null || value === null || value === undefined ? null : total[key] + value * entry.servings;
+    }
     return total;
   }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
 }

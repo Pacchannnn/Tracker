@@ -1,5 +1,5 @@
 const groups = {
-  dashboard: 'today',
+  dashboard: 'today', 'my-day': 'today',
   program: 'training',
   'original-program': 'training',
   'exercise-library': 'training',

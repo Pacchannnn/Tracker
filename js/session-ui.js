@@ -1,8 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=28';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=28';
-import { sessionTitle } from './custom-workout.js?v=28';
-import { restSeconds } from './workout.js?v=28';
-import { createLiveWorkoutUI } from './live-workout-ui.js?v=28';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=29';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=29';
+import { sessionTitle } from './custom-workout.js?v=29';
+import { restSeconds } from './workout.js?v=29';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=29';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;
@@ -226,9 +226,9 @@ export function createSessionUI(context) {
       }), 'danger'))));
     liveUI.appendReview();
   }
-  function historyView() {
+  function historyView(date = null) {
     main.append(panel(h2('Lịch sử tập'), p('Mở lại để sửa. Complete kiểm tra nguồn lịch sử trước khi ghi đè; sửa template không đổi snapshots.', 'hint')));
-    const sessions = [...getData().sessions].sort((a,b) => b.date.localeCompare(a.date));
+    const sessions = getData().sessions.filter(session => date === null || session.date === date).sort((a,b) => b.date.localeCompare(a.date));
     if (!sessions.length) { main.append(panel(p('Chưa có buổi tập nào. Ghi ít nhất một hiệp và Complete.', 'empty'))); return; }
     for (const session of sessions) {
       const box = panel(h3(`${session.date} · ${sessionTitle(session)}`), p(`${session.workoutSnapshot?.planName || 'Original Plan'} · ${session.sets.length} hiệp${session.notes ? ` · ${session.notes}` : ''}`, 'summary'));

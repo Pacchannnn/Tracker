@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=28';
+import { validDate } from './data.js?v=29';
 
 export const PHOTO_CATEGORIES = [
   { value: 'daily', label: 'Nhật ký ngày' },
@@ -75,7 +75,8 @@ const requestResult = request => new Promise((resolve, reject) => {
 });
 
 export async function listPhotos() {
-  const db = await openDb();
+  const db = await openExistingDb();
+  if (!db) return [];
   try {
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly');
@@ -87,13 +88,63 @@ export async function listPhotos() {
 }
 
 export async function getPhoto(id) {
-  const db = await openDb();
+  const db = await openExistingDb();
+  if (!db) return null;
   try {
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readonly');
       const promise = requestResult(tx.objectStore(STORE).get(id));
       tx.oncomplete = () => promise.then(resolve, reject);
       tx.onerror = () => reject(new Error('Không đọc được ảnh cục bộ.'));
+    });
+  } finally { db.close(); }
+}
+
+// Read paths must not initialize an empty photo store just because a day was opened.
+function openExistingDb() {
+  return new Promise((resolve, reject) => {
+    if (!globalThis.indexedDB) { reject(new Error('Không đọc được kho ảnh cục bộ.')); return; }
+    const request = indexedDB.open(DB_NAME, 1);
+    let absent = false;
+    request.onupgradeneeded = () => { absent = true; request.transaction.abort(); };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => absent ? resolve(null) : reject(new Error('Không đọc được kho ảnh cục bộ.'));
+    request.onblocked = () => reject(new Error('Kho ảnh đang được dùng ở tab khác.'));
+  });
+}
+
+export async function listPhotoMetadata() {
+  const db = await openExistingDb();
+  if (!db) return [];
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly'), records = [];
+      const request = tx.objectStore(STORE).openCursor();
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) return;
+        // Existing records co-locate binary handles; project metadata one at a time.
+        // No Blob bytes are decoded, retained, or exposed by this query.
+        const { blob, thumbnail, ...metadata } = cursor.value;
+        records.push(metadata); cursor.continue();
+      };
+      tx.oncomplete = () => resolve(records);
+      tx.onerror = tx.onabort = () => reject(new Error('Không đọc được metadata ảnh.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function getPhotoThumbnail(id) {
+  const db = await openExistingDb();
+  if (!db) return null;
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      let thumbnail = null;
+      const request = tx.objectStore(STORE).get(id);
+      request.onsuccess = () => { thumbnail = request.result?.thumbnail ?? null; };
+      tx.oncomplete = () => resolve(thumbnail);
+      tx.onerror = tx.onabort = () => reject(new Error('Không đọc được ảnh thu nhỏ.'));
     });
   } finally { db.close(); }
 }

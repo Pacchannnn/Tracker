@@ -1,20 +1,21 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=28';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=28';
-import { createDraftStore } from './planning-draft.js?v=28';
-import { navigationGroup } from './navigation.js?v=28';
-import { restSeconds } from './workout.js?v=28';
-import { weeklySummary, exerciseHistory } from './progress.js?v=28';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=28';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=28';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=28';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=28';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=28';
-import { createGymBuilder } from './gym-builder-ui.js?v=28';
-import { createPlannerUI } from './planner-ui.js?v=28';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=28';
-import { createSessionStore } from './session-runtime.js?v=28';
-import { runtimeView } from './session-readers.js?v=28';
-import { createSessionUI } from './session-ui.js?v=28';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=29';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=29';
+import { createDraftStore } from './planning-draft.js?v=29';
+import { navigationGroup } from './navigation.js?v=29';
+import { restSeconds } from './workout.js?v=29';
+import { weeklySummary, exerciseHistory } from './progress.js?v=29';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=29';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=29';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=29';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=29';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=29';
+import { createGymBuilder } from './gym-builder-ui.js?v=29';
+import { createPlannerUI } from './planner-ui.js?v=29';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=29';
+import { createSessionStore } from './session-runtime.js?v=29';
+import { runtimeView } from './session-readers.js?v=29';
+import { createSessionUI } from './session-ui.js?v=29';
+import { createMyDayUI } from './my-day-ui.js?v=29';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -55,6 +56,7 @@ let journalYear = new Date().getFullYear();
 let photoFilter = 'all';
 let editingPhoto = null;
 let photoUrls = [];
+let daySourceContext = null;
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -74,7 +76,7 @@ const h2 = text => node('h2', { text });
 const h3 = text => node('h3', { text });
 const panel = (...children) => node('section', { class: 'panel' }, children);
 const div = (cls, ...children) => node('div', { class: cls }, children);
-const fmt = value => Number.isInteger(value) ? String(value) : Number(value).toFixed(1);
+const fmt = value => value == null ? 'Chưa rõ' : Number.isInteger(value) ? String(value) : Number(value).toFixed(1);
 const id = () => crypto.randomUUID();
 
 function field(label, name, value = '', options = {}) {
@@ -161,6 +163,22 @@ async function sessionAction(operation, success = 'Đã lưu buổi.', { renderA
   catch (error) { message(error.message || 'Không thể lưu buổi.', true); return false; }
 }
 
+const myDay = createMyDayUI({ main, getData: () => data, render, openSource: openDaySource,
+  registerUrl: url => photoUrls.push(url), helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
+function openDaySource(kind, date, recordId) {
+  daySourceContext = { kind, date };
+  if (kind === 'journal' || kind === 'photos') {
+    journalDate = date; journalSection = kind === 'photos' ? 'photos' : 'entry'; editingPhoto = null; photoFilter = 'all'; show('journal');
+  } else if (kind === 'nutrition') {
+    foodDateSelection = { mode: 'selected', date }; nutritionSubView = 'daily'; editingEntry = null; show('nutrition');
+  } else if (kind === 'gym') show('history');
+  else if (kind === 'cardio' || kind === 'knee') {
+    editingCardio = kind === 'cardio' ? recordId : null; editingKnee = kind === 'knee' ? recordId : null; show('gym-logs');
+  } else if (kind === 'checkin') {
+    progressSubView = 'checkins'; editingCheckin = recordId; show('checkins');
+  }
+}
+
 async function mutate(change, success = 'Đã lưu.') {
   try {
     data = await updateData(localStorage, navigator.locks, change);
@@ -176,6 +194,7 @@ function show(next) {
   try { data = loadData(localStorage); }
   catch (error) { message(error.message, true); return; }
   sessionStore.reset();
+  if (next === 'dashboard' || next === 'my-day') daySourceContext = null;
   view = next;
   notice.hidden = true;
   updateNavigation();
@@ -200,7 +219,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 function updateNavigation() {
   const group = navigationGroup(view);
   const titles = { today: 'Hôm nay', training: 'Gym', food: 'Dinh dưỡng', journal: 'Nhật ký & Ảnh', progress: 'Tiến độ', settings: 'Cài đặt & sao lưu' };
-  viewTitle.textContent = titles[group];
+  viewTitle.textContent = view === 'my-day' ? 'Xem ngày' : titles[group];
   trainingNav.hidden = group !== 'training';
   tabs.forEach(tab => {
     const active = tab.dataset.group ? tab.dataset.group === group : tab.dataset.subview === view;
@@ -213,7 +232,8 @@ function render() {
   photoUrls.forEach(url => URL.revokeObjectURL(url));
   photoUrls = [];
   main.replaceChildren();
-  ({ dashboard: dashboardView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
+  if (daySourceContext) main.append(div('my-day-return', button(`← Quay lại Xem ngày · ${daySourceContext.date}`, () => show('my-day'))));
+  ({ dashboard: dashboardView, 'my-day': myDay.renderView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
 }
 
 function latestCheckin(key) { return [...data.checkins].filter(item => item[key] !== null).sort((a, b) => b.date.localeCompare(a.date))[0]; }
@@ -241,6 +261,7 @@ function dashboardView() {
     div('', node('strong', { text: weight ? `${fmt(weight.weight)} kg` : '—' }), node('small', { text: 'cân gần nhất' }))));
   const checkin = panel(h2('Check-in gần nhất'), latest ? p(`${latest.date}${latest.weight !== null ? ` · ${fmt(latest.weight)} kg` : ''}${latest.waist !== null ? ` · ${fmt(latest.waist)} cm eo` : ''}`, 'summary') : p('Chưa có cân nặng hoặc số đo eo. Ghi lần đầu để thấy thay đổi.', 'hint'), button('Ghi check-in', () => { progressSubView = 'checkins'; show('checkins'); }));
   main.append(div('dashboard-layout', div('stack', intro, nutrition), div('stack', week, checkin)), h2('Chọn việc cần làm'), div('quick-links',
+    quickLink('Xem ngày', 'Xem các bản ghi theo ngày', () => show('my-day')),
     quickLink('Gym', 'Bài tập và buổi đang tập', () => show('program')),
     quickLink('Dinh dưỡng', 'Nhật ký và món ăn', () => show('nutrition')),
     quickLink('Nhật ký & Ảnh', 'Ghi lại một ngày', () => show('journal')),
@@ -313,7 +334,11 @@ async function openWorkout(key) {
   if (expected) confirmAction('Đổi buổi sẽ thay bản nháp hiện tại. Tiếp tục?', start); else start();
 }
 const workoutView = () => sessionUI.workoutView();
-const historyView = () => sessionUI.historyView();
+const historyView = () => {
+  const date = daySourceContext?.kind === 'gym' ? daySourceContext.date : null;
+  if (date) main.append(panel(p(`Lịch sử ngày ${date}`, 'hint'), button('Xem toàn bộ lịch sử tập', () => { daySourceContext.kind = 'all-history'; render(); })));
+  sessionUI.historyView(date);
+};
 
 function restTimerPanel() {
   const timer = panel(h3('Đồng hồ nghỉ'), p(`${restTimer.exercise} · theo plan: ${restTimer.planRest}. Khoảng nghỉ dùng mức thấp làm mặc định.`, 'hint'));
@@ -555,7 +580,10 @@ function renderFoodEntries(foodDate) {
   } else box.append(p('Tạo một món trong thư viện trước khi ghi bữa ăn.', 'empty'), button('Mở thư viện thực phẩm', () => { nutritionSubView = 'foods'; render(); }));
   const entries = data.entries.filter(item => item.date === foodDate);
   if (!entries.length) box.append(p('Chưa có bữa ăn cho ngày này.', 'empty'));
-  for (const entry of entries) box.append(div('list-card', h3(`${entry.meal} · ${entry.food.name}`), p(`${fmt(entry.servings)} × ${entry.food.serving} · ${fmt(entry.food.calories * entry.servings)} kcal · P ${fmt(entry.food.protein * entry.servings)} · C ${fmt(entry.food.carbs * entry.servings)} · F ${fmt(entry.food.fat * entry.servings)}`, 'summary'), div('actions', button('Sửa', () => { editingEntry = entry.id; render(); }), button('Xóa', () => confirmAction('Xóa bữa ăn này?', () => mutate(next => { next.entries = next.entries.filter(item => item.id !== entry.id); }, 'Đã xóa bữa ăn.')), 'danger'))));
+  for (const entry of entries) {
+    const macros = dailyTotals([entry], entry.date);
+    box.append(div('list-card', h3(`${entry.meal} · ${entry.food.name}`), p(`${fmt(entry.servings)} × ${entry.food.serving} · ${fmt(macros.calories)} kcal · P ${fmt(macros.protein)} · C ${fmt(macros.carbs)} · F ${fmt(macros.fat)}`, 'summary'), div('actions', button('Sửa', () => { editingEntry = entry.id; render(); }), button('Xóa', () => confirmAction('Xóa bữa ăn này?', () => mutate(next => { next.entries = next.entries.filter(item => item.id !== entry.id); }, 'Đã xóa bữa ăn.')), 'danger'))));
+  }
   main.append(box);
 }
 
@@ -910,13 +938,15 @@ function renderPhotos() {
   box.append(form);
   main.append(box);
   const gallery = panel(h2('Ảnh đã lưu'));
+  const selectedPhotoDate = daySourceContext?.kind === 'photos' ? daySourceContext.date : null;
+  if (selectedPhotoDate) gallery.append(p(`Ảnh ngày ${selectedPhotoDate}`, 'hint'), button('Xem tất cả ảnh', () => { daySourceContext.kind = 'all-photos'; render(); }));
   const filter = field('Lọc ảnh', 'photoFilter', photoFilter, { tag: 'select', choices: [{ value: 'all', label: 'Tất cả' }, ...PHOTO_CATEGORIES] });
   filter.querySelector('select').addEventListener('change', event => { photoFilter = event.target.value; render(); });
   gallery.append(filter);
   main.append(gallery);
   listPhotos().then(records => {
     if (journalSection !== 'photos' || !gallery.isConnected) return;
-    const visible = records.filter(item => photoFilter === 'all' || item.category === photoFilter).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+    const visible = records.filter(item => (!selectedPhotoDate || item.date === selectedPhotoDate) && (photoFilter === 'all' || item.category === photoFilter)).sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
     if (!visible.length) { gallery.append(p('Chưa có ảnh trong mục này.', 'empty')); return; }
     for (const item of visible) {
       const card = div('photo-card');
