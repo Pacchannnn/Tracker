@@ -1,4 +1,4 @@
-import { validatePhotoMeta } from './photo-store.js?v=20';
+import { validatePhotoMeta } from './photo-store.js?v=23';
 
 const FORMAT = 'tracker-photo-backup';
 const MAX_IMAGE_BYTES = 20_000_000;

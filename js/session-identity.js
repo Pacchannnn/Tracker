@@ -1,7 +1,7 @@
-import { PROGRAM, programDay } from './program.js?v=20';
-import { BUILTIN_EXERCISES, validateWorkoutSnapshot } from './custom-workout.js?v=20';
+import { PROGRAM, programDay } from './program.js?v=23';
+import { BUILTIN_EXERCISES, validateWorkoutSnapshot } from './custom-workout.js?v=23';
 
-// Foundation only: none of these constructors are called by live Start/writers in 4B-1.
+// Pure identity helpers. Runtime activation is atomic at the session-store write boundary.
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = value => typeof value === 'string' && value.trim().length > 0 && value.length <= 160;
 const nullableId = value => value === null || id(value);
