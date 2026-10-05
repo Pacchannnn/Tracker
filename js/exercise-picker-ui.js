@@ -1,13 +1,13 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=23';
-import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=23';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=26';
+import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=26';
 
-export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onClose, helpers }) {
+export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onClose, helpers, renderReview = null, contextText = null }) {
   const { node, button, field, panel, div, p, h2, h3 } = helpers;
   let busy = false;
   const selection = createPickerSelection(mode), options = pickerOptions(catalog());
   const root = panel(h2(mode === 'add' ? 'Chọn bài để thêm' : `Chọn bài thay · ${slot.name}`));
   root.classList.add('exercise-picker');
-  root.append(p('Lọc chỉ đổi danh sách. Lựa chọn đang chờ chưa được autosave; xác nhận để đưa vào bản nháp buổi. Hủy/rời trang sẽ bỏ lựa chọn chưa xác nhận.', 'hint'),
+  root.append(p(contextText || 'Lọc chỉ đổi danh sách. Lựa chọn đang chờ chưa được autosave; xác nhận để đưa vào bản nháp buổi. Hủy/rời trang sẽ bỏ lựa chọn chưa xác nhận.', 'hint'),
     p('Nhóm cơ lọc theo cơ chính, gồm nhóm con Lưng/Vai. Các bộ lọc kết hợp AND. Dụng cụ trong tên ghép là lựa chọn, không phải tất cả đều bắt buộc; hãy đọc tên/setup.', 'hint'));
   const filters = div('picker-filters', field('Tìm tên bài', 'pickerQuery'), ...[
     ['Nhóm cơ chính', 'pickerMuscle', options.muscle], ['Dụng cụ', 'pickerEquipment', options.equipment], ['Kiểu chuyển động', 'pickerPattern', options.pattern]
@@ -18,10 +18,12 @@ export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onCl
     if (busy) return;
     busy = true; confirm.disabled = true; error.hidden = true;
     try {
-      if (await onConfirm(selection.ids()) === false) throw new Error('Chưa lưu thay đổi. Lựa chọn vẫn còn; giữ phần đang nhập và xử lý lỗi lưu trước khi rời trang.');
+      const outcome = await onConfirm(selection.ids());
+      if (outcome === 'review') { busy = false; confirm.disabled = !selection.ids().length; return; }
+      if (outcome === false) throw new Error('Chưa lưu thay đổi. Lựa chọn vẫn còn; giữ phần đang nhập và xử lý lỗi lưu trước khi rời trang.');
     } catch (problem) { error.textContent = problem.message; error.hidden = false; busy = false; confirm.disabled = !selection.ids().length; }
   }, 'primary');
-  const close = () => onClose();
+  const close = () => { if (!busy) onClose(); };
   root.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); close(); } });
   const labels = (choices, values) => values.length ? values.map(value => labelFor(choices, value)).join(', ') : 'Chưa ghi metadata';
   function refresh(focusId = null) {
@@ -39,6 +41,7 @@ export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onCl
     for (const id of selected) {
       const item = all.find(exercise => exercise.id === id);
       pending.append(div('list-card', p(`✓ ${item?.name || 'Bài không còn trong thư viện'}`, 'summary'), button('Bỏ lựa chọn', () => { selection.toggle(id); refresh(id); })));
+      if (renderReview && item) pending.append(renderReview(item));
       if (mode === 'replace' && item) {
         const comparison = compareExercises(current, item);
         pending.append(p(`Hiện tại: ${slot.name} → Mới: ${item.name}`, 'summary'),

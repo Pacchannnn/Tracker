@@ -1,6 +1,6 @@
-import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=23';
-import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=23';
-import { plannerPayload, recoverPlannerResult } from './planning-draft.js?v=23';
+import { MUSCLES, EQUIPMENT, libraryExercises } from './custom-workout.js?v=26';
+import { createPlannerRequest, suggestWorkout, validatePlannerOutput } from './planner.js?v=26';
+import { plannerPayload, recoverPlannerResult } from './planning-draft.js?v=26';
 
 export function createPlannerUI({ main, getData, helpers, checkChoices, useDraft, render, drafts, draftStatus, recoveryCard }) {
   const { node, field, panel, p, h2, h3, div, button, message, id, confirmAction } = helpers;

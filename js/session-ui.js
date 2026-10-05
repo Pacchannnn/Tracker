@@ -1,7 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues } from './session-readers.js?v=23';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=23';
-import { sessionTitle } from './custom-workout.js?v=23';
-import { restSeconds } from './workout.js?v=23';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues } from './session-readers.js?v=26';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=26';
+import { sessionTitle } from './custom-workout.js?v=26';
+import { restSeconds } from './workout.js?v=26';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=26';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;
@@ -9,6 +10,7 @@ export function createSessionUI(context) {
   let focusMode = false, focusSlotId = null, editingSet = null, editingNote = null;
   let pending = 0;
   const choices = new Map();
+  const formSavers = new WeakMap();
   function syncBusy() {
     const busy = pending > 0 || store.status().state === 'saving';
     main.querySelectorAll('button,input,select,textarea').forEach(control => {
@@ -20,19 +22,28 @@ export function createSessionUI(context) {
     pending++; syncBusy();
     try { return await operation(); } finally { pending--; syncBusy(); }
   }
-  const action = (operation, success) => runWrite(() => persistAction(operation, success));
+  const action = (operation, success, options) => runWrite(() => persistAction(operation, success, options));
   const mutate = (change, success) => runWrite(() => persistMutate(change, success));
-  const command = (intent, draft, success) => action(() => store.command(intent, draft), success);
+  const command = (intent, draft, success, options) => action(() => store.command(intent, draft), success, options);
   const controlled = element => { element.dataset.sessionControl = ''; return element; };
   const writeButton = (text, fn, kind) => controlled(button(text, fn, kind));
   function guardUnsaved(except = null) {
     if (pending || store.status().state === 'saving') { message('Đang lưu. Đợi hoàn tất trước khi đổi màn hình hoặc nhập thêm.', true); return false; }
-    const dirty = [...main.querySelectorAll('[data-session-form]')].some(form => form !== except &&
-      [...form.querySelectorAll('input,select,textarea')].some(input => input.dataset.initialValue !== undefined && input.value !== input.dataset.initialValue));
+    const dirty = dirtyForms().some(form => form !== except);
     if (dirty) message('Có phần nhập chưa lưu. Lưu hiệp/ngày/ghi chú hoặc đưa các ô về giá trị ban đầu trước khi đổi màn hình.', true);
     return !dirty;
   }
   const cleanAction = fn => (...args) => { if (guardUnsaved()) return fn(...args); };
+  function dirtyForms() {
+    return [...main.querySelectorAll('[data-session-form]')].filter(form =>
+      [...form.querySelectorAll('input,select,textarea')].some(input => input.dataset.initialValue !== undefined && (input.validity?.badInput || input.value !== input.dataset.initialValue)));
+  }
+  const liveUI = createLiveWorkoutUI({ main, getData, command, render, dirtyForms,
+    pendingWrite: () => pending > 0 || store.status().state === 'saving', focusSlot: id => { focusSlotId = id; }, helpers,
+    saveForms: async forms => {
+      for (const form of forms) { if (!await formSavers.get(form)?.(true)) return false; }
+      return true;
+    } });
 
   function statusView() {
     const status = p('', 'hint'); status.setAttribute('role', 'status');
@@ -113,15 +124,21 @@ export function createSessionUI(context) {
       form.prepend(p(`Lần trước ${previous.date}: ${previous.occurrences.map(item => `${item.label}: ${item.sets.map(set => `${set.weight} ${set.unit || 'kg'} × ${set.reps}`).join(' | ')}${item.quickFillAllowed ? '' : ' (ownership mơ hồ, chỉ xem)'}`).join('; ')}`, 'hint'), quick);
     }
     if (edit) form.append(button('Hủy sửa', () => { if (guardUnsaved(form)) { editingSet = null; render(); } }));
-    form.addEventListener('submit', async event => {
-      event.preventDefault(); if (!guardUnsaved(form)) return; const values = Object.fromEntries(new FormData(form));
+    const save = async (deferRender = false) => {
+      if (!deferRender && !guardUnsaved(form)) return false;
+      const values = Object.fromEntries(new FormData(form));
       const intent = edit ? { type: 'edit', setId: edit.id, slotId: slot?.id ?? null, values } : { type: 'log', slotId: slot.id, setNumber: number, values };
-      if (await command(intent, draft, edit ? 'Đã lưu thay đổi hiệp.' : `Đã lưu hiệp ${number}.`)) {
+      if (await command(intent, deferRender ? getData().draft : draft, edit ? 'Đã lưu thay đổi hiệp.' : `Đã lưu hiệp ${number}.`, { renderAfter: !deferRender })) {
         editingSet = null;
+        form.querySelectorAll('input,select').forEach(input => { if (input.dataset.initialValue !== undefined) input.dataset.initialValue = input.value; });
         if (focusMode && getData().draft) focusSlotId = nextIncompleteSlot(getData().draft) ?? slot?.id ?? null;
-        render();
+        if (!deferRender) render();
+        return true;
       }
-    });
+      return false;
+    };
+    formSavers.set(form, save);
+    form.addEventListener('submit', event => { event.preventDefault(); save(); });
     return form;
   }
   function setupNotes(slot) {
@@ -149,8 +166,9 @@ export function createSessionUI(context) {
       p(`${snapshot.sets} hiệp × ${snapshot.reps} · Nghỉ ${snapshot.rest} · RIR mục tiêu ${snapshot.rir}`, 'exercise-meta'));
     if (snapshot.notes) box.append(p(snapshot.notes, 'hint'));
     box.append(setupNotes(slot), setList(draft, sets, slot.id));
+    const structural = liveUI.controls(draft, slot); if (structural) box.append(structural);
     if (sets.length && restSeconds(snapshot.rest)) box.append(button('Nghỉ sau hiệp', cleanAction(() => startRest(snapshot.name, snapshot.rest))));
-    if (slot.status !== 'active') box.append(p('Mục này chỉ giữ phần đã ghi; không ghi hiệp mới vào đây.', 'hint'));
+    if (slot.status !== 'active') box.append(p(`${slot.status === 'removed' ? 'Dừng bài' : 'Bài đã thay'} · đã ghi ${sets.length}/${snapshot.sets} hiệp. Giữ phần đã ghi; không ghi hiệp mới vào đây.`, 'hint'));
     const edit = sets.find(set => set.id === editingSet);
     if (edit || slot.status === 'active') {
       const form = setForm(draft, slot, edit, previousOccurrences(getData().sessions, draft, slot)); if (form) box.append(form);
@@ -174,6 +192,7 @@ export function createSessionUI(context) {
     details.querySelectorAll('input').forEach(input => { input.dataset.initialValue = input.value; controlled(input); });
     details.addEventListener('submit', event => { event.preventDefault(); if (guardUnsaved(details)) command({ type: 'metadata', patch: Object.fromEntries(new FormData(details)) }, draft, 'Đã lưu ngày và ghi chú buổi.'); });
     header.append(details); main.append(header);
+    const structuralHeader = liveUI.header(draft); if (structuralHeader) main.append(structuralHeader);
     const recovery = recoveryPanel(draft, view.ambiguous); if (recovery) main.append(recovery);
     const rest = restPanel(); if (rest) main.append(rest);
     if (view.ambiguous) {
@@ -190,7 +209,7 @@ export function createSessionUI(context) {
       if (focusMode && focusSlotId) {
         const index = view.slots.findIndex(slot => slot.id === focusSlotId), activeIndex = active.findIndex(slot => slot.id === focusSlotId);
         group.append(exerciseBlock(draft, view.slots[index], index, display), div('actions', button('← Bài trước', cleanAction(() => { focusSlotId = active[Math.max(0, activeIndex - 1)].id; render(); })), button('Bài sau →', cleanAction(() => { focusSlotId = active[Math.min(active.length - 1, activeIndex + 1)].id; render(); }))));
-      } else if (focusMode) group.append(p('Không còn mục đang tập. Hiệp đã ghi vẫn được giữ.', 'empty'));
+      } else if (focusMode) { group.append(p('Không còn mục đang tập. Hiệp đã ghi vẫn được giữ.', 'empty')); view.slots.forEach((slot,index) => group.append(exerciseBlock(draft,slot,index,display))); }
       else view.slots.forEach((slot,index) => group.append(exerciseBlock(draft, slot, index, display)));
       main.append(group);
     }
@@ -204,6 +223,7 @@ export function createSessionUI(context) {
       }, 'primary'), writeButton('Bỏ bản nháp', () => confirmAction('Xóa bản nháp đang tập? Lịch sử nguồn nếu có vẫn được giữ.', async () => {
         if (await command({ type: 'discard' }, draft, 'Đã bỏ bản nháp.')) { clearRest(); render(); }
       }), 'danger'))));
+    liveUI.appendReview();
   }
   function historyView() {
     main.append(panel(h2('Lịch sử tập'), p('Mở lại để sửa. Complete kiểm tra nguồn lịch sử trước khi ghi đè; sửa template không đổi snapshots.', 'hint')));
@@ -214,7 +234,7 @@ export function createSessionUI(context) {
       if (sessionGeneration(session) === 'structured') {
         for (const [index,slot] of runtimeView(session).slots.entries()) {
           const sets = session.sets.filter(set => set.slotId === slot.id);
-          box.append(h3(`${index + 1}. ${slot.snapshot.name}`), p(sets.length ? sets.map(set => `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ') : 'Chưa ghi hiệp', 'hint'));
+          box.append(h3(`${index + 1}. ${slot.snapshot.name}`), p(slot.status === 'removed' ? `Dừng bài · đã ghi ${sets.length}/${slot.snapshot.sets} hiệp` : slot.status === 'replaced' ? `Bài đã thay · ${sets.length} hiệp đã ghi` : '', 'hint'), p(sets.length ? sets.map(set => `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ') : 'Chưa ghi hiệp', 'hint'));
         }
       } else {
         const list = node('ul', { class: 'history-list' }); session.sets.forEach(set => list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }))); box.append(list);
@@ -226,5 +246,5 @@ export function createSessionUI(context) {
       main.append(box);
     }
   }
-  return { workoutView, historyView, guardUnsaved, reset() { editingSet = null; focusSlotId = null; } };
+  return { workoutView, historyView, guardUnsaved, clearReview: () => liveUI.reset(), reset() { editingSet = null; focusSlotId = null; liveUI.reset(); } };
 }

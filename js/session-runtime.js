@@ -1,5 +1,6 @@
-import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=23';
-import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=23';
+import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=26';
+import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=26';
+import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=26';
 
 const clone = value => structuredClone(value);
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -51,8 +52,10 @@ export function applySessionCommand(data, expected, command) {
   guardSession(data.draft, expected);
   if (!data.draft) stale();
   if (command.type === 'discard') { data.draft = null; return; }
+  if (['add','remove','reorder'].includes(command.type) && !liveStructureAllowed(data.draft, data.sessions)) throw new Error('Buổi không có identity live hợp lệ hoặc đang sửa lịch sử. Không đổi cấu trúc.');
   const { session, ambiguous } = activateDraft(data.draft, data);
   switch (command.type) {
+    case 'add': case 'remove': case 'reorder': applyLiveStructure(session, command, data); break;
     case 'log': {
       if (ambiguous) throw new Error('Ownership buổi cũ còn mơ hồ. Không ghi hiệp mới/Quick Fill; giữ bản nháp và xem lại dữ liệu.');
       const ordinal = session.sessionStructure.slots.findIndex(slot => slot.id === command.slotId), slot = session.sessionStructure.slots[ordinal];
@@ -98,13 +101,17 @@ export function createSessionStore({ getData, write, acceptData = () => {}, comm
   let expected, initialized = false, epoch = 0, pending = 0, queue = Promise.resolve(), state = { state: 'idle' };
   const listeners = new Set(), publish = value => { state = value; listeners.forEach(listener => listener(value)); };
   const initialize = () => { if (!initialized) { expected = clone(getData().draft ?? null); initialized = true; } };
-  function run(baseline, change, planningKind = null) {
+  function run(baseline, change, planningKind = null, strictBaseline = false) {
     initialize(); const intent = clone(baseline ?? null), generation = epoch;
     if (!same(intent, expected)) { publish({ state: 'error', message: 'Màn hình buổi tập cũ. Hãy mở lại trước khi lưu.' }); return Promise.reject(new Error(state.message)); }
     pending++; publish({ state: 'saving' });
     const operation = queue.then(async () => {
       if (generation !== epoch) throw new Error('Thao tác cũ đã hủy sau khi mở lại dữ liệu.');
       if ((intent?.id ?? null) !== (expected?.id ?? null)) stale();
+      // Structural review is tied to the captured screen, even across this tab's queue.
+      // Preserve established log/log serialization only while slots and order are unchanged.
+      const structure = session => session?.sessionStructure && [session.sessionStructure.slots, session.sessionStructure.order];
+      if (strictBaseline || !same(structure(intent), structure(expected))) guardSession(expected, intent);
       const boundary = apply => planningKind ? commitPlanning(planningKind, apply) : write(apply);
       const next = await boundary(data => {
         if (generation !== epoch) throw new Error('Thao tác cũ đã hủy.');
@@ -122,7 +129,7 @@ export function createSessionStore({ getData, write, acceptData = () => {}, comm
   return {
     command: (command, baseline) => {
       const intent = clone(command);
-      return run(baseline, (data, expected) => applySessionCommand(data, expected, intent));
+      return run(baseline, (data, expected) => applySessionCommand(data, expected, intent), null, ['add','remove','reorder'].includes(intent.type));
     },
     start: (spec, baseline, { planningKind = null, plan = null } = {}) => {
       const intent = clone(spec), source = clone(plan);

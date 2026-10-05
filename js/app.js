@@ -1,20 +1,20 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=23';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=23';
-import { createDraftStore } from './planning-draft.js?v=23';
-import { navigationGroup } from './navigation.js?v=23';
-import { restSeconds } from './workout.js?v=23';
-import { weeklySummary, exerciseHistory } from './progress.js?v=23';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=23';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=23';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=23';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=23';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=23';
-import { createGymBuilder } from './gym-builder-ui.js?v=23';
-import { createPlannerUI } from './planner-ui.js?v=23';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=23';
-import { createSessionStore } from './session-runtime.js?v=23';
-import { runtimeView } from './session-readers.js?v=23';
-import { createSessionUI } from './session-ui.js?v=23';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=26';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=26';
+import { createDraftStore } from './planning-draft.js?v=26';
+import { navigationGroup } from './navigation.js?v=26';
+import { restSeconds } from './workout.js?v=26';
+import { weeklySummary, exerciseHistory } from './progress.js?v=26';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=26';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=26';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=26';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=26';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=26';
+import { createGymBuilder } from './gym-builder-ui.js?v=26';
+import { createPlannerUI } from './planner-ui.js?v=26';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=26';
+import { createSessionStore } from './session-runtime.js?v=26';
+import { runtimeView } from './session-readers.js?v=26';
+import { createSessionUI } from './session-ui.js?v=26';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -156,8 +156,8 @@ const sessionUI = createSessionUI({ main, getData: () => data, getLatest: () => 
   clearRest: () => { restTimer = null; },
   startRest: (name, rest) => { const duration = restSeconds(rest); if (!duration) return; restTimer = { exercise: name, planRest: rest, duration, remaining: duration, endAt: Date.now() + duration * 1000, running: true }; render(); },
   registerUrl: url => photoUrls.push(url), helpers: { node, button, panel, div, p, h2, h3, field, fmt, confirmAction, message } });
-async function sessionAction(operation, success = 'Đã lưu buổi.') {
-  try { await operation(); render(); message(success); return true; }
+async function sessionAction(operation, success = 'Đã lưu buổi.', { renderAfter = true } = {}) {
+  try { await operation(); if (renderAfter) render(); message(success); return true; }
   catch (error) { message(error.message || 'Không thể lưu buổi.', true); return false; }
 }
 
@@ -172,6 +172,7 @@ async function mutate(change, success = 'Đã lưu.') {
 
 function show(next) {
   if (view === 'workout' && !sessionUI.guardUnsaved()) return;
+  if (view === 'workout') sessionUI.clearReview();
   try { data = loadData(localStorage); }
   catch (error) { message(error.message, true); return; }
   sessionStore.reset();
