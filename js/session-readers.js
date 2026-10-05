@@ -1,4 +1,4 @@
-import { materializeLegacySession, sessionGeneration, validateSessionIdentity } from './session-identity.js?v=26';
+import { materializeLegacySession, sessionGeneration, validateSessionIdentity } from './session-identity.js?v=28';
 
 export function runtimeView(session, exerciseNotes = {}) {
   const result = materializeLegacySession(session, exerciseNotes);
@@ -8,6 +8,11 @@ export function runtimeView(session, exerciseNotes = {}) {
 }
 export function setsForSlot(session, slotId) {
   return runtimeView(session).session.sets.filter(set => set.slotId === slotId);
+}
+export function replacementLabel(session, slot) {
+  if (!slot.replacesSlotId) return '';
+  const predecessor = session.sessionStructure.slots.find(item => item.id === slot.replacesSlotId);
+  return predecessor ? `Thay cho ${predecessor.snapshot.name}` : '';
 }
 const missingNumber = (session, slot) => slot.status !== 'active' ? null :
   Array.from({ length: slot.snapshot.sets }, (_, index) => index + 1).find(number => !session.sets.some(set => set.slotId === slot.id && set.setNumber === number)) ?? null;

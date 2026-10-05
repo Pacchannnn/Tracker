@@ -1,8 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues } from './session-readers.js?v=26';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=26';
-import { sessionTitle } from './custom-workout.js?v=26';
-import { restSeconds } from './workout.js?v=26';
-import { createLiveWorkoutUI } from './live-workout-ui.js?v=26';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=28';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=28';
+import { sessionTitle } from './custom-workout.js?v=28';
+import { restSeconds } from './workout.js?v=28';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=28';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;
@@ -165,6 +165,7 @@ export function createSessionUI(context) {
     const box = div(`exercise${slot.id === nextIncompleteSlot(draft) ? ' is-next' : ''}`, h3(`${index + 1}. ${snapshot.name}`),
       p(`${snapshot.sets} hiệp × ${snapshot.reps} · Nghỉ ${snapshot.rest} · RIR mục tiêu ${snapshot.rir}`, 'exercise-meta'));
     if (snapshot.notes) box.append(p(snapshot.notes, 'hint'));
+    const replacement = replacementLabel(display, slot); if (replacement) box.append(p(replacement, 'summary'));
     box.append(setupNotes(slot), setList(draft, sets, slot.id));
     const structural = liveUI.controls(draft, slot); if (structural) box.append(structural);
     if (sets.length && restSeconds(snapshot.rest)) box.append(button('Nghỉ sau hiệp', cleanAction(() => startRest(snapshot.name, snapshot.rest))));
@@ -234,7 +235,9 @@ export function createSessionUI(context) {
       if (sessionGeneration(session) === 'structured') {
         for (const [index,slot] of runtimeView(session).slots.entries()) {
           const sets = session.sets.filter(set => set.slotId === slot.id);
-          box.append(h3(`${index + 1}. ${slot.snapshot.name}`), p(slot.status === 'removed' ? `Dừng bài · đã ghi ${sets.length}/${slot.snapshot.sets} hiệp` : slot.status === 'replaced' ? `Bài đã thay · ${sets.length} hiệp đã ghi` : '', 'hint'), p(sets.length ? sets.map(set => `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ') : 'Chưa ghi hiệp', 'hint'));
+          box.append(h3(`${index + 1}. ${slot.snapshot.name}`), p(`${slot.status === 'removed' ? 'Dừng bài' : slot.status === 'replaced' ? 'Dừng / Đã đổi bài' : 'Bài trong buổi'} · đã ghi ${sets.length}/${slot.snapshot.sets} hiệp`, 'hint'));
+          const replacement = replacementLabel(session, slot); if (replacement) box.append(p(replacement, 'summary'));
+          box.append(p(sets.length ? sets.map(set => `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ') : 'Chưa ghi hiệp', 'hint'));
         }
       } else {
         const list = node('ul', { class: 'history-list' }); session.sets.forEach(set => list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }))); box.append(list);

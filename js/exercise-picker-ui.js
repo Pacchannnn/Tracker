@@ -1,7 +1,7 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=26';
-import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=26';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=28';
+import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=28';
 
-export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onClose, helpers, renderReview = null, contextText = null }) {
+export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onClose, helpers, renderReview = null, contextText = null, liveReplace = false }) {
   const { node, button, field, panel, div, p, h2, h3 } = helpers;
   let busy = false;
   const selection = createPickerSelection(mode), options = pickerOptions(catalog());
@@ -42,7 +42,7 @@ export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onCl
       const item = all.find(exercise => exercise.id === id);
       pending.append(div('list-card', p(`✓ ${item?.name || 'Bài không còn trong thư viện'}`, 'summary'), button('Bỏ lựa chọn', () => { selection.toggle(id); refresh(id); })));
       if (renderReview && item) pending.append(renderReview(item));
-      if (mode === 'replace' && item) {
+      if (mode === 'replace' && item && !liveReplace) {
         const comparison = compareExercises(current, item);
         pending.append(p(`Hiện tại: ${slot.name} → Mới: ${item.name}`, 'summary'),
           p(`Giữ nguyên mục/thứ tự và thông số: ${slot.sets} hiệp · ${slot.repMin}–${slot.repMax} reps · RIR ${slot.targetRIR ?? 'chưa định nghĩa'} · ${slot.restSeconds}s. Không đổi tạ hoặc lịch sử.`, 'hint'),
@@ -50,6 +50,11 @@ export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onCl
           p(`Dụng cụ: ${labels(EQUIPMENT, comparison.fromEquipment)} → ${labels(EQUIPMENT, comparison.toEquipment)}.`, 'hint'),
           p(`Ghi chú setup cũ: ${slot.notes || 'Không ghi'}\nSau thay bài: ${item.notes || 'Không ghi'}. Ghi chú cũ sẽ được thay.`, 'hint'),
           p('So sánh chỉ theo metadata đã có; không khẳng định hai bài giống hoàn toàn hoặc phù hợp y khoa.', 'hint'));
+      }
+      if (mode === 'replace' && item && liveReplace) {
+        const comparison = compareExercises(current, item);
+        pending.append(p(`Cơ chính chung: ${labels(MUSCLES, comparison.sharedPrimary)}. Pattern: ${comparison.fromPattern ? labelFor(PATTERNS, comparison.fromPattern) : 'Chưa ghi'} → ${labelFor(PATTERNS, comparison.toPattern)}.`, 'hint'),
+          p(`Dụng cụ: ${labels(EQUIPMENT, comparison.fromEquipment)} → ${labels(EQUIPMENT, comparison.toEquipment)}. So sánh chỉ theo metadata; không khẳng định tương đương hoặc phù hợp y khoa.`, 'hint'));
       }
     }
     if (mode === 'add' && selected.length) pending.append(p('Bài mới dùng mặc định chỉnh được: 2 hiệp, 8–12 reps, RIR 2, nghỉ 90s. Chưa lưu vào kế hoạch nguồn.', 'hint'));

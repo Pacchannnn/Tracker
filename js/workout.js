@@ -1,4 +1,4 @@
-import { setCount } from './program.js?v=26';
+import { setCount } from './program.js?v=28';
 
 export function previousExerciseSets(sessions, workout, exerciseIndex, excludeId = null, exerciseId = null) {
   const latest = [...sessions]
@@ -23,7 +23,7 @@ export function nextIncompleteExercise(exercises, draft) {
 
 export function restSeconds(rest) {
   if (typeof rest !== 'string') return null;
-  const amount = Number(rest.match(/^\d+/)?.[0]);
+  const amount = Number(rest.trim().match(/^\d+(?:\.\d+)?/)?.[0]);
   if (!Number.isFinite(amount) || amount <= 0) return null;
   if (rest.includes('phút')) return amount * 60;
   if (rest.includes('giây')) return amount;

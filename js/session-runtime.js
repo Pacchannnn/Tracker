@@ -1,6 +1,6 @@
-import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=26';
-import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=26';
-import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=26';
+import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=28';
+import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=28';
+import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=28';
 
 const clone = value => structuredClone(value);
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -52,10 +52,10 @@ export function applySessionCommand(data, expected, command) {
   guardSession(data.draft, expected);
   if (!data.draft) stale();
   if (command.type === 'discard') { data.draft = null; return; }
-  if (['add','remove','reorder'].includes(command.type) && !liveStructureAllowed(data.draft, data.sessions)) throw new Error('Buổi không có identity live hợp lệ hoặc đang sửa lịch sử. Không đổi cấu trúc.');
+  if (['add','remove','reorder','replace'].includes(command.type) && !liveStructureAllowed(data.draft, data.sessions)) throw new Error('Buổi không có identity live hợp lệ hoặc đang sửa lịch sử. Không đổi cấu trúc.');
   const { session, ambiguous } = activateDraft(data.draft, data);
   switch (command.type) {
-    case 'add': case 'remove': case 'reorder': applyLiveStructure(session, command, data); break;
+    case 'add': case 'remove': case 'reorder': case 'replace': applyLiveStructure(session, command, data); break;
     case 'log': {
       if (ambiguous) throw new Error('Ownership buổi cũ còn mơ hồ. Không ghi hiệp mới/Quick Fill; giữ bản nháp và xem lại dữ liệu.');
       const ordinal = session.sessionStructure.slots.findIndex(slot => slot.id === command.slotId), slot = session.sessionStructure.slots[ordinal];
@@ -129,7 +129,7 @@ export function createSessionStore({ getData, write, acceptData = () => {}, comm
   return {
     command: (command, baseline) => {
       const intent = clone(command);
-      return run(baseline, (data, expected) => applySessionCommand(data, expected, intent), null, ['add','remove','reorder'].includes(intent.type));
+      return run(baseline, (data, expected) => applySessionCommand(data, expected, intent), null, ['add','remove','reorder','replace'].includes(intent.type));
     },
     start: (spec, baseline, { planningKind = null, plan = null } = {}) => {
       const intent = clone(spec), source = clone(plan);
