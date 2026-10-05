@@ -1,8 +1,9 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase4B-4 / Phase4 complete; STOP before5)
+Updated: 2026-10-06 (Phase5A complete; STOP before5B)
 
 CURRENT PROJECT STATE
-Phase4 Flexible Live Workout IMPLEMENTED / TESTED;197 tests /47 syntax checks.
+Phase4 + Phase5A Xem ngày IMPLEMENTED / TESTED;216 tests /51 syntax checks.
+Full Phase5 remains incomplete until5B Journal Retrieval.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -229,3 +230,30 @@ DECISIONS: home vs subview; remote AI/backend/privacy DECIDE LATER.
 BACKLOG: Phase5/6 food reuse/7 reviews/8 experiments; future template promotion,
  remote integration/auth/cloud remain separately authorized work. No generic Undo.
 See V4_IMPLEMENTATION_REPORT.md for all37 required report items and30-gate evidence.
+
+
+V4 PHASE 5A — CURRENT STATUS — 2026-10-06
+CURRENT PHASE:5A Xem ngày IMPLEMENTED / TESTED; schema8 remains8; full5 NOT DONE.
+CURRENT STEP: handoff; STOP before5B. IN PROGRESS: none. BLOCKERS: none in5A.
+COMPLETED: audited all explicit local date/ISO fields and photo owner relations;
+ pure daySummary/readDay and calendar stepping; read-only metadata/thumbnail APIs;
+ paper subview, Dashboard shortcut, all source actions and return; no stored summary.
+TESTS:197→216; all old assertions retained;19new groups;51syntax; diff check.
+ Browser synthetic8780 A–I incl photo-only/failure/zero-write, sourceedit/delete,
+ replacement history, reload; rendered320/360/390 single column/no overflow;
+ Tab/Enter/Space/visible focus. JSON string/photo metadata unchanged during read-only flow.
+DONE:25 required gates passed in documented local scope. Codeffe8279; docs in Git log.
+DATA: localStorage JSON + existing IDB1; no writes on view/date/source navigation;
+ explicit source Save still uses original lock/conflict policy. Photo cursor projects
+ co-located binary handles but never decodes/retains originals; selected thumbnails only.
+RELOAD: existing in-memory route; reload Dashboard, next My Day defaults local today.
+LIMITATIONS/KNOWN BUGS: no My Day bug observed; no physical phone/Safari/screen-reader/
+ large-photo benchmark/nativequota claims. Unknown-macro fixtures are defensive reads;
+ current food logging/strict backup still require known macros. Historical harness
+ observer error not reproduced5A; attribution remains unproven. No remote processing.
+NEXT:5B only after a separate task: local Journal text/tag retrieval, filters,
+ paging beyond30, date/source navigation, stable empty/clear states and tests.
+DEPENDENCIES: existing journal data/date helpers/source editor; no implicit schema bump.
+MODEL/REASONING: GPT-6.1-sol/high for5B matching/state/date integration, medium for docs.
+DECISIONS: home promotion/richer mood/catalog/remote AI/backend/privacy DECIDE LATER.
+BACKLOG:5B;6food reuse/cookbook;7reviews/memories;8experiments. No5B implemented here.

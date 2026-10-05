@@ -2,6 +2,26 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Phase 5A Xem ngày — derived read model (06/10/2026)
+
+Schema8 stays8. No persisted summary, selected date, duplicated source record or migration. `daySummary(data, photosMetadata, date)` returns date, journal array, compact completed workout summaries, cardio/check-in/knee arrays, canonical nutrition totals and item/meal-label counts, deduplicated photo metadata, explicit presence flags and source view/date references. Input arrays/records are not changed. A draft is never counted as completed. Workout exercise count means distinct saved set owners (slotId, legacy exerciseIndex fallback), not current template size; saved set count is exactly history sets.length. No expansion of replacement chains or new volume/ownership calculation.
+
+| Domain | Day source of truth | Other date fields / join rule |
+| --- | --- | --- |
+| Journal | journalEntries.date, local YYYY-MM-DD | createdAt/updatedAt ISO; never used for day membership. Editor and strict backup enforce one/date; defensive read retains every matching record rather than choosing one. |
+| Nutrition | entries.date, local YYYY-MM-DD | Logged food snapshots and servings; never join library photo owner to a meal date. |
+| Completed Gym | sessions.date, local YYYY-MM-DD | updatedAt ISO and session identity metadata do not shift date; active draft excluded. |
+| Cardio | cardioEntries.date, local YYYY-MM-DD | Every matching activity retained independently of strength. |
+| Body | checkins.date, local YYYY-MM-DD | Multiple records allowed; no latest-only selection/trend. |
+| Knee | kneeEntries.date, local YYYY-MM-DD | moment is recorded context, not a derived next-day date; records only. |
+| Photos | photos.date, local YYYY-MM-DD | ISO createdAt/updatedAt only metadata. Daily category attaches by date; food/recipe owner IDs refer to library objects. All categories, including orphan owners, appear once per photo ID on their own date. |
+
+Calendar stepping uses validated local noon + localDate, never bare new Date(YYYY-MM-DD); year/month/leap/local-midnight/ISO-near-midnight cases are tested. Source actions use existing in-memory navigation. Journal/Nutrition dates, history date filter, exact cardio/check-in/knee record and photo-gallery date are transient. Return reloads canonical JSON, then derives again. Reload returns Dashboard; next Xem ngày starts at the client local current day. No URL/router framework or persisted selected date added.
+
+`dailyTotals` is still the single daily arithmetic helper: any null/undefined macro in a logged item makes that macro total unknown (null), retaining the other known totals and actual numeric zeros. Empty-day My Day totals are null instead of calling an empty sum a logged zero. Current food/recipe logging and strict backups still require known macros; defensive null fixtures exercise older/manual readable snapshots and do not authorize unknown-macro logging/import or change weekly review semantics.
+
+`readDay` isolates metadata failures; JSON cards render independently and photoError is explicit. If JSON is empty and photo metadata fails, whole-day empty is unknown (null), not a claim of no photos. UI shows a scoped JSON absence and photo read error. Core loadData/identity fail-closed behavior remains. My Day has no Save/Delete action and adds no cross-domain deletion. Existing explicit source editors retain their deletion policies (including the existing confirmed Journal+daily-photo deletion).
+
 ## Phase 4B-4 live Replace — schema8 unchanged (06/10/2026)
 
 No stored fields or migrations added. Command replace uses the same canonical queue, full reviewed baseline and Web Lock as4B-3. Only valid live active sources with remaining=max(0,target minus saved set count for exact source slotId) qualify. Close old status=replaced and append fresh UUID successor atomically; sourceSlotId=null, replacesSlotId=old.id, active snapshot. Insert successor after old in order, retain registry ordinal, old snapshot and every saved set. One-successor/cycle/dangling validators remain strict; cap100 counts all tombstones and imports>100 remain intact.

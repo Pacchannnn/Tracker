@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase4 Flexible Live Workout IMPLEMENTED / TESTED · 197 tests.** Tải lại mọi tab để nhận asset/module `v=28`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo 37 mục](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · Phase4 + Phase5A Xem ngày IMPLEMENTED / TESTED · 216 tests. Phase5 chưa hoàn tất;5B chưa bắt đầu.** Tải lại mọi tab để nhận asset/module `v=29`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -100,3 +100,11 @@ Nghiên cứu 35 sản phẩm: [GLOBAL_APP_RESEARCH.md](GLOBAL_APP_RESEARCH.md).
 Gym → Tạo buổi (hoặc sửa buổi custom) → **Thêm bài bằng bộ chọn**. Lọc tên không dấu/cơ chính/dụng cụ/pattern, chọn nhiều bài rồi **Xác nhận thêm bài**. Đổi filter giữ lựa chọn. **Thay bài** chọn một bài và duyệt so sánh/thông số/ghi chú trước xác nhận. Bài đã có bị chặn trùng; bài custom đang dùng cũng xuất hiện.
 
 Xác nhận tự lưu vào bản nháp; reload → **Tiếp tục bản nháp**. Lựa chọn chưa xác nhận sẽ mất khi rời trang. Lưu kế hoạch/source hoặc Start vẫn là hành động riêng. Schema7 giữ nguyên. Kiểm chứng và giới hạn: [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md).
+
+## Xem ngày — Phase 5A
+
+Ở **Hôm nay → Chọn việc cần làm → Xem ngày**, chọn ngày để xem nhật ký, các buổi tập đã hoàn thành, cardio, dinh dưỡng, check-in, ghi nhận gối và ảnh đã lưu. Dashboard vẫn là trang mặc định. Ngày trước/sau đi đúng một ngày lịch, không bỏ qua ngày trống; **Hôm nay** quay về ngày hiện tại trên thiết bị. Ngày tương lai được phép xem.
+
+Trang này chỉ đọc và dẫn về editor nguồn. Dùng **Mở nhật ký / dinh dưỡng / lịch sử tập / check-in / cardio / ảnh**, sửa ở nguồn nếu cần, rồi **Quay lại Xem ngày** để thấy dữ liệu mới. Lịch sử và ảnh được lọc ngày, có nút xem toàn bộ. Ngày được giữ trong bộ nhớ khi điều hướng trong tab; reload trở về Dashboard và lần mở Xem ngày tiếp theo bắt đầu ở hôm nay. Không lưu thêm summary/ngày chọn vào dữ liệu.
+
+Ngày trống hiện **Chưa có bản ghi**; ngày chỉ có ảnh vẫn hiển thị ảnh. Thiếu macro hiện **Chưa rõ**, không thay bằng0. Ảnh lỗi không che các bản ghi khác. Không có phân tích sức khỏe hay gợi ý tự động. Schema8 giữ nguyên, dữ liệu JSON và kho ảnh vẫn cục bộ. **5A implemented/tested; Phase5 chưa hoàn tất, 5B Journal Retrieval chưa bắt đầu.**

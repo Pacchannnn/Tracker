@@ -18,7 +18,7 @@ Read model `daySummary(data, photosMetadata, date)` tính từ các arrays hiệ
 
 Một cột ở 320/360/390; header date và tác vụ đang dùng rõ, sections thu gọn. Desktop hai cột khi có đủ nội dung. Không thêm một primary navigation tab bắt buộc; có thể nâng Hôm nay thành view này sau duyệt.
 
-**Cần duyệt:** thay dashboard mặc định hay subview “Xem ngày”; photo/knee cards hiển thị mặc định hay thu gọn. **Status: PLANNED.**
+**Decision5A approved:** subview “Xem ngày”, Dashboard giữ nguyên; gối thu gọn, ảnh strip. **Status: Phase5A IMPLEMENTED / TESTED (216tests,06/10/2026).** Journal Retrieval5B còn lại; chưa nâng thành Home.
 
 ## 2. Fast Daily Journal — “Vài dấu mực là đủ”
 

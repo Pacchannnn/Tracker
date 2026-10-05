@@ -1,3 +1,74 @@
+# Tracker V4 — Phase5A Xem ngày release
+
+06/10/2026 · **Phase5A IMPLEMENTED / TESTED in verified local scope. All25 gates passed. FullPhase5 remains incomplete until5B Journal Retrieval. STOP before5B.** Schema8 stays8. Local main codeffe8279; separate docs checkpoint follows in Git log. No push/fetch/reset/history rewrite. The Phase4 and earlier reports below are historical.
+
+## Phase5A report — all32 requested items
+
+1. **Baseline → final tests:** clean main6b76064,197/197→216/216,0failed/skipped/todo. Existing197 tests and assertions unchanged.19 new groups across tests/my-day.test.js and tests/my-day-photos.test.js. RED missing read-model/photo exports→GREEN; additional RED photo-error empty=true→GREEN unknown=null. Browser reproduced entry-row null arithmetic before canonical helper reuse fixed it.
+2. **Schema:**8→8, no fields/entities/migrations added, no dailySummary/myDay/cachedDay or persisted selected date. Existing migration/backup/identity tests pass. Photo DB1 and backup format1 unchanged.
+3. **Date semantics audit:** every domain joins its saved local YYYY-MM-DD date. Journal/photo createdAt/updatedAt and session updatedAt ISO do not determine membership. Knee moment does not shift saved date. Daily photos attach by date/category; food/recipe owner IDs refer to definitions, never meal dates. DATA_MODEL table records the audit. Noon/calendar stepping and localDate avoid bare YYYY-MM-DD parsing; month/year/leap/local midnight/ISO-near-midnight/future/invalid/empty tests pass.
+4. **Read-model architecture:** pure daySummary derives journals, compact completed sessions, cardio/check-ins/knee, canonical food totals/counts, photo metadata, presence and source view/date references. No writes or Blob loads. readDay isolates metadata errors; UI renders JSON immediately, then metadata/thumbnails asynchronously. Frozen inputs tested, no plan/ownership edits.
+5. **Persistent writes audit:** browser-owned probe counted0 JSON and0 photo writes for open/date controls and source navigation before Save. Audit showed exact JSON string and photo metadata unchanged. Initial full-day5photos:0 original URLs,4 thumbnails and one missing placeholder. Fake IDB test also verifies0readwrite transactions and no database created by an empty read. Explicit Journal Save produced1 JSON write; Check-in Save/delete produced2, not viewing.
+6. **Journal behavior:** current MOODS unchanged; drained means Mệt. Title,280-character note excerpt and existing tags rendered with textContent; literal HTML remains plain text. Contract is one entry/date in source editor and strict backup, with duplicate-date rejection test. Defensive read retains every matching record rather than silently choosing one; no auto Gym tag.
+7. **Workout behavior:** only data.sessions completed history, never active draft. All workouts/date displayed by frozen session title/source label. Counts are distinct exercise owners with saved sets and exact saved sets.length (label bài đã ghi), not current template size or fabricated performed exercises. Recorded exercise names/notes are compact; source opens date-filtered history, not a persisted history-edit draft.
+8. **Phase4 replacement-history:** actual browser fixture includes replaced Pulldown25kg and successor15kg, each one set, showing2bài/2hiệp; history retains each exact owner, closed state and Thay cho link. No chain expansion, volume recalculation, set movement or consumer rewrite. Automated runtime-complete fixture deep-equal ownership/snapshots retained; all Phase4 tests unchanged.
+9. **Cardio:** all records shown, actual activity/minutes/optional distance/intensity/notes only. Multiple activities kept independently from Gym. Source action opens the exact record/date in existing editor. No calorie estimate or rest-day label.
+10. **Nutrition totals/null:** uses dailyTotals, now propagating null/undefined independently for each macro; actual zero remains numeric zero. My Day no-entry totals=null, never logged0kcal. Existing food/recipe logging and strict backup still require known macros: null fixtures are defensive legacy/manual readable-state tests, not a new supported unknown-macro import/logging feature. Browser2items/2meal-label groups=350kcal/P28, unknown C/F matched source totals; row detail also uses canonical helper. Deleting Dinner returned150kcal/P12/C18/F4.5.
+11. **Check-in:** all same-date records retained; weight/waist/sleep and optional knee/notes shown only if recorded. Browser2records (one measurements, one sleep-only) preserved. Exact source editor70→71kg Save then second-record delete; return showed71kg and1record with other cards still present. No trend inference.
+12. **Knee:** optional compact details card, current moment/pain/swelling/instability/stiffness/notes, unknown values stay unrecorded. Exact source date/record inspected. Record-only wording; no diagnosis/safety score/recommendation.
+13. **Photo metadata/thumbnail:** new readonly metadata cursor projection, selected thumbnail getter. Original and thumbnail handles are co-located in existing IDB records; cursor.value receives structured-clone handles internally but original bytes are never decoded/retained or turned into URLs by My Day. Metadata result strips both binary fields; no getAll or new photo format/index layer. Missing thumbnail stays missing, no original fallback. URL lifetime and detached-host checks retain isolation.
+14. **Photo-only day:** actual5photo fixture on2026-10-03 displayed date+strip without journal/nutrition/check-in/workout or whole-day empty.0writes/0originalURLs/4thumbnailURLs, metadata and JSON unchanged. Orphan food owner remains a visible photo on its own date, not repaired or reassociated.
+15. **Empty day:** selected empty/future day says Chưa có bản ghi with light source shortcuts; no zeros/failure/rest-day language or placeholder creation. Empty domains hide large cards; useful compact nutrition missing text where other JSON records exist. If metadata fails and JSON is empty, no universal-empty claim: scoped JSON absence plus photo error; readDay.empty=null.
+16. **Multiple records/day:** full browser fixture2completed workouts,2cardio,2food items/2meal labels,journal,2check-ins,knee,5photos. All kept, photo IDs counted once, distinct domains not merged. Automated combined/multiple tests pass.
+17. **Date navigation:** previous/next exactly one calendar day; no skips, date picker/future allowed; Hôm nay local client date. Invalid/blank picker reports Chọn ngày hợp lệ and writes nothing. Browser year/month/leap cases and Today Enter/Space tested.
+18. **Route/reload:** existing in-memory show/render retained; My Day is a today-group subview, no primary tab/framework/query or persistent route. Selected date remains during source visits/return. Reload on standalone app returns Dashboard; next My Day2026-10-06 (actual client today), selecting04still shows prior saved JSON/photos. Documented in README/guide/model.
+19. **Source links:** Journal/Nutrition exact selected date; Gym history filter with view-all; Cardio/Check-in/Knee exact record/date; Photos gallery selected-date filter/view-all. Lightweight return button, no duplicate editors. All exercised in synthetic browser; source navigation itself0writes, photo source retains original gallery behavior separately.
+20. **Source edit/delete refresh:** return show reloads canonical JSON and reads fresh metadata. Actual Journal title/note edit, Nutrition item delete and Check-in edit/delete reflected immediately. No cached summary. Automated update/deletion tests retain unrelated arrays.
+21. **Independent failures:** simulated IndexedDB.open failure left every JSON card visible with photo warning. Missing thumbnail placeholder observed. Pure tests cover error on JSON-empty day and unsupported IDB/getter failure. Core loadData and identity validation stay fail-closed; no catch bypass/repair of corrupted JSON. My Day adds no cascade; existing explicit source deletion policies are preserved, including confirmed Journal+daily-photo deletion.
+22. **Mobile320/360/390:** actual iframe widths; content client/scroll305/305,345/345,375/375 because15px scrollbar. One grid column, all populated cards, long Vietnamese title/exercise/note text, nutrition, photo strip and empty date controls checked. Buttons48px; last photo action bottom561/576/571px above nav top673/687/687. Screenshot and DOM measurements retained ignored under.local. Not physical phones.
+23. **Accessibility:** semantic h1/h2/h3, wrapped date label, real buttons, native details, meaningful source names and metadata-based image alt. Tab moved previous→next; blue2.4px visible focus+2.4pxoffset inspected, Enter/Space activated date controls, focus restored after date rerender. Source button focus/bounds verified all3mobile widths. No screen-reader or WCAG certification claim.
+24. **Performance:** no original photo byte decoding or original URLs on initial My Day; cursor metadata scan then thumbnails only for chosen date, no per-card whole-history recalculations or persisted indexing layer. Existing source gallery may open full-image URLs after explicit source navigation. No throughput/memory benchmark or large-library claim; physical IDB co-location caveat recorded in PHOTO_STORAGE.
+25. **Security/privacy:** only local relative modules/Blob thumbnail URLs; no new CDN/fonts/analytics/upload/backend/remote AI. Existing textContent renderer handles user text; literal markup browser test did not create images/scripts. Fixtures/screenshots/probe scripts ignored; private MASTER_PLAN unchanged and not staged. User8765 origin untouched.
+26. **Regression suite:** all197 original assertions retained: identity/Replace/history/backup/picker/planningDraft/Nutrition/Journal/photo/recovery/migrations. Final216 pass,51JS syntax checks, git diff --check clean after EOF cleanup. Independent read-only reviewer ran215test interim tree and found no blocking/important defect; final extra failure-absence test was verified locally.
+27. **Browser actually tested:** Aempty/future, Bjournal-only/edit, Cnutritionmulti+null/source/delete, Dcompleted+replacement history, Eall-domains multiple, Fphoto-only, Gsourceedit/delete return, Hmonth/year/leap/Today/blank, Istandalone reload/data retention. Extra metadata fault, missingthumbnail, zero-write/source/date audit, keyboard and320/360/390 full/empty. Current harness and standalone captured warning/error logs empty. Older iframe observer attribution remains unproven; do not generalize historical logs.
+28. **Files changed:** created js/my-day.js,my-day-ui.js,tests/my-day.test.js,my-day-photos.test.js. Behavior changes app/data/navigation/photo-store/session-ui/CSS; index/import URLs28→29 (remaining JS edits cache-only). Docs README,DATA_MODEL,PHOTO_STORAGE,TRACKER_PRODUCT_IDEAS,V4_ROADMAP,this report,FULL_STEP_BY_STEP_GUIDE; ignored private TONG_KET updated. No dependency/PROGRAM/master/source plan change. No test fixture/probe/screenshot committed.
+29. **Git:** codeffe8279 on existing local main; separate docs checkpoint named Record Phase5A date audit, release gates and browser evidence. Final status inspected after that commit; no remote operation/branch split/history rewrite/private staging. Cached origin/main comparison is not remote verification.
+30. **NOT VERIFIED:** physical phone/mobile Safari/other browser engines/screen reader/nativequota/large photo-library I/O/performance/power loss/user private profile/full image backup roundtrip this milestone/every editor race. Existing image backup regression tests pass, but no repeat manual full-Blob backup test. No deployment/backend/AI/cloud performed. Unknown-macro fixture is not a valid new food/recipe import contract.
+31. **5A DONE gate:** all25 required gates passed in this documented local scope; matrix below. No blocking date/ownership ambiguity. Only5A marked implemented/tested; Phase5 NOT DONE.
+32. **Exact remaining5B:** local Journal full-text/tag retrieval, useful filter/clear/no-result states, paging beyond current30entry timeline, preserve dates/source navigation, pure search/filter and paging tests, saved older-entry edit/return browser flows, mobile/accessibility/privacy/regression/docs/checkpoints. No5B feature added. Recommend GPT-6.1-sol/high. **STOP here.**
+
+## Phase5A 25-gate evidence
+
+| Gate | Evidence / result |
+| --- | --- |
+|1 Baseline197 retained |PASS; final216, original assertions unchanged |
+|2 Schema8 |PASS; no persistent fields/migration |
+|3 Derived/read-only |PASS; pure frozen-input tests + browser probes |
+|4 No persisted summary |PASS; state key structure and code diff |
+|5 Local dates |PASS; model audit + boundary/midnight/ISO tests + browser |
+|6 Neutral empty |PASS; A/future and all3mobile |
+|7 Photo-only |PASS; F5photos, no journal |
+|8 Journal |PASS; drained=Mệt/tags/title/note/source Save |
+|9 History |PASS; Dall sessions, draft excluded |
+|10 Replacement ownership |PASS; exact owner/set tests + Dsource history |
+|11 Cardio |PASS; E2activities and exact source |
+|12 Canonical nutrition |PASS; helper reused, Cmatches source |
+|13 Null not zero |PASS; defensive helper fixture/browser C/rowfix |
+|14 Check-in |PASS; E2records, edit/delete G |
+|15 Knee record-only |PASS; details/source fields/wording |
+|16 Metadata/thumbnails |PASS; no getAll/binary result/original URL; co-location caveat |
+|17 Source links |PASS; all7domain targets exercised |
+|18 Edit refresh |PASS; Journal and Check-in source Save |
+|19 Delete refresh |PASS; Nutrition and Check-in source Delete |
+|20 No cascade mutation |PASS; view has no mutation, zero-write audit; source policies unchanged |
+|21 Opening/date0writes |PASS; JSON exact equality/metadata/probes; absentDB test |
+|22 Mobile3widths |PASS; measured populated+empty/nooverflow/source above nav |
+|23 Keyboard/focus |PASS; Tab/Enter/Space/outline/source bounds |
+|24 Full suite |PASS;216/216+51syntax+diff |
+|25 No5B creep |PASS; no text/tag search or paging added; STOP |
+
+---
+
 # Tracker V4 — Phase4B-4 Live Replace / Phase4 release
 
 06/10/2026 · **4A approved;4B-1/2/3/4 IMPLEMENTED / TESTED. All30 final gates passed in documented local scope. STOP before Phase5 My Day.** Work started05/10, completed06/10. Schema8 stays8. Code checkpoint61de602; separate docs checkpoint follows in local main Git log. No push/fetch/reset/history rewrite. Older reports below are historical.

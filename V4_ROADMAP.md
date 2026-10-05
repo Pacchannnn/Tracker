@@ -8,7 +8,7 @@
 
 ## Trạng thái và quy ước
 
-### Phase 4B-4 execution — 05–06/10/2026 (IMPLEMENTED / TESTED; STOP)
+### Historical Phase 4B-4 execution — 05–06/10/2026 (IMPLEMENTED / TESTED; STOP)
 
 Approved4A contract + explicit4B-4 request define this milestone. Verified clean main08e533f, schema8,180/180 tests. Continue on main; local code/docs checkpoints, no push.
 
@@ -57,10 +57,10 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–4 IMPLEMENTED / TESTED;4A approved;4B-1/2/3/4 DONE in documented local scope.
-- **CURRENT STEP:** bàn giao4B-4/Phase4, schema8; STOP trước Phase5 My Day. IN PROGRESS: none.
-- **BLOCKERS:** none in4B-4 scope. KNOWN BUGS: no remaining app bug in exercised flows; iframe harness observer error recorded, see report.
-- **DECIDE LATER:** My Day home/subview; richer mood/catalog; backend/AI/provider/privacy. Live Add/Remove/Reorder/Replace đã triển khai. Phase5 cần task riêng.
+- **CURRENT PHASE:**0–4 and5A IMPLEMENTED / TESTED; schema8;216tests/51syntax. FullPhase5 remains incomplete until5B.
+- **CURRENT STEP:** bàn giao5A Xem ngày; STOP trước5B Journal Retrieval. IN PROGRESS: none.
+- **BLOCKERS:** none in5A scope. KNOWN BUGS: no remaining My Day bug in exercised flows. Historical iframe observer error remains an unproven attribution; current5A captures are empty.
+- **DECIDE LATER:** whether My Day later becomes Home; richer mood/catalog; backend/AI/provider/privacy. Subview decision approved and implemented5A;5B needs its own task.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
 ## Ràng buộc chung
@@ -170,7 +170,25 @@ All30 final gates pass:197 tests (180 existing),47 syntax checks, browser0/parti
 
 ## Phase 5 — My Day và journal retrieval
 
-**Goal/value:** một trang theo date để nhìn cả ngày, tìm nhật ký cũ. **Depends:** user chọn home/subview, phase 1 capture. **Data:** derived join từ existing arrays/IDB metadata, chưa cần schema; activity catalog/energy là milestone khác. **UI:** dates, cards, source-links, local text/tagsearch, paging hơn30entries, photo-only days.
+### Phase 5A execution plan — 06/10/2026 (IMPLEMENTED / TESTED; STOP before5B)
+
+Approved: subview **Xem ngày**, Dashboard retained; schema8→8. Execute inline on current local main; no remote operations. Phase5B is excluded and remains incomplete.
+
+Date audit: journalEntries, entries, sessions, cardioEntries, checkins, kneeEntries and photos all use explicit local calendar `date` (YYYY-MM-DD). Journal/session/photo createdAt/updatedAt are ISO timestamps for metadata, never day membership. Daily photos attach by date/category, not journal ID; food/recipe owner IDs reference library definitions, not meal dates. Each photo joins once by its own date/ID, including orphan owners. No date reassociation. Journal editor and backup enforce one entry/date; other domains permit multiple. Preserve all source records in the read model. Existing router uses in-memory `view`; selected day remains in memory through source navigation, reload returns Dashboard. No new persisted route state.
+
+Architecture: pure `daySummary(data, photosMetadata, date)` plus local calendar stepping in js/my-day.js; small js/my-day-ui.js uses existing semantic helpers and textContent. Source links configure existing source views, with an in-memory return button. History optionally filters the chosen date without changing session readers/ownership. Canonical dailyTotals must propagate unknown macros as null; known zero remains zero. Photos use new read-only metadata cursor projection and selected thumbnail getter on the unchanged IDB store; reading a nonexistent DB aborts creation. No Blob decoding/original URLs in My Day, no writes or persisted aggregate.
+
+1. [x] RED tests: pure empty/each-domain/multiple/date/null/immutability/source update-delete/replacement; read-only photo queries, missing DB and failure isolation. Run node --test tests/my-day.test.js tests/my-day-photos.test.js.
+2. [x] GREEN: implement read model/calendar helpers, minimal canonical macro fix, read-only photo APIs. Retain all197 regression assertions. Files: js/my-day.js, js/data.js, js/photo-store.js and above tests.
+3. [x] UI: date controls, neutral empty state, ordered populated cards, metadata/thumbnail strip, source actions/return, Dashboard shortcut; small app/navigation/session-ui/CSS changes, cache URLs29. No editor in this view.
+4. [x] Browser synthetic origin: A–I workflows; explicit source Save/edit/delete followed by fresh derive; count storage/IDB writes while only reading/navigating; photo failure and photo-only; reload contract. Actual rendered320/360/390 all-card and empty screens; Tab/Enter/Space/focus/labels; no private origin changes.
+5. [x] Independent review, fixes, full suite/syntax/diff checks; update roadmap/report/data model/photo docs/README/guide/private summary, separate local code/docs checkpoints. No synthetic fixtures staged. STOP before5B.
+
+Dependencies:1→2→3→4→5. Done: all25 user gates supported by actual evidence; distinguish unverified physical devices/screen reader/native quota. Model/reasoning: current coding model/high for date and read isolation; medium for docs. No blocker in audited date/ownership contracts. Future decision: whether My Day becomes Home; no decision blocks5A.
+
+**Phase5 status:**5A DONE in verified local scope;5B Journal Retrieval NOT STARTED. FullPhase5 NOT DONE. Evidence:197→216tests;51JS syntax/diff; synthetic8780 A–I, zero-write/photo failure,320/360/390 and keyboard, local codeffe8279 + docs checkpoint.
+
+**Goal/value:** một trang theo date để nhìn cả ngày, tìm nhật ký cũ. **Depends:** subview approved for5A, phase 1 capture. **Data:** derived join từ existing arrays/IDB metadata, chưa cần schema; activity catalog/energy là milestone khác. **UI:** dates, cards, source-links, local text/tagsearch, paging hơn30entries, photo-only days.
 
 Tests: leap/month/year/timezone boundary, future/empty day, multi workouts/checkins, missing nutrition/photo read errors, independent sources. Manual: chọn ngày cũ → mở food/gym/journal đúngngày → sửa nguồn → summary cậpnhật; clearfilters giữ dữ liệu. Done: không tạo/duplicate records chỉ vì xemngày, không cascade delete sang cácdomain khác.
 
