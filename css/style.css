@@ -261,5 +261,5 @@ dialog::backdrop { background: #2d2d2db0; }
 .journal-retrieval-tags legend { max-width: 100%; font-size: .93rem; overflow-wrap: anywhere; }
 .journal-retrieval .tag-suggestions { display: flex; flex-wrap: wrap; gap: 10px; }
 .journal-retrieval button { max-width: 100%; overflow-wrap: anywhere; }
-.journal-retrieval-tags button[aria-pressed=true] { background: var(--yellow); border-style: dashed; }
+.journal-retrieval-tags button[aria-pressed=true] { color: var(--ink); background: var(--yellow); border-style: dashed; }
 .journal-retrieval .list-card { scroll-margin-block: 100px; }
