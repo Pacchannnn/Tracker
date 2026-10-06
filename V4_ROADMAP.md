@@ -254,6 +254,8 @@ Tests: double-submit batch, exact itemcount, date/meal retained, deletedfood, st
 
 ## Phase 7 — weekly life review và monthly memories
 
+**Phase7 CONTRACT DESIGNED — NOT IMPLEMENTED.** Phase7A design-only contract: [PHASE7_LIFE_REVIEW_CONTRACT.md](PHASE7_LIFE_REVIEW_CONTRACT.md). Await user approval before any7B runtime/tests/migration; this contract defers persisted highlights/hidden flags mentioned in the original proposal below.
+
 **Goal/value:** tìm lại dữ kiện có ích từ dữ liệu đã ghi. **Depends:** phase5 + agreed missing-data/mood semantics; richercatalog optional. **Data:** derived periodsummary; hiddenmemory/highlight flags nếu persist cần migration; không reinterpret legacy `drained`. **UI:** coverage/mooddistribution/activities, sources, photo highlights do user mở/chọn.
 
 Tests: denominators journal/mood/nutrition riêng, same-date dedupe, sparse sample, emptyweek, chronological order, unknownmuscle bucket, hiddenmemory không xóaentry. Manual: fixture4journal/3mood/2fooddays phải hiển thị chính xác; không báo “tuần tốt/xấu” hoặc medical cause. Done: mọi số truy về records được và unknown không thành0.
