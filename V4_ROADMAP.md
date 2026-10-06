@@ -57,10 +57,10 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–4 and5A IMPLEMENTED / TESTED; schema8;216tests/51syntax. FullPhase5 remains incomplete until5B.
-- **CURRENT STEP:** bàn giao5A Xem ngày; STOP trước5B Journal Retrieval. IN PROGRESS: none.
-- **BLOCKERS:** none in5A scope. KNOWN BUGS: no remaining My Day bug in exercised flows. Historical iframe observer error remains an unproven attribution; current5A captures are empty.
-- **DECIDE LATER:** whether My Day later becomes Home; richer mood/catalog; backend/AI/provider/privacy. Subview decision approved and implemented5A;5B needs its own task.
+- **CURRENT PHASE:**0–5 IMPLEMENTED / TESTED in verified local scope; schema8;231tests/53syntax. All29 Phase5B gates passed.
+- **CURRENT STEP:** bàn giao5B Journal Retrieval; STOP trước Phase6. IN PROGRESS: none.
+- **BLOCKERS:** none in5B scope. KNOWN BUGS: no remaining retrieval bug in exercised flows; detached-chip focus and selected-hover contrast fixed. Current5B harness/standalone warning/error captures empty; historical observer attribution remains unproven.
+- **DECIDE LATER:** whether My Day later becomes Home; richer mood/catalog; backend/AI/provider/privacy. Phase6 needs a separate task and bounded scope.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
 ## Ràng buộc chung
@@ -170,6 +170,24 @@ All30 final gates pass:197 tests (180 existing),47 syntax checks, browser0/parti
 
 ## Phase 5 — My Day và journal retrieval
 
+### Phase 5B execution plan — 06/10/2026 (IMPLEMENTED / TESTED)
+
+Verified baseline: clean local main d3f2e83 (code5A ffe8279), schema8,216/216tests and51JS syntax pass. Guide on disk is FULL_STEP_BY_STEP_GUIDE.txt (the requested .md does not exist); update this existing guide. No baseline mismatch, no AGENTS found, no remote operation. The existing timeline in renderJournalCalendar sorts newest first then slices30. Journal shape is id/date/mood/title/note/tags/createdAt/updatedAt; strict backup validates text/tag/date types and one journal/date. My Day uses in-memory source date/return, preserved.
+
+Approved design: pure retrieval in js/journal.js, focused js/journal-retrieval-ui.js integrated only at the timeline; keep calendar/editor/photo code and paper style. Normalize temporary strings with NFD accent removal, đ→d, Vietnamese lowercase, trim/collapse whitespace. Substring match individually in title/note/each tag; exact normalized tag equality, multiple tags ALL, query AND tags. Filter the full array then stable descending date sort, then take cumulative limit30,60,90. No cross-field invented phrase, fuzzy/mood search or persistent index. Existing recent tag editor helpers and MOODS unchanged. Retrieval validates the fields it reads; malformed source records fail with a clear read-only message rather than repair/skip; strict core load/backup behavior retained.
+
+UI state query/tags/limit lives only in the module closure and survives editor visits in the tab; reload resets it. Live input refreshes only results/status, preserving typing focus. Tag chips use aria-pressed and original labels deduplicated by normalized key; chosen-but-removed source tags stay visible in active-filter text until Clear. Filter changes reset30; Xem thêm adds30, focuses first new record; Clear resets all and focuses search. Distinguish no journals from no matching results. Results open exact Journal date; explicit return to results reloads canonical JSON and derives afresh; My Day source opening resets only the retrieval-return flag, preserving5A return behavior. No new navigation tab/schema or editor.
+
+1. [x] RED tests in tests/journal-retrieval.test.js: title/note/tag/unaccented/whitespace/no-results/blank, exact1tag and ALL tags+query, chronological/immutable,75records/filtered beyond30/partial pages/no duplicate or skip/reset/clear, source edit/delete/literal HTML/malformed values, backup and zero storage writes. Run node --test tests/journal-retrieval.test.js.
+2. [x] GREEN pure helpers: normalizeJournalText, journalTagOptions, retrieveJournalEntries returning visible records/total/hasMore. Existing216 assertions untouched; node --test plus schema8 backup tests.
+3. [x] UI/module integration and CSS: semantic Tìm nhật ký field, chips, active filters/count/clear, paged results/Load More, source-return button and latest canonical source. Cache URLs30 only; no Gym/Nutrition behavior change.
+4. [x] Synthetic separate origin browser A–K with75entries and probe: retrieve55beforeLoadMore,30→60→75 no skip/duplicates, filtered45→30+15, query+tags/reset/clear, edit/delete return,5A source save/return, reload; read-only counters0, related/unrelated daily photos deletion policy unchanged. Actual320/360/390 many long chips/query/results/LoadMore/no-result/keyboard/focus/bottomnav; standalone logs.
+5. [x] Independent review, important fixes, full tests/syntax/diff; update roadmap/report/model/README/existing guide/private summary, separate local main code/docs checkpoints. All29gates passed; Phase5 complete in verified local scope. STOP before6; no push.
+
+Dependencies:1→2→3→4→5. Model/reasoning: current coding model/high for full-history/date/source/focus integration; medium for docs. Decisions: cumulative LoadMore chosen over numbered paging as the smallest reversible solution. No schema/dependency/blocking decision required.
+
+Results:216→231tests,53syntax, original216 assertions unchanged. Browser synthetic8782 A–K; initial75, filtered45→30/45, entry55 before LoadMore,30/60/75 unique dates. Query+ALLtags, filter reset60→30/37, mutually exclusive tags0; source edit/delete refresh; My Day date03 Save/return; reload74 after explicit deletion and filters reset. Probe0JSON/0IDB writes plus exact JSON/metadata equality for retrieval/source-opening-only. Existing Journal delete removed daily55 only; food55 same date and daily-other retained. All320/360/390 no overflow. Code334d541 plus hover-contrast fix79e60eb; separate docs checkpoint follows. No remaining important finding in independent read-only review. No physical-device/screen-reader/large-library benchmark claim. Full evidence and29-gate matrix: V4_IMPLEMENTATION_REPORT.md. STOP before6.
+
 ### Phase 5A execution plan — 06/10/2026 (IMPLEMENTED / TESTED; STOP before5B)
 
 Approved: subview **Xem ngày**, Dashboard retained; schema8→8. Execute inline on current local main; no remote operations. Phase5B is excluded and remains incomplete.
@@ -186,7 +204,7 @@ Architecture: pure `daySummary(data, photosMetadata, date)` plus local calendar 
 
 Dependencies:1→2→3→4→5. Done: all25 user gates supported by actual evidence; distinguish unverified physical devices/screen reader/native quota. Model/reasoning: current coding model/high for date and read isolation; medium for docs. No blocker in audited date/ownership contracts. Future decision: whether My Day becomes Home; no decision blocks5A.
 
-**Phase5 status:**5A DONE in verified local scope;5B Journal Retrieval NOT STARTED. FullPhase5 NOT DONE. Evidence:197→216tests;51JS syntax/diff; synthetic8780 A–I, zero-write/photo failure,320/360/390 and keyboard, local codeffe8279 + docs checkpoint.
+**Phase5 status:**5A and5B IMPLEMENTED / TESTED in verified local scope. FullPhase5 DONE;29/29 Phase5B gates passed. Historical5A evidence:197→216tests/51syntax, codeffe8279. Current5B:216→231tests/53syntax, code334d541+79e60eb, browser8782 A–K and mobile/zero-write/source return. STOP before Phase6.
 
 **Goal/value:** một trang theo date để nhìn cả ngày, tìm nhật ký cũ. **Depends:** subview approved for5A, phase 1 capture. **Data:** derived join từ existing arrays/IDB metadata, chưa cần schema; activity catalog/energy là milestone khác. **UI:** dates, cards, source-links, local text/tagsearch, paging hơn30entries, photo-only days.
 

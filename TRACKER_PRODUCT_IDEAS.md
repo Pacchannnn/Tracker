@@ -18,7 +18,7 @@ Read model `daySummary(data, photosMetadata, date)` tính từ các arrays hiệ
 
 Một cột ở 320/360/390; header date và tác vụ đang dùng rõ, sections thu gọn. Desktop hai cột khi có đủ nội dung. Không thêm một primary navigation tab bắt buộc; có thể nâng Hôm nay thành view này sau duyệt.
 
-**Decision5A approved:** subview “Xem ngày”, Dashboard giữ nguyên; gối thu gọn, ảnh strip. **Status: Phase5A IMPLEMENTED / TESTED (216tests,06/10/2026).** Journal Retrieval5B còn lại; chưa nâng thành Home.
+**Decision5A approved:** subview “Xem ngày”, Dashboard giữ nguyên; gối thu gọn, ảnh strip. **Status: Phase5A +5B IMPLEMENTED / TESTED trong phạm vi local (231tests,06/10/2026).** Journal Retrieval tìm title/note/tags không dấu; exact tags ALL + query AND; toàn bộ lịch sử trước paging30/60/90. Có Clear/no-result/count/source-return;0writes khi chỉ tìm/xem. Schema8 giữ nguyên; chưa nâng thành Home. STOP trước Phase6; giới hạn và evidence ở V4_IMPLEMENTATION_REPORT.md.
 
 ## 2. Fast Daily Journal — “Vài dấu mực là đủ”
 

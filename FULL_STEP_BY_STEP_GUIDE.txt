@@ -1,9 +1,9 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase5A complete; STOP before5B)
+Updated: 2026-10-06 (Phase5A+5B complete in verified local scope; STOP before6)
 
 CURRENT PROJECT STATE
-Phase4 + Phase5A Xem ngày IMPLEMENTED / TESTED;216 tests /51 syntax checks.
-Full Phase5 remains incomplete until5B Journal Retrieval.
+Phase4 + Phase5 Xem ngày / Journal Retrieval IMPLEMENTED / TESTED;
+231 tests /53 syntax checks; all29 Phase5B gates passed, schema8 unchanged.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -232,7 +232,7 @@ BACKLOG: Phase5/6 food reuse/7 reviews/8 experiments; future template promotion,
 See V4_IMPLEMENTATION_REPORT.md for all37 required report items and30-gate evidence.
 
 
-V4 PHASE 5A — CURRENT STATUS — 2026-10-06
+V4 PHASE 5A — HISTORICAL STATUS — 2026-10-06
 CURRENT PHASE:5A Xem ngày IMPLEMENTED / TESTED; schema8 remains8; full5 NOT DONE.
 CURRENT STEP: handoff; STOP before5B. IN PROGRESS: none. BLOCKERS: none in5A.
 COMPLETED: audited all explicit local date/ISO fields and photo owner relations;
@@ -257,3 +257,35 @@ DEPENDENCIES: existing journal data/date helpers/source editor; no implicit sche
 MODEL/REASONING: GPT-6.1-sol/high for5B matching/state/date integration, medium for docs.
 DECISIONS: home promotion/richer mood/catalog/remote AI/backend/privacy DECIDE LATER.
 BACKLOG:5B;6food reuse/cookbook;7reviews/memories;8experiments. No5B implemented here.
+
+
+V4 PHASE 5B — CURRENT STATUS — 2026-10-06
+CURRENT PHASE:5A+5B IMPLEMENTED / TESTED in verified local scope; Phase5 DONE.
+CURRENT STEP: handoff; STOP before Phase6. Schema8/photo DB1/format1 unchanged.
+COMPLETED:local title/note/tag substring retrieval, Vietnamese normalization,
+exact tag ALL + query AND, full-history-before-paging30/60/90, Clear/count/
+empty/no-result, fresh exact-date source edit/delete return. My Day preserved.
+STEPS:1 RED15groups ->2 pure helpers ->3 UI/CSS/source/cache30 ->4 browser A-K
+and mobile/keyboard/zero-write ->5 review/fixes/verification/docs/checkpoints.
+All steps DONE; dependencies1->2->3->4->5. Model/reasoning: coding model/high
+for matching/source/focus integration and verification; medium for docs.
+TESTS:216->231; existing216 unchanged,15new groups;53syntax; diff clean.
+Browser8782 synthetic75records, entry55 before LoadMore,30/60/75 unique,
+45filtered30+15, ALLtags and filter-reset, literal HTML stays text, edit/delete
+fresh derive, MyDay03 Save/return, reload74 retains explicit deletion.
+Retrieval-only0JSON/0IDB writes plus raw JSON/metadata equality; explicit
+source delete retains same-date food photo and unrelated daily photo.
+Mobile320/360/390 measured no overflow;44px chips/48px source; keyboard,
+Clear/LoadMore focus, visible removed-tag fallback320 and hover contrast fixed.
+CODE CHECKPOINTS:334d541 +79e60eb; separate docs checkpoint in git log.
+IN PROGRESS:none. BLOCKERS:none in5B. KNOWN BUGS:no remaining important
+retrieval bug in exercised flows; all29 gates passed. No push/remote operation.
+NOT VERIFIED:physical phones/Safari/other engines/screen reader/nativequota/
+large-history benchmarks/full photo backup browser repetition/editor races.
+DECISIONS NEEDED:none for5B; MyDay-as-Home, richer taxonomy, remote services
+remain DECIDE LATER. Search state is deliberately transient, no schema change.
+NEXT:Phase6 faster food reuse/cookbook only after a separate bounded task.
+Done conditions next:review selected items/count/date, preserve nutrition
+snapshots, validate quantities and migrate only necessary persistent fields.
+BACKLOG:6food reuse/cookbook;7reviews/memories;8experiments. No6 started.
+Evidence/detailed limits:V4_IMPLEMENTATION_REPORT.md; plan:V4_ROADMAP.md.

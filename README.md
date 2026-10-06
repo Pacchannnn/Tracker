@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase4 + Phase5A Xem ngày IMPLEMENTED / TESTED · 216 tests. Phase5 chưa hoàn tất;5B chưa bắt đầu.** Tải lại mọi tab để nhận asset/module `v=29`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · Phase4 + Phase5 (Xem ngày và Journal Retrieval) IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 231 tests.** Tải lại mọi tab để nhận asset/module `v=30`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). STOP trước Phase6.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -107,4 +107,12 @@ Xác nhận tự lưu vào bản nháp; reload → **Tiếp tục bản nháp**.
 
 Trang này chỉ đọc và dẫn về editor nguồn. Dùng **Mở nhật ký / dinh dưỡng / lịch sử tập / check-in / cardio / ảnh**, sửa ở nguồn nếu cần, rồi **Quay lại Xem ngày** để thấy dữ liệu mới. Lịch sử và ảnh được lọc ngày, có nút xem toàn bộ. Ngày được giữ trong bộ nhớ khi điều hướng trong tab; reload trở về Dashboard và lần mở Xem ngày tiếp theo bắt đầu ở hôm nay. Không lưu thêm summary/ngày chọn vào dữ liệu.
 
-Ngày trống hiện **Chưa có bản ghi**; ngày chỉ có ảnh vẫn hiển thị ảnh. Thiếu macro hiện **Chưa rõ**, không thay bằng0. Ảnh lỗi không che các bản ghi khác. Không có phân tích sức khỏe hay gợi ý tự động. Schema8 giữ nguyên, dữ liệu JSON và kho ảnh vẫn cục bộ. **5A implemented/tested; Phase5 chưa hoàn tất, 5B Journal Retrieval chưa bắt đầu.**
+Ngày trống hiện **Chưa có bản ghi**; ngày chỉ có ảnh vẫn hiển thị ảnh. Thiếu macro hiện **Chưa rõ**, không thay bằng0. Ảnh lỗi không che các bản ghi khác. Không có phân tích sức khỏe hay gợi ý tự động. Schema8 giữ nguyên, dữ liệu JSON và kho ảnh vẫn cục bộ. **5A và5B implemented/tested trong phạm vi local đã kiểm tra.**
+
+## Tìm lại nhật ký — Phase 5B
+
+Vào **Nhật ký & Ảnh → Lịch & dòng thời gian**. Ô **Tìm nhật ký** tìm trong tiêu đề, ghi chú và thẻ, không phân biệt hoa/thường hoặc dấu tiếng Việt (`met` tìm được `Mệt`). Khoảng trắng được gộp khi so sánh; nội dung đã lưu không bị sửa. Chọn nhiều thẻ nghĩa là nhật ký phải có **tất cả** thẻ đó và khớp query nếu có.
+
+Tìm/lọc trên toàn bộ lịch sử rồi hiển thị ngày mới trước:30 kết quả đầu, **Xem thêm** thêm30. Đổi query/thẻ hoặc **Xóa bộ lọc** quay về30 kết quả; Clear trả focus về ô tìm. Không có dữ liệu hiện **Chưa có nhật ký**, không khớp bộ lọc hiện **Không tìm thấy nhật ký phù hợp**.
+
+**Mở ngày** mở editor đúng ngày; **Quay lại kết quả nhật ký** tính lại từ dữ liệu hiện tại. Sau sửa/xóa, entry có thể không còn khớp query/thẻ. Tìm/lọc/xem thêm/mở kết quả không lưu dữ liệu. Chỉ Save/Delete trong editor thay dữ liệu theo flow hiện có. Query/thẻ/số kết quả không lưu qua reload; dữ liệu nhật ký và ảnh vẫn còn. Đã kiểm tra browser/iframe320/360/390 và keyboard; chưa kiểm tra điện thoại vật lý, screen reader hoặc Safari.

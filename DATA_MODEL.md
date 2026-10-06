@@ -2,6 +2,16 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Phase 5B Journal retrieval — transient UI only (06/10/2026)
+
+Schema8 remains8; no search index, cached normalized text, search/page preferences or migration. `normalizeJournalText` uses NFD combining-mark removal, đ/Đ→d, Vietnamese lowercase, trim and whitespace collapse. It only creates temporary strings; saved title/note/tags remain verbatim. `retrieveJournalEntries(entries,{query,tags,limit})` searches substring independently in title, note and each tag. It does not search mood/date/timestamps or invent phrases across fields. Blank/null query means no text constraint. Tag keys compare exact normalized strings; all selected tags must match, and query AND tags must match.
+
+Filter the entire array → stable newest `date` first (local YYYY-MM-DD, never timestamps) → cumulative slice limit30/60/90. Return visible entries, total and hasMore without mutating inputs. UI resets30 on query/tag changes and Clear; Clear also empties query/tags. Query/tags/limit live in one closure, survive source visits in that tab and reset on reload. Tag labels come from existing records with the most recent original spelling per normalized key. A selected tag whose last record was edited/deleted remains removable until deselected/Clear.
+
+Readable retrieval records must have nonempty string id, valid date, string title/note and an array of string tags. Invalid shapes reject with a read-only error; no skipped records, repair, migration or changed strict backup contract. Fields not read by retrieval remain governed by existing source/backup validation.
+
+Opening a result selects its exact source date and reloads canonical JSON through existing show. Returning derives current matches afresh, so edited/deleted records can disappear from results. My Day source opening preserves its date/return flow and clears only the retrieval-return flag. Search/filter/paging/Clear/open/return write neither JSON nor IndexedDB. Explicit source Save/Delete retain existing mutation and confirmed daily-photo deletion policy; food photos on the same date and unrelated photos are retained. Photo DB1/backup format1 unchanged. Verified216→231 tests and browser probes; details in V4_IMPLEMENTATION_REPORT.md.
+
 ## Phase 5A Xem ngày — derived read model (06/10/2026)
 
 Schema8 stays8. No persisted summary, selected date, duplicated source record or migration. `daySummary(data, photosMetadata, date)` returns date, journal array, compact completed workout summaries, cardio/check-in/knee arrays, canonical nutrition totals and item/meal-label counts, deduplicated photo metadata, explicit presence flags and source view/date references. Input arrays/records are not changed. A draft is never counted as completed. Workout exercise count means distinct saved set owners (slotId, legacy exerciseIndex fallback), not current template size; saved set count is exactly history sets.length. No expansion of replacement chains or new volume/ownership calculation.

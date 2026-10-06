@@ -1,3 +1,68 @@
+# Tracker V4 — Phase5B Journal Retrieval / Phase5 release
+
+06/10/2026 · **5B IMPLEMENTED / TESTED; Phase5 IMPLEMENTED / TESTED in verified local scope. All29 gates passed. STOP before Phase6.** Schema8 stays8. Baseline clean main d3f2e83 (5A code ffe8279); code334d541, contrast fix79e60eb; separate docs checkpoint follows in local Git log. No push/fetch/reset/history rewrite. Reports below are historical.
+
+## Phase5B report — all22 requested items
+
+1. **Baseline → final tests:**216/216→231/231,0failed/skipped/todo. All216 existing tests/assertions unchanged.15 new groups in tests/journal-retrieval.test.js; RED missing helper exports before implementation, then GREEN. Final full suite rerun after the hover-color fix.53 JS files pass node --check; git diff --check clean. Independent read-only reviewer found detached-chip focus, confirmed final fix and no remaining important finding.
+2. **Schema:**8→8. No persisted index/normalized text/query/tag/page preference or migration. Existing schema8 backup/migration/photo/planningDraft tests pass; Photo DB1/backup format1 unchanged.
+3. **Exact search fields:** journalEntries.title, note and each tags string. Substring per field; no fabricated phrase joining title+note or different tags. Mood/date/timestamps not searched. Existing MOODS unchanged; drained remains Mệt.
+4. **Normalization:** temporary String(value??'') → NFD → strip combining marks U+0300–036F → đ/Đ→d → Vietnamese lowercase → trim/collapse whitespace. Blank/null query imposes no text filter. Original saved text/labels untouched; met matches Mệt and tap gym matches actual Tập gym text.
+5. **Tags:** exact normalized equality, ALL selected tags. Options derive from existing records, most recent original spelling per normalized key; no taxonomy. A selected tag removed from all source records stays removable until deselected/Clear. Existing recent-tag editor semantics unchanged.
+6. **Composition:** query AND all selected tags. Browser query lich su chung + Gym + Đọc sách returned23/23. Independent Gym + Đi bộ fixture groups returned0, proving ALL rather than OR. Pure tests also cover independent multi-tag combinations.
+7. **Sort:** stable descending local YYYY-MM-DD date, same newest-first behavior as old timeline; createdAt/updatedAt irrelevant. Sorting uses copies, no source mutation.
+8. **Paging:** validate readable source → filter entire history → sort matches → slice cumulative limit30/60/90. Return entries,total,hasMore. Query/tag change resets30; Clear empties both/reset30. LoadMore focuses first newly shown source button. UI state survives editor visits only in the tab; reload resets it.
+9. **>30 evidence:**75-record fixture entry55 (2026-08-13) found with dac biet before LoadMore. Filtered45 matched records rendered30 then45 (final15), not slice-before-filter. After60 unfiltered results, Gym reset to30/37 in the fixture where one even entry had been explicitly deleted.
+10. **>60 evidence:** actual30→60→75 records;75 unique date/source labels, original first30/60 retained, final15, no skip/duplicates and no LoadMore at75. Pure tests independently compare slices and uniqueness.
+11. **Zero-write evidence:** owned synthetic8782 probe counts Storage set/remove/clear and IDB write transactions. Search/tag/paging/Clear/open result/return produced0 JSON and0 photo writes; exact raw JSON string and photo metadata equality, changedDomains=[] after resetting baseline to current data. Empty history read also0writes. No persistent timestamp touch, repair or hidden metadata.
+12. **Edit/delete refresh:** search old55, edit title/tags, Save, return derives canonical source and removes old match; new query finds edited title. Subsequent confirmed Delete removes match; reload shows74 persisted records and deleted55 stays absent. Delete cancel/Escape0writes; explicit Delete1JSON+1photo write. Existing policy removes daily55 only; same-date food55 and unrelated daily-other retained. Other state domains compare unchanged. Literal HTML query found61st record and remained text, with0img/script nodes in results. Retrieval rejects malformed shapes without repair/skip; source/backup validation remains strict.
+13. **My Day regression:** valid synthetic fixture Home→Xem ngày2026-10-03→Journal exact03→Save updated title→return exact03/current title/photo. No retrieval-return button injected into MyDay-opened editor. Recent Gym tag toggle add/remove retained original tags and0writes before Save. Earlier invalid fixture tag length was correctly rejected; corrected fixture was used for successful Save verification, not a relaxed validator.
+14. **Mobile:** actual iframe320/360/390, content client/scroll305/305,345/345,375/375 (15px scrollbar).14 chips, long Vietnamese query, query typing focus, selected filters, Clear, result cards, LoadMore60 and no-result checked. No horizontal overflow. New-result source button48px, bottom404/404/404 above navigation top673/688/688. Final removed-tag fallback explicitly retested320: search top356/bottom404 above nav673. Screenshot and measured JSON ignored under.local; no physical-device claim.
+15. **Accessibility:** labeled native search; semantic fieldset/legend/buttons, aria-pressed and checkmark/active text; status count, disabled Clear when inactive. Tab/Shift+Tab, Enter/Space, Escape cancel, visible blue2.4px focus; Clear→search, LoadMore→first new source. Removed-chip bug reproduced BODY focus, then offscreen search with preventScroll; fixed connected-chip focus vs normal fallback search focus and proved visible320. Chips44px/source48px. Selected hover contrast fixed from white-on-yellow to rgb45,45,45 on rgb255,249,196; browser computed hover/focus state verified. No screen-reader/WCAG certification.
+16. **Privacy/security:**100% local retrieval; no dependency/CDN/font/analytics/AI/network service added. Safe existing textContent APIs for query/title/note/tags, no unsafe user HTML. User8765 origin untouched; all fixtures/probes/screenshots on owned8782 and ignored.local. Private master unchanged/not staged.
+17. **Performance decision:** pure in-memory linear filtering plus sorting sufficient for observed75-record workload; typing updates only result/status nodes, preserves input. No fuzzy engine/index/worker/backend. No quantified latency, large-history or photo-I/O benchmark claim. Full source validation on read is deliberate fail-safe behavior, not automatic data repair.
+18. **Files:** new js/journal-retrieval-ui.js and tests/journal-retrieval.test.js; behavior changes js/journal.js, js/app.js, css/style.css. index and other JS import URLs29→30 are cache-only; no Gym/Nutrition architecture change. Docs V4_ROADMAP, this report, DATA_MODEL, README, TRACKER_PRODUCT_IDEAS, existing FULL_STEP_BY_STEP_GUIDE.txt; ignored private summary updated. Requested guide.md absent, existing guide.txt reused. No test fixtures/probes/private data committed.
+19. **Git:** local main code334d541; focused contrast checkpoint79e60eb; docs checkpoint named Record Phase5B retrieval evidence and Phase5 completion. Main status inspected after docs commit; no remote command/push/branch split/reset/history rewrite. Cached origin comparison is not remote verification.
+20. **NOT VERIFIED:** physical phones/mobile Safari/other engines/screen reader/WCAG certification/native quota/very large history/photo-library performance/power loss/all source editor races/manual full-image backup roundtrip this milestone. Existing regression tests pass; not every Gym/Nutrition/Check-in/Knee UI workflow was manually repeated in5B. Historical iframe observer attribution remains unproven; current5B harness and standalone captured warning/error logs empty. No deployment/backend/AI/cloud performed.
+21. **DONE gate:**29/29 passed in this documented local scope (matrix below).5A and5B implemented/tested; Phase5 complete. No blocking schema/date/ownership decision and no remaining important retrieval bug in exercised flows.
+22. **Exact next phase:**Phase6 — faster food reuse và cookbook: bounded approved milestone for existing food/recipe reuse, selective/multi-item review and safe logged snapshots; persistent additions require migration/tests when needed. No Phase6 implementation started. **STOP here; await a separate task.**
+
+## Phase5B 29-gate matrix
+
+| Gate | Evidence / result |
+| --- | --- |
+|1 Baseline216 retained |PASS; original files/assertions unchanged,231final |
+|2 Schema8 |PASS; no persistent fields/migration |
+|3 Local full-text |PASS; pure tests + browserB/C/D |
+|4 Vietnamese accents |PASS; NFD/đ tests + met/tap gym browser |
+|5 Title/note/tags |PASS; independent per-field cases |
+|6 Tag filtering |PASS; exact normalized equality |
+|7 Query+tags composition |PASS; ALL and AND,23match/0exclusive browser |
+|8 Full history before slice |PASS; entry55 without LoadMore |
+|9 >30 paging |PASS;30→60, filtered45→30/45 |
+|10 >60 paging |PASS;30→60→75 |
+|11 No duplicate/skip |PASS;75unique dates and stable prefixes |
+|12 Filter reset |PASS;60→30/37 after Gym, query reset/mobile |
+|13 Clear restores |PASS;30/75, search focus, disabled Clear |
+|14 Empty vs no-result |PASS; distinct rendered messages |
+|15 Source date/navigation |PASS; Aug13/Aug07 exact editor |
+|16 Old edit/return |PASS; renamed title/tag disappears, new search finds |
+|17 Delete/return |PASS; disappears and reload retains74 |
+|18 MyDay↔Journal |PASS; date03 valid Save/return/title/photo |
+|19 Retrieval0writes |PASS;0JSON/0IDB + exact raw/metadata equality |
+|20 No cascade |PASS; unchanged other domains; food/unrelated daily photos retained |
+|21 Immutable source |PASS; frozen-input tests, browser raw equality |
+|22 Mobile3widths |PASS;320/360/390 no horizontal overflow |
+|23 Keyboard/focus |PASS; Tab/ShiftTab/Enter/Space/Escape, focus fixes |
+|24 Local privacy |PASS; relative modules/text APIs/no new remote service |
+|25 All previous tests |PASS;216retained |
+|26 New tests |PASS;15new groups |
+|27 Syntax/diff |PASS;53node --check + clean git diff --check |
+|28 No Phase6 |PASS; source/doc scope inspected |
+|29 No GitHub push |PASS; local checkpoints only |
+
+---
+
 # Tracker V4 — Phase5A Xem ngày release
 
 06/10/2026 · **Phase5A IMPLEMENTED / TESTED in verified local scope. All25 gates passed. FullPhase5 remains incomplete until5B Journal Retrieval. STOP before5B.** Schema8 stays8. Local main codeffe8279; separate docs checkpoint follows in Git log. No push/fetch/reset/history rewrite. The Phase4 and earlier reports below are historical.
