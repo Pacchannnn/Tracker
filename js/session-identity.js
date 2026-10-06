@@ -1,5 +1,5 @@
-import { PROGRAM, programDay } from './program.js?v=31';
-import { BUILTIN_EXERCISES, validateWorkoutSnapshot } from './custom-workout.js?v=31';
+import { PROGRAM, programDay } from './program.js?v=34';
+import { BUILTIN_EXERCISES, validateWorkoutSnapshot } from './custom-workout.js?v=34';
 
 // Pure identity helpers. Runtime activation is atomic at the session-store write boundary.
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);

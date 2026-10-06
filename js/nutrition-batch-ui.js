@@ -1,6 +1,6 @@
-import { dailyTotals, validateEntry, localDate } from './data.js?v=31';
-import { searchFoods } from './nutrition.js?v=31';
-import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=31';
+import { dailyTotals, validateEntry, localDate } from './data.js?v=34';
+import { searchFoods } from './nutrition.js?v=34';
+import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=34';
 
 const meals = ['Breakfast','Lunch','Snack','Dinner','Custom'];
 export function createNutritionBatchUI({ main, getData, getLatest, write, acceptData, render, onSaved, helpers }) {
@@ -114,13 +114,14 @@ export function createNutritionBatchUI({ main, getData, getLatest, write, accept
         }catch(problem){preview.textContent=problem.message;amount.querySelector('input').setAttribute('aria-invalid','true');}
       };
       amount.querySelector('input').addEventListener('input',event=>{row.servings=event.target.value;state.rows.find(item=>item.key===row.key).servings=event.target.value;updatePreview();});
-      const remove=button(`Bỏ ${row.name} khỏi batch`,()=>{
+      const remove=button('Bỏ món',()=>{
         if(busy)return;
         state.rows=state.rows.filter(item=>item.key!==row.key); review.rows=review.rows.filter(item=>item.key!==row.key);
         error='';
         if(!review.rows.length) state.review=null;
         render(); const inputs=main.querySelectorAll('.batch-review input');focus(inputs[Math.min(index,inputs.length-1)]||main.querySelector('.nutrition-batch input'));
       });
+      remove.setAttribute('aria-label',`Bỏ ${row.name} khỏi batch`);
       rowsHost.append(div('list-card',h3(`${index+1}. ${row.name}`),p(`${row.type==='copy'?'Snapshot đã ghi':row.type==='recipe'?'Công thức':'Thực phẩm'} · ${meal} · ${row.food.serving}`,'hint'),amount,preview,remove));updatePreview();
     });
     const back=button('Quay lại chọn món',()=>{if(!busy){state.review=null;error='';refresh('.nutrition-batch input');}});

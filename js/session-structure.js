@@ -1,5 +1,5 @@
-import { libraryExercises, defaultSlot, validateSlot } from './custom-workout.js?v=31';
-import { sessionGeneration, validateSessionIdentity } from './session-identity.js?v=31';
+import { libraryExercises, defaultSlot, validateSlot } from './custom-workout.js?v=34';
+import { sessionGeneration, validateSessionIdentity } from './session-identity.js?v=34';
 
 export function liveStructureAllowed(session, completed = []) {
   if (!session || sessionGeneration(session) !== 'structured' || session.historyEditBase != null || completed.some(item => item.id === session.id)) return false;

@@ -269,3 +269,9 @@ dialog::backdrop { background: #2d2d2db0; }
 .nutrition-batch .batch-recent { grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); }
 .nutrition-batch button[aria-pressed=true] { color: var(--ink); background: var(--yellow); border-style: dashed; }
 .nutrition-batch .batch-review .list-card { scroll-margin-block: 100px; }
+.cookbook-tags { min-width: 0; border: 2px dashed var(--old-paper); margin: 16px 0; }
+.cookbook-tags legend, .recipe-detail, .cooking-mode { overflow-wrap: anywhere; }
+.cookbook-tags button { max-width: 100%; overflow-wrap: anywhere; }
+.cookbook-tags button[aria-pressed=true] { color: var(--ink); background: var(--yellow); }
+.cooking-mode .history-list li { white-space: pre-wrap; }
+.cooking-steps { list-style: decimal; padding-left: 1.5rem; }

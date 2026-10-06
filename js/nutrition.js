@@ -40,7 +40,7 @@ export function validateRecipe(raw) {
   if (!name) throw new Error('Tên công thức là bắt buộc.');
   if (!Number.isFinite(servings) || servings <= 0 || servings > 100) throw new Error('Số phần ăn không hợp lệ.');
   const lines = String(raw.ingredients ?? '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  const ingredients = lines.map(line => {
+  const ingredients = Array.isArray(raw.ingredients) ? structuredClone(raw.ingredients) : lines.map(line => {
     const parts = line.split('|').map(part => part.trim());
     const quantity = Number(parts[0]);
     if (parts.length !== 3 || !Number.isFinite(quantity) || quantity <= 0 || !parts[1] || !parts[2]) {
@@ -48,8 +48,10 @@ export function validateRecipe(raw) {
     }
     return { quantity, unit: parts[1], name: parts[2] };
   });
+  if (!ingredients.every(item => item && Number.isFinite(item.quantity) && item.quantity > 0 && typeof item.unit === 'string' && typeof item.name === 'string')) throw new Error('Nguyên liệu có cấu trúc không hợp lệ.');
   if (!ingredients.length) throw new Error('Nhập ít nhất một nguyên liệu.');
-  const steps = String(raw.steps ?? '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const steps = Array.isArray(raw.steps) ? structuredClone(raw.steps) : String(raw.steps ?? '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (!steps.every(step => typeof step === 'string')) throw new Error('Bước nấu không hợp lệ.');
   if (!steps.length) throw new Error('Nhập ít nhất một bước nấu.');
   const keys = ['calories', 'protein', 'carbs', 'fat'];
   const values = keys.map(key => raw[key]);
@@ -63,7 +65,7 @@ export function validateRecipe(raw) {
   })) : null;
   return {
     name, description: String(raw.description ?? '').trim(), servings, ingredients, steps,
-    tags: Array.isArray(raw.tags) ? raw.tags : String(raw.tags ?? '').split(',').map(tag => tag.trim()).filter(Boolean),
+    tags: Array.isArray(raw.tags) ? structuredClone(raw.tags) : String(raw.tags ?? '').split(',').map(tag => tag.trim()).filter(Boolean),
     notes: String(raw.notes ?? '').trim(), nutritionPerServing
   };
 }

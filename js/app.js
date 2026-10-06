@@ -1,23 +1,25 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=31';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=31';
-import { createDraftStore } from './planning-draft.js?v=31';
-import { navigationGroup } from './navigation.js?v=31';
-import { restSeconds } from './workout.js?v=31';
-import { weeklySummary, exerciseHistory } from './progress.js?v=31';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=31';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=31';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=31';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=31';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=31';
-import { createGymBuilder } from './gym-builder-ui.js?v=31';
-import { createPlannerUI } from './planner-ui.js?v=31';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=31';
-import { createSessionStore } from './session-runtime.js?v=31';
-import { runtimeView } from './session-readers.js?v=31';
-import { createSessionUI } from './session-ui.js?v=31';
-import { createMyDayUI } from './my-day-ui.js?v=31';
-import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=31';
-import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=31';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=34';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=34';
+import { createDraftStore } from './planning-draft.js?v=34';
+import { navigationGroup } from './navigation.js?v=34';
+import { restSeconds } from './workout.js?v=34';
+import { weeklySummary, exerciseHistory } from './progress.js?v=34';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=34';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=34';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=34';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=34';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=34';
+import { createGymBuilder } from './gym-builder-ui.js?v=34';
+import { createPlannerUI } from './planner-ui.js?v=34';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=34';
+import { createSessionStore } from './session-runtime.js?v=34';
+import { runtimeView } from './session-readers.js?v=34';
+import { createSessionUI } from './session-ui.js?v=34';
+import { createMyDayUI } from './my-day-ui.js?v=34';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=34';
+import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=34';
+import { createCookbookUI } from './cookbook-ui.js?v=34';
+import { recipeFormValues } from './cookbook.js?v=34';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -172,6 +174,10 @@ const nutritionBatch = createNutritionBatchUI({ main, getData:()=>data, getLates
   write:change=>updateData(localStorage,navigator.locks,change), acceptData:next=>data=next, render,
   onSaved:(date,count)=>{foodDateSelection={mode:'selected',date};nutritionSubView='daily';render();message(`Đã thêm ${count} món vào ${date}.`);const launch=main.querySelector('[data-batch-launch]');launch?.focus();launch?.scrollIntoView({block:'center'});},
   helpers:{node,button,field,panel,div,p,h2,h3,fmt,id} });
+const cookbook = createCookbookUI({main,getData:()=>data,getLatest:()=>loadData(localStorage),
+  write:change=>updateData(localStorage,navigator.locks,change),acceptData:next=>data=next,render,
+  onDuplicateStart:()=>editingRecipe=null,clearPhotoUrls:()=>{photoUrls.forEach(url=>URL.revokeObjectURL(url));photoUrls=[];},
+  helpers:{node,button,field,panel,div,p,h2,h3,fmt,id,message}});
 const journalRetrieval = createJournalRetrievalUI({ main, getEntries: () => data.journalEntries,
   openEntry: entry => { journalDate = entry.date; journalSection = 'entry'; journalReturnToResults = true; show('journal'); },
   helpers: { node, button, panel, div, p, h2, h3, field } });
@@ -658,24 +664,27 @@ function renderSavedMeals(foodDate) {
 }
 
 function renderRecipes(foodDate) {
+  if(cookbook.renderCooking())return;
   const editing = data.recipes.find(item => item.id === editingRecipe);
-  const box = panel(h2('Công thức'), p('Nhập nguyên liệu và dinh dưỡng từ nguồn của bạn. Nếu chưa biết đủ macro, để trống cả bốn ô; ứng dụng không tự ước tính.', 'hint'));
-  const form = node('form', { class: 'form-grid' }, [
-    field('Tên công thức', 'name', editing?.name || '', { required: true }),
-    field('Số phần', 'servings', editing?.servings ?? 1, { type: 'number', min: '0.01', step: 'any', required: true }),
-    field('Mô tả', 'description', editing?.description || ''),
-    field('Nguyên liệu, mỗi dòng: số lượng | đơn vị | tên', 'ingredients', editing?.ingredients.map(item => `${item.quantity} | ${item.unit} | ${item.name}`).join('\n') || '', { tag: 'textarea', required: true }),
-    field('Các bước, mỗi dòng một bước', 'steps', editing?.steps.join('\n') || '', { tag: 'textarea', required: true }),
-    field('Thẻ (cách nhau bằng dấu phẩy)', 'tags', editing?.tags.join(', ') || ''),
-    field('Calories / phần (tùy chọn)', 'calories', editing?.nutritionPerServing?.calories ?? '', { type: 'number', min: '0', step: 'any' }),
-    field('Protein / phần (g)', 'protein', editing?.nutritionPerServing?.protein ?? '', { type: 'number', min: '0', step: 'any' }),
-    field('Carbs / phần (g)', 'carbs', editing?.nutritionPerServing?.carbs ?? '', { type: 'number', min: '0', step: 'any' }),
-    field('Fat / phần (g)', 'fat', editing?.nutritionPerServing?.fat ?? '', { type: 'number', min: '0', step: 'any' }),
-    field('Ghi chú nấu ăn', 'notes', editing?.notes || '', { tag: 'textarea' }),
-    node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu công thức' : 'Thêm công thức' })
+  const duplicate=cookbook.duplicateDraft(),values=duplicate?.raw??recipeFormValues(editing);
+  const box = panel(h2(duplicate?'Duyệt bản sao công thức':'Công thức'), p(duplicate?'Bản sao chưa lưu. Chỉnh các ô rồi Lưu bản sao; ảnh nguồn không được copy. Reload sẽ bỏ phần chưa lưu.':'Nhập nguyên liệu và dinh dưỡng từ nguồn của bạn. Nếu chưa biết đủ macro, để trống cả bốn ô; ứng dụng không tự ước tính.', 'hint'));
+  const form = node('form', { class: 'form-grid recipe-editor' }, [
+    field('Tên công thức', 'name', values.name, { required: true }),
+    field('Số phần', 'servings', values.servings, { type: 'number', min: '0.01', step: 'any', required: true }),
+    field('Mô tả', 'description', values.description),
+    field('Nguyên liệu, mỗi dòng: số lượng | đơn vị | tên', 'ingredients', values.ingredients, { tag: 'textarea', required: true }),
+    field('Các bước, mỗi dòng một bước', 'steps', values.steps, { tag: 'textarea', required: true }),
+    field('Thẻ (cách nhau bằng dấu phẩy)', 'tags', values.tags),
+    field('Calories / phần (tùy chọn)', 'calories', values.calories, { type: 'number', min: '0', step: 'any' }),
+    field('Protein / phần (g)', 'protein', values.protein, { type: 'number', min: '0', step: 'any' }),
+    field('Carbs / phần (g)', 'carbs', values.carbs, { type: 'number', min: '0', step: 'any' }),
+    field('Fat / phần (g)', 'fat', values.fat, { type: 'number', min: '0', step: 'any' }),
+    field('Ghi chú nấu ăn', 'notes', values.notes, { tag: 'textarea' }),
+    node('button', { type: 'submit', class: 'primary', text: duplicate?'Lưu bản sao':editing ? 'Lưu công thức' : 'Thêm công thức' })
   ]);
   if (editing) form.append(button('Hủy sửa', () => { editingRecipe = null; render(); }));
-  form.addEventListener('submit', async event => {
+  if(duplicate)cookbook.bindDuplicateForm(form);
+  else form.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(form));
     const done = await mutate(next => {
@@ -689,9 +698,9 @@ function renderRecipes(foodDate) {
     if (done) { editingRecipe = null; render(); }
   });
   box.append(form);
-  if (!data.recipes.length) box.append(p('Chưa có công thức nào.', 'empty'));
-  for (const recipe of data.recipes) {
+  cookbook.renderLibrary(box,(results,recipes)=>{for (const recipe of recipes) {
     const detail = node('details', { class: 'recipe-detail' }, [node('summary', { text: `${recipe.name} · ${fmt(recipe.servings)} phần` })]);
+    detail.dataset.recipeId=recipe.id;
     detail.append(nutritionPhoto('recipe', recipe.id, recipe.name));
     if (recipe.description) detail.append(p(recipe.description, 'summary'));
     const ingredients = node('ul', { class: 'history-list' });
@@ -733,6 +742,7 @@ function renderRecipes(foodDate) {
         field('Số phần', 'servings', 1, { type: 'number', min: '0.01', step: 'any', required: true }),
         node('button', { type: 'submit', class: 'primary', text: 'Ghi vào nhật ký ăn' })
       ]);
+      logForm.querySelector('button[type=submit]').dataset.recipeAction='log';
       logForm.addEventListener('submit', async event => {
         event.preventDefault();
         const raw = Object.fromEntries(new FormData(logForm));
@@ -746,13 +756,15 @@ function renderRecipes(foodDate) {
       });
       detail.append(logForm);
     }
-    detail.append(div('actions', button('Sửa công thức', () => { editingRecipe = recipe.id; render(); }),
-      button('Xóa công thức', () => confirmAction(`Xóa công thức ${recipe.name}? Nhật ký ăn giữ nguyên; ảnh còn trong Nhật ký & Ảnh.`, () => mutate(next => {
+    const duplicateAction=button('Nhân bản',()=>cookbook.openDuplicate(recipe));duplicateAction.dataset.recipeAction='duplicate';duplicateAction.setAttribute('aria-label',`Nhân bản ${recipe.name}`);
+    const cookAction=button('Chế độ nấu',()=>cookbook.openCooking(recipe));cookAction.dataset.recipeAction='cook';cookAction.setAttribute('aria-label',`Chế độ nấu ${recipe.name}`);
+    detail.append(div('actions',duplicateAction,cookAction,button('Sửa', () => { if(!cookbook.discardDuplicate())return;editingRecipe = recipe.id; render();main.querySelector('.recipe-editor input')?.focus(); }),
+      button('Xóa', () => confirmAction(`Xóa công thức ${recipe.name}? Nhật ký ăn giữ nguyên; ảnh còn trong Nhật ký & Ảnh.`, () => mutate(next => {
         ensureUnchanged(next.recipes.find(item => item.id === recipe.id), recipe);
         next.recipes = next.recipes.filter(item => item.id !== recipe.id);
       }, 'Đã xóa công thức.')), 'danger')));
-    box.append(detail);
-  }
+    results.append(detail);
+  }});
   main.append(box);
 }
 
