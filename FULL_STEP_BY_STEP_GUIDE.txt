@@ -1,10 +1,18 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase6B/full bounded6 complete; STOP beforePhase7)
+Updated: 2026-10-06 (Phase7B-1 complete; STOP before7B-2)
 
 CURRENT PROJECT STATE
-Phase0-6 IMPLEMENTED / TESTED in verified local scope;
-283 tests /59 syntax checks;6A34/34 +6B36/36 gates passed, schema8 unchanged.
-Full boundedPhase6 DONE; STOP beforePhase7.
+Phase0-6 and Phase7B-1 IMPLEMENTED / TESTED in verified local scope;
+333 tests /65 syntax checks; schema8 unchanged. Phase7A CONTRACT APPROVED.
+Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED. Full Phase7 NOT DONE.
+CURRENT PHASE:7B-1. CURRENT STEP:handoff; STOP before7B-2.
+COMPLETED: pure calendar/validation/provenance, Weekly UI, exact sources,
+transient Back, zero-write/browser/mobile/keyboard verification and review.
+IN PROGRESS:none. BLOCKERS:none. KNOWN BUGS:no material remaining finding.
+NEXT:separately authorized7B-2 using unchanged approved contract.
+DECISIONS NEEDED:when to start7B-2. BACKLOG:Monthly Memories, Phase8 proposals.
+Model:current coding model; reasoning high for contracts/domain tests,
+medium for documentation. Evidence and limitations:V4_IMPLEMENTATION_REPORT.md.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/

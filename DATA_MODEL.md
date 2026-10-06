@@ -2,6 +2,21 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Phase7B-1 Weekly Review — derived only (06/10/2026)
+
+Schema8→8; no migration/entity/field/key/summary cache or persisted route.
+`life-review.js` takes detached canonical JSON/photo-metadata read envelopes
+and explicit anchor/today dates. It derives local-calendar periods, independent
+domain coverage and exact SourceRefs; no storage/clock/DOM/image access.
+Workout owners come from saved slot/legacy evidence, never the current catalog.
+Nutrition uses saved food snapshots; unknown totals retain known subtotals and
+known-day denominators. Missing/unknown/zero/unavailable remain distinct.
+Photo metadata uses the existing whole-store readonly projection, not a claimed
+date-range index; absent DB remains absent. JSON and IDB reads are independent,
+not an atomic cross-store snapshot. Back rereads/rederives; its route/focus/scroll
+context exists in memory only. Backup JSON8/photo DB1/format1 stay unchanged.
+7A APPROVED;7B-1 IMPLEMENTED / TESTED;7B-2 NOT IMPLEMENTED; Full Phase7 NOT DONE.
+
 ## Phase 6B cookbook — schema8 unchanged (06/10/2026)
 
 06/10/2026 · **Phase6B IMPLEMENTED / TESTED; full bounded Phase6 IMPLEMENTED / TESTED.** Schema8 unchanged;262→283 tests,59 JS syntax checks;36/36 gates passed in verified local scope. Code checkpoint ad1a8f5, asset34. STOP before Phase7. Favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition and shopping list remain deferred proposals.

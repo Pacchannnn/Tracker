@@ -8,6 +8,20 @@
 
 ## Trạng thái và quy ước
 
+### Phase 7B-1 execution — 06/10/2026 (IMPLEMENTED / TESTED)
+
+Phase7A contract APPROVED by explicit7B-1 request. Baseline main4a97ada, clean,
+283/283 tests and59 JS syntax checks. Schema8→8; no migration or stored summary.
+1. [DONE] RED calendar/domain/provenance tests → pure Weekly Review helpers.
+2. [DONE] Weekly UI under Tiến độ, exact source IDs and transient Back.
+3. [DONE] Synthetic browser A–H/K/L/M,320/360/390,0writes/backup/regressions.
+4. [DONE] Independent review/fixes, documentation; local checkpoints at handoff. STOP before7B-2.
+Dependencies:1→2→3→4. Model/reasoning: current coding model/high for validation,
+ownership/unknown denominators.333/333 tests,65 syntax checks;50 new tests.
+Code checkpoint5a6b9c5; separate documentation checkpoint at handoff. Asset36.
+Risks: legacy ambiguity, root failure isolation, async metadata/focus, dirty
+editors. No Monthly Memories runtime, anatomical guessing, Phase8 or push.
+
 ### Historical Phase 4B-4 execution — 05–06/10/2026 (IMPLEMENTED / TESTED; STOP)
 
 Approved4A contract + explicit4B-4 request define this milestone. Verified clean main08e533f, schema8,180/180 tests. Continue on main; local code/docs checkpoints, no push.
@@ -57,8 +71,8 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**0–6 IMPLEMENTED / TESTED in verified local scope; schema8;283tests/59syntax.6A34/34 +6B36/36 gates passed; full boundedPhase6 DONE.
-- **CURRENT STEP:** bàn giao6B Cookbook; STOP trước Phase7. IN PROGRESS: none. NEXT: separately scoped Phase7 Weekly Life Review/Monthly Memories.
+- **CURRENT PHASE:**7A CONTRACT APPROVED;7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; schema8;333tests/65syntax. Full Phase7 NOT DONE.
+- **CURRENT STEP:** bàn giao7B-1; STOP. IN PROGRESS: none. NEXT:7B-2 Monthly Memories only after separate authorization. BLOCKERS/KNOWN BUGS: no remaining material finding in bounded7B-1 review.
 - **BLOCKERS:** none in bounded6 scope. KNOWN BUGS: none remaining important in exercised6B flows after independent review. Corrected detached failure form, structured-copy preservation, unknown-macro shortcut and visible step numbering. Standalone warning/error logs empty; harness observer error attribution unproven.
 - **DECIDE LATER:** favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition, shopping list; MyDay-as-Home, richer mood/catalog/backend/AI remain proposals. No blocking6B product decision.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
@@ -254,7 +268,7 @@ Tests: double-submit batch, exact itemcount, date/meal retained, deletedfood, st
 
 ## Phase 7 — weekly life review và monthly memories
 
-**Phase7 CONTRACT DESIGNED — NOT IMPLEMENTED.** Phase7A design-only contract: [PHASE7_LIFE_REVIEW_CONTRACT.md](PHASE7_LIFE_REVIEW_CONTRACT.md). Await user approval before any7B runtime/tests/migration; this contract defers persisted highlights/hidden flags mentioned in the original proposal below.
+**Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED; Full Phase7 NOT DONE.** Approved contract: [PHASE7_LIFE_REVIEW_CONTRACT.md](PHASE7_LIFE_REVIEW_CONTRACT.md), unchanged. Weekly implementation uses derived read-only schema8 data, metadata coverage and transient exact-source return. No stored highlights/hide/pins or monthly UI. Evidence: [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md). Original broader proposal below remains a backlog, not delivered functionality.
 
 **Goal/value:** tìm lại dữ kiện có ích từ dữ liệu đã ghi. **Depends:** phase5 + agreed missing-data/mood semantics; richercatalog optional. **Data:** derived periodsummary; hiddenmemory/highlight flags nếu persist cần migration; không reinterpret legacy `drained`. **UI:** coverage/mooddistribution/activities, sources, photo highlights do user mở/chọn.
 

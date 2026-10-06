@@ -1,4 +1,69 @@
-# Tracker V4 — Phase6B Cookbook / full bounded Phase6 release
+# Tracker V4 — Phase7B-1 Weekly Life Review
+
+06/10/2026 · **Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED; Full Phase7 NOT DONE.** Schema8 remains8. Asset36. Code checkpoint **5a6b9c5**; separate documentation checkpoint named **Record Phase7B1 evidence and bounded weekly handoff**. No push. Earlier dated sections are historical reports.
+
+## Phase7B-1 final report — 32 requested items
+
+1. **Baseline → final tests:** clean main4a97ada verified before edits; npm test283/283. Final fresh npm test333/333,0fail/cancel/skipped/todo.50 new tests:30 domain,14 UI,6 exact-source. Existing test files/assertions unchanged. Missing-interface RED precedes production helpers; additional RED cases cover unknown-nutrition provenance, empty certainty after mood failure, duplicate source identities, repeated evidence focus, blank-mood vs absent-journal dates and late control-focus theft.
+2. **Syntax:**59 baseline →65 final `node --check` checks across js/tests; all pass. Working/staged diff checks pass. No package/dependency change.
+3. **Schema:**8→8; no migration, entity, field, summary cache, storage key or persisted route. Same localStorage JSON, IDB tracker-photos DB1/store photos and photo backup format1.
+4. **Files:** new js/life-review.js, js/life-review-ui.js, js/life-review-source.js and corresponding3 test files. Integrations app/session-ui/my-day-ui/navigation/CSS/index. Other existing JS changes are import-query34→36 only, including progress.js/data.js/photo-store.js; existing weeklySummary, storage and backup implementations unchanged. Docs roadmap/report/model/README/guide plus ignored private summary. MASTER_PLAN and approved Phase7 contract unchanged; fixtures/evidence stay ignored.local.
+5. **Calendar:** pure lifeReviewPeriod uses validated stored local dates, local-noon calendar stepping and Mon–Sun normalization. Full period validity includes0000–9999 boundaries, leap/month/year crossings and unsupported neighbouring periods. Month helper semantics tested as shared calendar only; no deriveLifeMonth or monthly UI.30 domain tests also pass under TZ America/New_York; this is not physical browser timezone certification.
+6. **Eligibility:** past7; current Monday→captured today inclusive; future0/null ratio. Browser current fixture Oct5–6 gives2 eligible days; Sunday future meal remains exact future evidence, excluded from eligible totals/coverage/distribution. Invalid date retains prior valid range and gives inline error; no0/0 percentage.
+7. **Coverage:**8 independent distinct-date numerators with eligible-day denominator; separate record counts. Mixed browser fixture3 food entries/1 nutrition day,2 history sessions/1 workout day,10 IDs/1 photo day. Separate-domain/empty/future-only tests do not infer rest days or missing measurements.
+8. **Mood:** existing MOODS labels/marks/order unchanged, including drained=Mệt. Blank counts journal only. Browser4 journal days/3 known moods gives journal4/7,mood3/7,drained2/3 known mood days. Unknown nonblank mood fails only mood submetric; missing dates and blank recorded dates separate. No valence/average/health interpretation.
+9. **Tags:** explicit saved tags only, trim/Vietnamese case fold with accents/internal spacing retained; distinct tag-date evidence. UI “Thẻ hoạt động do bạn ghi”; no title/note inference or sum-to100 claim.
+10. **Structured workouts:** saved sessions only; canonical slot IDs. Logged old replacement owner and successor retain separate occurrences; zero-log added/removed/replaced slots contribute0. Empty saved session counts1 with0 performed work. Active/planning/history-edit drafts excluded; source/source-set provenance retains session and slot identities.
+11. **Legacy:** saved index/name/consistent optional IDs/unique set-number evidence only. Ambiguous exact denominator unknown, proven occurrences retained and unresolved set refs/count exposed. Browser G unresolved2. No current PROGRAM/catalog reconstruction or arbitrary winner.
+12. **Muscles:** proven work labelled Không xác định; no catalog/name inference. Ambiguous occurrence denominator gets no percentage. No frozen-muscle schema extension.
+13. **Nutrition:** existing dailyTotals reads entries.food snapshots×servings, per macro independently.100/null/0 on3 logged days: full calories unknown, knownSubtotal100,knownDays2,known-day average50. Known0 counts as known; missing does not. Overflow is unavailable for affected arithmetic, not Infinity/0. All-unknown contributions keep exact refs. Strict invalid backup acceptance unchanged; no targets/deficit/advice in Weekly.
+14. **Cardio/check-in/knee:** record count and independent coverage; valid recorded durationMinutes only. Notes-only check-in valid. No trends, symptom scores or safety judgments.
+15. **Photos:** existing listPhotoMetadata readonly whole-store cursor projection, no Blob/image for Weekly coverage or lightweight photo-source route. Unique IDs/own dates count even orphan owners; variants count once. No indexed date-range-I/O claim. Source Journal uses metadata and relevant-day thumbnail reads, no original fallback; existing My Day reads relevant thumbnails. Absent localhost origin stayed databases=[] through Weekly navigation/Refresh and nested MyDay→Journal→Back;0IDB writes/0binary reads.
+16. **Isolation:** canonical loadData only. Whole consumed domains validate before period filter; no malformed skipping/repair/duplicate winner. Root failure makes JSON unavailable while independent photos10 still show. Photo read failure leaves JSON valid. Invalid nutrition does not disable journal. Invalid mood outside selected week leaves empty certainty unknown. Empty tri-state tested; root failure cannot route into empty-success editors.
+17. **Provenance:** aggregates/distributions/counts carry detached exact SourceRefs; coverage references all contributing records. Unknown macros and future records retain refs. Set IDs resolved in session scope, plus exact slot/legacy owner. Latest-source validation rejects duplicate IDs/dates and changed/deleted/mismatched refs; no name lookup.
+18. **Routes:** journal exact date/ID; nutrition date/entry; history date/exact session+set owner; cardio/check-in/knee exact record/form; photo lightweight metadata; My Day selected date. Browser9 exact sources includes same set ID in another session and same record ID across cardio/knee, preventing cross-owner focus collisions. Existing Progress/MyDay/editor navigation retained.
+19. **No reopen:** H fixture contains a valid active draft. Viewing both workout/session-set sources, including copied set IDs, leaves entire raw JSON byte-equal and draft intact,0Storage writes. Route uses historyView, never store.reopen; explicit existing Edit remains a separate action.
+20. **Back:** transient week/metric/ref/scroll/focus only; canonical reread and fresh derivation. H returns same Sep28 week/exact evidence; nested MyDay→Journal→MyDay→Weekly retains stack. K explicit journal Save/Delete each writes1 separately; Back writes0 and derives latest journal count1. Deleted source focus falls back to metric. Dirty Back/internal calendar navigation blocked with input retained, no auto-save/discard.
+21. **Async:** view/request generation and connected-host checks reject old-week/left-view results. Tests hold promises and resolve out of order. Control focus restores immediately after header rebuild, late metadata preserves user's later focus; source Back restores after summary. Captured journal dates/disconnected checks prevent stale thumbnail append/object URL creation.
+22. **Zero writes:** browser probes Storage.setItem/removeItem/clear and IDB readwrite transactions. Open/change/prev/next/current/expand/source/Back/Refresh all0. Weekly and exact metadata-source routes0 Blob/getAll reads before My Day. Existing nested My Day thumbnail reads are readonly and counted separately, not claimed metadata-only. No absent DB creation. Explicit source Save/Delete counted outside viewing audit.
+23. **Backup:** actual createBackup pre/post full data equality for valid fixtures, exact raw JSON/photo metadata/original+thumbnail bytes unchanged. F unknown nutrition/M malformed/root invalid states retain identical strict backup rejection (backupValid=false,backupEquivalence=true), not a claimed successful export. Existing schema8 JSON roundtrip/photo backup tests pass. No new manual full-image restore performed.
+24. **Browser:** A full/B sparse/C empty/D current+future/E mood/F unknown nutrition/G ownership/H exact sources/K explicit edit/delete+dirty guards/L reload/M root/domain/photo errors executed on synthetic127.0.0.1:8786; absent DB on localhost8786. I/J Monthly flows not implemented/run as release functionality. Standalone warning/error logs empty; final probed flows errors=[] and externalRequests=[]. Harness developer logs also contain2 MutationObserver.observe Node errors; no MutationObserver exists in app/probe/harness source, attribution unproven. A cold-load harness attempt clicked before module initialization; QA now waits for rendered main before actions, full final flows pass. These are recorded, not a claim of every harness console being clean. Real8765 user data untouched.
+25. **Mobile:** real iframe320/360/390; Weekly expanded long sections and error/unknown states client/scroll305/305,345/345,375/375 (15px vertical scrollbar). All9 source routes at each width same equality; metadata panel has no scrollbar320/320,360/360,390/390. Buttons≥48px, wrapping, focused return reachable above bottom nav. These are rendered iframe tests; browser viewport override did not yield an independently verified320px standalone viewport, so no such claim.
+26. **Keyboard/accessibility:** actual Tab/ShiftTab moved Previous↔Next; Enter previous/source/Back and Space next/disclosure worked. Exact source and originating evidence focus observed; deleted source metric fallback. Blank date gives role=alert and preserves range; read navigation audit0writes. Semantic headings/details/buttons, textual counts/denominators/states, visible focus/contextual source labels. Empty alert is hidden. No screen-reader/WCAG certification.
+27. **Regression:** all283 previous tests retained/pass; Phase2 recovery,3 picker,4 live/history ownership,5 MyDay/journal and6 batch/cookbook suites unchanged. progress weeklySummary body unchanged; no history/nutrition/photo data rewritten. Independent final review reports no remaining material finding; focused50/50.
+28. **Privacy/network:** no remote call/AI/CDN/analytics/backend/account/upload/new dependency. Local assets only; probes externalRequests=[]; no personal data sent. Synthetic fixtures/screenshot/evidence ignored. MASTER_PLAN preserved.
+29. **NOT VERIFIED:** physical phone/Safari/other browser engines/screen reader/WCAG/large real dataset/native quota or power loss/new manual complete image restore/all pre-existing browser workflows. JSON+IDB reads are not one atomic cross-store snapshot; metadata scans whole store. Tests use synthetic errors/timezones. Standalone viewport override limitation noted above.
+30. **Git/checkpoints:** local main only; inspected baseline/diff/staged file lists. Code5a6b9c5 and separate documentation checkpoint named above; no push/fetch/reset/history rewrite/new branch. Private source/summary and.local excluded. Owned test tabs/server8786 cleaned up at handoff; user8765 untouched.
+31. **Exact gate:** all32 requested7B-1 done conditions below pass in verified scope.7A APPROVED,7B-1 IMPLEMENTED / TESTED,7B-2 NOT IMPLEMENTED,Full Phase7 NOT DONE. No monthly runtime/schema9/Phase8 or GitHub push.
+32. **Exact next:** STOP.7B-2 Monthly Memories only on separate user instruction using unchanged approved contract. Current coding model/high reasoning recommended for calendar/source/readonly tests; medium for docs. No new remote/product decision needed for delivered7B-1.
+
+## Phase7B-1 gate evidence index
+
+All32 gates passed in bounded verified scope:
+
+| Gates | Evidence |
+| --- | --- |
+|1 baseline;2 RED;3 schema|Items1–3; saved pre-implementation RED logs; no stored-field diff|
+|4 calendar;5 eligibility;6 future|Items5–6; P1–P6 and browser D|
+|7 coverage;8 mood;9 tags|Items7–9; C1–C3/M1–M3/T1, browser A/E|
+|10 structured;11 legacy;12 muscle|Items10–12; W1–W4, browser G/H|
+|13 snapshots;14 macro states|Item13; N1–N3, F/overflow/unknown refs|
+|15 refs;16 drilldown;17 no reopen|Items17–19; source6 tests/H intact active draft|
+|18 Back;19 domain isolation|Items16/20; I1–I2,K/M, deleted-source focus|
+|20 Storage;21 IDB;22 absent DB|Items15/22; instrumented0 counts, nested absent route|
+|23 async;24 honest states|Items16/21; held-read UI tests/D1–D2|
+|25 accessibility;26 widths|Items25–26; rendered widths, actual keyboard|
+|27 browser flows;28 previous tests|Items24/27;333/333|
+|29 backup;30 no Monthly;31 no Phase8;32 no push|Items3/23/30–32; Git diff and scope inspection|
+
+Reproducible tracked tests: `npm test`, `node --check` on every js/tests file.
+Private local evidence (ignored, synthetic only): `.local/phase7b1-final-tests.txt`,
+`phase7b1-domain-red.txt`, `phase7b1-ui-red.txt`, browser flows JSON,
+sources320/360/390-final JSON, edit-final JSON, absent-db-final JSON,
+keyboard-audit JSON and desktop/mobile screenshots. Harness and fixtures are
+development evidence, not an application route shipped in Git.
+
+## Historical Phase6B Cookbook / full bounded Phase6 release
 
 06/10/2026 · **Phase6B IMPLEMENTED / TESTED; full bounded Phase6 IMPLEMENTED / TESTED. All36 gates passed in verified local scope.** Schema8 stays8. Code checkpoint **ad1a8f5**; separate local documentation checkpoint named **Record Phase6B cookbook evidence and bounded Phase6 release**. Asset34. **STOP before Phase7.** Earlier dated sections below are historical checkpoint reports.
 

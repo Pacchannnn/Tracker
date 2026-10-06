@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase0–6 IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 283 tests.** Tải lại mọi tab để nhận asset/module `v=34`. Cookbook có tìm công thức/thẻ/nguyên liệu, Nhân bản qua review và Chế độ nấu chỉ xem. Buổi tập giữ Add/Remove/Reorder/Đổi phần còn lại và ownership/CAS. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). Full bounded Phase6 hoàn tất; STOP trước Phase7.
+**Hiện tại: schema8 · Phase7B-1 Weekly Review IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 333 tests.** Tải lại mọi tab để nhận asset/module `v=36`. Vào **Tiến độ → Tuần đã ghi** để xem dữ kiện đã lưu theo tuần và mở đúng nguồn. Phase7A contract đã duyệt;7B-2 Monthly Memories chưa triển khai, toàn bộ Phase7 chưa hoàn tất. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -24,6 +24,7 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 4. Tạo món ở **Dinh dưỡng → Thực phẩm**, rồi thêm vào **Nhật ký ngày**. Có thể lưu một bữa đã ghi thành **Bữa lưu sẵn**, sao chép ngày trước, hoặc nhập **Công thức**. Macro công thức là dữ liệu bạn tự nhập; công thức thiếu macro không ghi vào nhật ký ăn.
 5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
    **Tiến độ → Tổng quan** cho biết các trung bình theo tuần và lịch sử theo bài khi có dữ liệu. **Gym → Cardio & gối** cho phép ghi hoạt động và tình trạng gối riêng.
+   **Tiến độ → Tuần đã ghi** có tuần trước/sau/hiện tại, chọn ngày và Làm mới. Xem ngày có bản ghi, tâm trạng, thẻ tự ghi, buổi tập, dinh dưỡng và metadata ảnh. Bản ghi tương lai được tách riêng; thiếu/chưa rõ/chưa đọc được không đổi thành số0. Mở nguồn rồi **Quay lại Tuần đã ghi** để đọc lại dữ liệu mới nhất; phần chưa lưu sẽ chặn rời trang. Xem tuần/nguồn không tự lưu hay mở buổi tập để sửa. Ngữ cảnh quay lại chỉ giữ trong tab, mất sau reload.
 6. Vào **Nhật ký & Ảnh** để đánh dấu trạng thái ngày, thẻ và ghi chú. Ảnh lưu cục bộ trong trình duyệt; ảnh tiến độ có ngày, góc chụp, cân/eo tùy chọn. Ảnh được nén, file gốc trên thiết bị không bị sửa.
 7. Vào **Cài đặt & sao lưu** để chuẩn bị và tải **hai file**: dữ liệu JSON và ảnh JSON. Giữ cả hai file riêng tư. Nếu trình duyệt không tải file dữ liệu, dùng **Sao chép JSON**. Xác nhận cả hai file thực sự tồn tại trước khi xóa dữ liệu trình duyệt.
 8. Để khôi phục, chọn file dữ liệu JSON, xem trước, giữ bản sao an toàn rồi xác nhận thay thế. Sau đó chọn file ảnh, xem trước và thêm ảnh còn thiếu. Nhập ảnh không xóa hoặc ghi đè ảnh hiện có.
