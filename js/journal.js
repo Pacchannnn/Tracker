@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=29';
+import { validDate } from './data.js?v=30';
 
 export const MOODS = [
   { value: 'drained', label: 'Mệt', mark: '·' },
@@ -52,4 +52,41 @@ export function monthDays(year, month) {
   const count = new Date(year, month, 0).getDate();
   return [...Array(offset).fill(null), ...Array.from({ length: count }, (_, index) =>
     `${year}-${String(month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`)];
+}
+
+export function normalizeJournalText(value) {
+  return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/gi, 'd').toLocaleLowerCase('vi').trim().replace(/\s+/g, ' ');
+}
+
+function journalRecords(entries) {
+  if (!Array.isArray(entries) || !entries.every(entry => entry && typeof entry.id === 'string' && entry.id &&
+    validDate(entry.date) && typeof entry.title === 'string' && typeof entry.note === 'string' &&
+    Array.isArray(entry.tags) && entry.tags.every(tag => typeof tag === 'string'))) {
+    throw new Error('Có dữ liệu nhật ký không thể tìm đọc. Dữ liệu được giữ nguyên; hãy kiểm tra bản sao lưu.');
+  }
+  return entries;
+}
+
+export function journalTagOptions(entries) {
+  const options = new Map();
+  for (const entry of [...journalRecords(entries)].sort((a,b) => b.date.localeCompare(a.date))) {
+    for (const label of entry.tags) {
+      const key = normalizeJournalText(label);
+      if (key && !options.has(key)) options.set(key, label);
+    }
+  }
+  return [...options.values()];
+}
+
+export function retrieveJournalEntries(entries, { query = '', tags = [], limit = 30 } = {}) {
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new Error('Số lượng nhật ký cần xem không hợp lệ.');
+  const chosen = tags ?? [];
+  if (!Array.isArray(chosen) || !chosen.every(tag => typeof tag === 'string')) throw new Error('Bộ lọc thẻ không hợp lệ.');
+  const text = normalizeJournalText(query), keys = chosen.map(normalizeJournalText).filter(Boolean);
+  const matches = journalRecords(entries).filter(entry =>
+    (!text || [entry.title, entry.note, ...entry.tags].some(value => normalizeJournalText(value).includes(text))) &&
+    keys.every(key => entry.tags.some(tag => normalizeJournalText(tag) === key)))
+    .sort((a,b) => b.date.localeCompare(a.date));
+  return { entries: matches.slice(0, limit), total: matches.length, hasMore: matches.length > limit };
 }

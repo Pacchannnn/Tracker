@@ -1,21 +1,22 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=29';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=29';
-import { createDraftStore } from './planning-draft.js?v=29';
-import { navigationGroup } from './navigation.js?v=29';
-import { restSeconds } from './workout.js?v=29';
-import { weeklySummary, exerciseHistory } from './progress.js?v=29';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=29';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag } from './journal.js?v=29';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=29';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=29';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=29';
-import { createGymBuilder } from './gym-builder-ui.js?v=29';
-import { createPlannerUI } from './planner-ui.js?v=29';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=29';
-import { createSessionStore } from './session-runtime.js?v=29';
-import { runtimeView } from './session-readers.js?v=29';
-import { createSessionUI } from './session-ui.js?v=29';
-import { createMyDayUI } from './my-day-ui.js?v=29';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=30';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=30';
+import { createDraftStore } from './planning-draft.js?v=30';
+import { navigationGroup } from './navigation.js?v=30';
+import { restSeconds } from './workout.js?v=30';
+import { weeklySummary, exerciseHistory } from './progress.js?v=30';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=30';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=30';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=30';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=30';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=30';
+import { createGymBuilder } from './gym-builder-ui.js?v=30';
+import { createPlannerUI } from './planner-ui.js?v=30';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=30';
+import { createSessionStore } from './session-runtime.js?v=30';
+import { runtimeView } from './session-readers.js?v=30';
+import { createSessionUI } from './session-ui.js?v=30';
+import { createMyDayUI } from './my-day-ui.js?v=30';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=30';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -51,6 +52,7 @@ let editingSavedMeal = null;
 let editingRecipe = null;
 let journalDate = localDate();
 let journalSection = 'entry';
+let journalReturnToResults = false;
 let journalMonth = new Date().getMonth() + 1;
 let journalYear = new Date().getFullYear();
 let photoFilter = 'all';
@@ -165,9 +167,13 @@ async function sessionAction(operation, success = 'Đã lưu buổi.', { renderA
 
 const myDay = createMyDayUI({ main, getData: () => data, render, openSource: openDaySource,
   registerUrl: url => photoUrls.push(url), helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
+const journalRetrieval = createJournalRetrievalUI({ main, getEntries: () => data.journalEntries,
+  openEntry: entry => { journalDate = entry.date; journalSection = 'entry'; journalReturnToResults = true; show('journal'); },
+  helpers: { node, button, panel, div, p, h2, h3, field } });
 function openDaySource(kind, date, recordId) {
   daySourceContext = { kind, date };
   if (kind === 'journal' || kind === 'photos') {
+    journalReturnToResults = false;
     journalDate = date; journalSection = kind === 'photos' ? 'photos' : 'entry'; editingPhoto = null; photoFilter = 'all'; show('journal');
   } else if (kind === 'nutrition') {
     foodDateSelection = { mode: 'selected', date }; nutritionSubView = 'daily'; editingEntry = null; show('nutrition');
@@ -774,6 +780,9 @@ function journalView() {
   if (journalSection === 'photos') { renderPhotos(); return; }
   const existing = data.journalEntries.find(item => item.date === journalDate);
   const box = panel(h2(existing ? `Ghi ngày ${journalDate}` : 'Ghi lại một ngày'));
+  if (journalReturnToResults) box.append(button('← Quay lại kết quả nhật ký', () => {
+    journalSection = 'calendar'; show('journal'); journalRetrieval.focusSearch();
+  }));
   const form = node('form', { class: 'journal-form' });
   const dateField = field('Ngày', 'date', journalDate, { type: 'date', required: true });
   dateField.querySelector('input').addEventListener('change', event => {
@@ -863,6 +872,8 @@ function journalView() {
 }
 
 function renderJournalCalendar() {
+  try { journalTagOptions(data.journalEntries); }
+  catch (error) { main.append(panel(p(error.message, 'notice error'))); return; }
   const month = panel(div('row', h2(`Tháng ${journalMonth}/${journalYear}`), div('actions',
     button('← Tháng trước', () => { const previous = new Date(journalYear, journalMonth - 2, 1); journalMonth = previous.getMonth() + 1; journalYear = previous.getFullYear(); render(); }),
     button('Tháng sau →', () => { const next = new Date(journalYear, journalMonth, 1); journalMonth = next.getMonth() + 1; journalYear = next.getFullYear(); render(); }))));
@@ -885,18 +896,7 @@ function renderJournalCalendar() {
       if (dates.has(date)) { day.classList.add('has-photo'); day.setAttribute('aria-label', `${day.getAttribute('aria-label')}, có ảnh`); }
     });
   }).catch(() => {});
-  const timeline = panel(h2('Dòng thời gian'));
-  const entries = [...data.journalEntries].sort((a, b) => b.date.localeCompare(a.date));
-  if (!entries.length) timeline.append(p('Chưa có nhật ký. Ghi một ngày để bắt đầu.', 'empty'));
-  for (const entry of entries.slice(0, 30)) {
-    const mood = MOODS.find(item => item.value === entry.mood);
-    timeline.append(div('list-card', h3(`${entry.date}${mood ? ` · ${mood.mark} ${mood.label}` : ''}`),
-      entry.title ? p(entry.title, 'summary') : document.createTextNode(''),
-      entry.note ? p(entry.note.slice(0, 180), 'hint') : document.createTextNode(''),
-      entry.tags.length ? p(entry.tags.join(' · '), 'hint') : document.createTextNode(''),
-      button('Mở ngày', () => { journalDate = entry.date; journalSection = 'entry'; render(); })));
-  }
-  main.append(timeline);
+  journalRetrieval.renderTimeline();
 }
 
 function renderPhotos() {
