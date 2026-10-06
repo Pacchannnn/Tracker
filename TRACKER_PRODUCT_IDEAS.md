@@ -38,6 +38,8 @@ Activity absent ≠ không chọn: chỉ tạo comparison sau khi có cách xác
 
 ## 4. Personal Food / Recipe Library — “Sổ món của mình”
 
+**Phase6A status (06/10/2026): IMPLEMENTED / TESTED in verified local scope;262tests/schema8.** Same-meal recents with explicit global fallback, food+recipe multi-select/review/one-write, selective historical snapshot copy. Missing recent source disabled; valid deleted-source snapshots copy safely. Search/amounts/Cancel are transient and0writes;320/360/390 checked. FullPhase6 NOT DONE; recipe search/duplicate/cooking-mode and persistent favorites/pins remain unimplemented decisions for a bounded6B task. Detailed evidence/limits in V4_IMPLEMENTATION_REPORT.md.
+
 Giữ card ảnh riêng, tên/serving/macros và nguồn nhập. Daily logger tìm trực tiếp trên thư viện đó; sau mới thêm pinned portions và recent theo meal. Search không dấu giúp gõ nhanh tiếng Việt. Kết quả rỗng phải chặn lưu, không âm thầm lấy món trước.
 
 Recipe có ba vùng tách nhau: **bản gốc**, **lượng định nấu**, **lượng đã ăn**. Preview lượng nấu là view arithmetic; reload quay về base. Ví dụ fixture: gốc4, ingredient400g,300kcal/phần → nấu2:200g,600kcal tổng,300kcal/phần. Ghi1.5phần=450kcal. Macro chưa biết vẫn null; không lấy ảnh/ingredients đoán.

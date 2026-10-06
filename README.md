@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase4 + Phase5 (Xem ngày và Journal Retrieval) IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 231 tests.** Tải lại mọi tab để nhận asset/module `v=30`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; mọi thay đổi chỉ áp dụng hôm nay. Lịch sử giữ ownership/CAS và không có structural controls. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). STOP trước Phase6.
+**Hiện tại: schema8 · Phase0–5 +6A Faster Meal Logging IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 262 tests.** Tải lại mọi tab để nhận asset/module `v=31`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; lịch sử giữ ownership/CAS. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). FullPhase6 chưa hoàn tất; STOP trước6B.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -116,3 +116,13 @@ Vào **Nhật ký & Ảnh → Lịch & dòng thời gian**. Ô **Tìm nhật ký
 Tìm/lọc trên toàn bộ lịch sử rồi hiển thị ngày mới trước:30 kết quả đầu, **Xem thêm** thêm30. Đổi query/thẻ hoặc **Xóa bộ lọc** quay về30 kết quả; Clear trả focus về ô tìm. Không có dữ liệu hiện **Chưa có nhật ký**, không khớp bộ lọc hiện **Không tìm thấy nhật ký phù hợp**.
 
 **Mở ngày** mở editor đúng ngày; **Quay lại kết quả nhật ký** tính lại từ dữ liệu hiện tại. Sau sửa/xóa, entry có thể không còn khớp query/thẻ. Tìm/lọc/xem thêm/mở kết quả không lưu dữ liệu. Chỉ Save/Delete trong editor thay dữ liệu theo flow hiện có. Query/thẻ/số kết quả không lưu qua reload; dữ liệu nhật ký và ảnh vẫn còn. Đã kiểm tra browser/iframe320/360/390 và keyboard; chưa kiểm tra điện thoại vật lý, screen reader hoặc Safari.
+
+## Ghi nhiều món và copy có chọn — Phase 6A
+
+Vào **Dinh dưỡng → Nhật ký ngày → Thêm nhiều món**. Chọn **Ngày đích/Bữa đích**, chọn món từ recent hoặc tìm kiếm; recent ưu tiên cùng bữa, fallback ghi rõ **bữa khác**. Món nguồn đã xóa hoặc công thức chưa đủ macro không chọn để ghi mới. Search không dấu và lọc thực phẩm/công thức vẫn giữ các món đã chọn.
+
+Chọn **Review batch** → chỉnh số khẩu phần từng món, kiểm tra macro, bỏ món nếu cần → **Thêm N món**. Món mới mặc định1 khẩu phần;0.01–100, không tự lấy lượng lần trước. Chọn/review chưa ghi dữ liệu. Confirm ghi toàn batch một lần; lỗi/stale/quota không ghi một nửa và giữ review để sửa/retry. Khi nguồn đã thay đổi, hủy/mở lại batch để duyệt nguồn mới. Save pending khóa controls, không tạo2N do click lặp.
+
+**Sao chép có chọn món**: chọn ngày/bữa nguồn → chọn từng bản ghi → ngày đích và giữ bữa nguồn hoặc chọn bữa đích → review/edit lượng → Confirm. Copy dùng macro snapshot đã ghi, kể cả food/recipe thư viện đã sửa/xóa; không dựng lại từ nguồn mới. Món nguồn/ngày đích đang có được giữ, bản copy có ID mới. Nút **Sao chép ngày hôm trước** cũ vẫn hoạt động.
+
+**Quay lại chọn món** giữ lượng đã sửa; **Hủy batch** chỉ bỏ phần đang soạn. Pending chỉ ở bộ nhớ của tab; reload làm mất phần chưa Confirm, món đã Save vẫn còn. Xem ngày tự đọc totals/count mới; cook-size công thức vẫn là preview riêng với số phần đã ăn. Schema8 và backup/ảnh không đổi. Đã kiểm tra iframe320/360/390, keyboard/focus, lỗi storage giả lập; chưa thử điện thoại vật lý/Safari/screen reader/quota thật. Chưa có favorites/pins, portion basis hay cookbook nâng cao;6B chưa triển khai.

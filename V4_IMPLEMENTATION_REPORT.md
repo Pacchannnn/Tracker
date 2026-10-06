@@ -1,3 +1,80 @@
+# Tracker V4 — Phase6A Faster Meal Logging release
+
+06/10/2026 · **6A IMPLEMENTED / TESTED in verified local scope; all34 gates passed. FullPhase6 NOT DONE. STOP before6B.** Schema8 stays8. Baseline clean local main88bba6b; code2d27a81; separate docs/whitespace checkpoint follows in local Git log. No push/fetch/reset/history rewrite. Earlier reports below are historical.
+
+## Phase6A report — all29 requested items
+
+1. **Baseline → final tests:**231/231→262/262,0failed/skipped/todo.31new groups in tests/nutrition-batch.test.js; all231 original files/assertions unchanged. Initial29 RED missing domain interfaces before implementation→GREEN; two additional snapshot/latest-state regression groups. Final suite after UI fixes;56JS syntax, final diff checks. Independent reviewer reran262/56 and found no remaining important correctness/scope defect.
+2. **Schema:**8→8, no persistent fields/migration/favorite/pin/pending batch. Photo DB1/backup format1 unchanged. Original PROGRAM/master/dependencies unchanged; existing other-module diff is cache30→31 only.
+3. **Recent algorithm:** derive from historical entries; exact same meal label first, then explicit global fallback, each newest local saved date first and reverse append position on ties. Dedupe food/recipe source keys, up to6choices including missing sources. Breakfast fixture prioritizes Oct02 missing source then Oct01 same-meal recipe/foods, before newer Oct04 Lunch egg. Selecting Lunch puts Oct04 egg first as same-meal; other candidates labeled bữa khác. No frequency score/persisted list.
+4. **Deleted-source recent:** historical label shown disabled when current definition is absent; incomplete/unknown macro recipe also disabled. Selection rechecks latest live source and rejects missing/invalid; never resurrects a definition. Existing historical logs remain readable.
+5. **Search integration:** reused searchFoods for projected food/recipe names, unchanged Vietnamese accent/case behavior. Daily single logger/editor search remains intact. Query Clear/type filter changes preserve selected rows; browser com trang→dau do→Clear→recipe filter retained all3choices. Original-container focus fix prevents jumping from library results to duplicate recent button.
+6. **Pending architecture:** one UI closure with destination/source dates+meals, query/type, selected rows and review; one row per live source, copy one per selected logged-entry ID. Rows capture full source baseline and snapshot. Search/filter/Back/navigation preserve local state; explicit Cancel discards only transient batch; reload drops it. No recovery persistence claim.
+7. **Review:** explicit Review batch before Confirm, date/meal/source type/names, individual amount, canonical macro preview and meaningful Remove. No Save when choosing. Back preserves edited2.25amount; removing3→2 focuses next amount and clears old error; success/Cancel focus launcher. Pending controls freeze.
+8. **Amount:** live food/recipe defaults1, never last consumed amount; copy defaults saved servings. validateEntry0.01–100, independent decimal inputs. Preview uses dailyTotals per snapshot; known0fat retained; invalid/blank amount rejects. Unknown/null snapshots remain unknown in defensive history reads but cannot newly log/copy. Cook-size does not change consumed servings.
+9. **Atomic commit:** review validates initially; Confirm uses existing updateData + origin Web Lock, clones latest, revalidates every row/source/snapshot/amount/destination, creates all IDs/records before push, appendsN and saves once. No half-write. Browser3 created exactly3records, only entries changed,1JSONwrite/0IDBwrite; source records and other domains unchanged.
+10. **Double submit:** automated delayed concurrent commits and repeat after success reject, N not2N; same for copy. Browser held native write pending, all controls disabled, repeated forced pointer attempts did not invoke duplicate writes; release produced exact3/one persisted write. Normal Enter/Space tested; tool refused key press on disabled button, so repeated pending Enter was not independently exercised in browser.
+11. **Stale/concurrency:** complete selected food/recipe or copy-entry baseline and destination-day entries compared against latest inside lock. Changed/deleted relevant source or changed destination rejects whole batch; unrelated dates/settings merge and are preserved (automated writer proof). Browser synthetic parent edited source while review open; Confirm rejected0writes and retained review. This is cross-document synthetic mutation, not a claim of two real browser-tab race testing. No merge/replay framework.
+12. **Storage failure:** injected Storage.setItem quota failure left exact persisted JSON unchanged,0successful writes/1attempt, retained3rows and amounts2/1/1, error/no success. Disable fault→explicit retry wrote once, exact3. Copy automated failure/retry proves same atomicity. Native real quota not tested. Only after successful persistence does review clear.
+13. **Date/meal:** batch3 into historical2026-09-20/Dinner, totals650kcal/P60/C100/F5; not today. Date handled as validated local YYYY-MM-DD, no UTC conversion. Copy2of3 into2026-09-22/Lunch,550kcal/P55/C90/F5. Mobile copy default kept Breakfast source labels alongside2Lunch target items;4total,2meal groups, append only.
+14. **Snapshot ownership:** live food uses existing foodSnapshotForEntry; recipe foodId=recipe:<id>, frozen per-serving food object. Historical records keep independent snapshots after library edit/delete; new-food+recipe regression, existing old snapshot tests and browser source totals remain unchanged. No live macro reference/MyDay batch special case.
+15. **Selective copy:** choose source date/optional meal, subset, destination date and preserve individual source meal labels or explicit target meal; review/edit amount, Confirm once. Copy uses historical entry food/foodId and existing source fields, fresh logged IDs, no destination overwrite, source untouched. Pure1of3/2of3; browser2of3 and current copy-all/Escape smoke passed. Distinct old entries referencing same definition may each be selected because they are separate records, not duplicate candidate selection.
+16. **Deleted-source copy:** strict existing backup accepts independent complete snapshots with missing library source. Selective copy retains that contract, no fake food/validator bypass. Browser selected old food100kcal+recipe300kcal, edited amount food2.5; deleted food, edited recipe999 then deleted recipe before Confirm; copy still250+300=550, source history unchanged, library counts2foods/1recipe rather than resurrecting records. Malformed/null snapshots disabled/rejected; source logged-entry edit/delete rejects.
+17. **MyDay:** actual saved batch3 dateSep20 shows3items/1meal,650/P60/C100/F5 matching canonical Nutrition; no MyDay body change. Pure daySummary count/group/totals tests pass, snapshots unchanged after definition deletion. Original Phase5 tests retained.
+18. **Recipe scaling:** existing tests pass. Browser4→2cook preview showed200g ingredient and600kcal batch while300kcal per serving and consumed logger default1 remained. No yield redistribution/cooked grams or modified recipe definition. Batch recipe logging uses original per-serving snapshot.
+19. **Backup/restore:** schema8 fixture containing old records, multi-add records, copy records, recipes and deleted-food-source snapshot createBackup→parseBackup→restoreBackupData deep equals original, including IDs/dates/food snapshots. Existing migration/backup/photo tests pass. No manual full-image restore repeated this milestone; no photo-format change.
+20. **Zero-write audit:** synthetic8783 probe after reset: opening recent/search/select/unselect/amount/review/Back/selective-copy selection/review/Cancel0JSONwrites/0attempts/0IDBwrites. Exact raw JSON and photo metadata equality, changedDomains=[];6initial records unchanged. Source edits made by synthetic parent are counted separately, never attributed to retrieval. After parent reload baseline metadata needed reset; temporary false equality before reset was a harness-baseline gap, not app photo mutation.
+21. **Browser A–L:** Ameal order/dedupe/fallback/missing; B3+amount→exact3; Cquery/filter selection; D3→2→exact2; Einvalid0; Fheld save/duplicate attempts; Gquota0/retained/retry; Hold-dateSep20; Isubset2of3; Jsource edit/delete/snapshots; KMyDay count/totals; Lreloadsaved9 retained/transient panel0. Extra stale-source0writes, Cancel/Back, old copy-all/Escape, recipe scale, safe local probes. Current harness/standalone warning/error captures empty.
+22. **Mobile320/360/390:** actual iframe widths; client/scroll305/305,345/345,375/375 (15px scrollbar), no horizontal overflow. Recent5choices, search/long Vietnamese names, multi3,3reviewrows, blank error, amount changes/remove, Confirm/add2, selective-copy2, bottomnav tested each. Result4target records/2meal labels, sources unchanged, unique IDs. Success launcher48px, bottom404 above nav673/688/688. Measured JSON and screenshot ignored under.local; no physical-phone claim.
+23. **Accessibility:** native wrapped labeled search/select/amount inputs, unique numbered amount labels, real meaningful selection/remove buttons, aria-pressed and selected count, alert/error focus target, visible blue2.4px focus. Tab amount→Remove, ShiftTab→amount; Enter/Space select/review/Save/Cancel; Escape existing copy-all dialog cancel0writes. Selection stays originating result container; Remove→next amount; Cancel/Save→launcher above nav. Pending Confirm/inputs/Back/Cancel disabled. No screen-reader/WCAG certification.
+24. **Privacy/security:** local relative modules only, no new dependency/CDN/font/AI/analytics/upload/account/backend. Safe text APIs; no user-entered HTML injection. No photo storage change. Fixtures/probes/audits/screenshot ignored.local on owned8783; user8765 origin untouched. Original private master not modified/staged.
+25. **Files:** created js/nutrition-batch.js, js/nutrition-batch-ui.js, tests/nutrition-batch.test.js. Small app integration and CSS additions; index/import URLs30→31 cache-only in other JS. Docs V4_ROADMAP,this report,DATA_MODEL,README,FULL_STEP_BY_STEP_GUIDE.txt,TRACKER_PRODUCT_IDEAS; ignored private summary updated. No original tests/dependencies/program changes, no synthetic/private files committed.
+26. **Git:** local main code2d27a81, docs/one-line whitespace cleanup checkpoint named Record Phase6A meal logging evidence and remaining6B. Final status inspected after commit; no fetch/push/reset/rebase/history rewrite or branch split. Cached origin/main comparison not remote verification.
+27. **NOT VERIFIED:** physical phones/Safari/other engines/screen reader/WCAG certification/native quota/power loss/very large histories/real multi-tab Nutrition race/manual full-image restore/all pre-existing editor workflows. Automated regressions pass, browser storage failure was injected. Pending batch deliberately not recovered after reload. Historical observer-error attribution unproven; current captures empty.
+28. **DONE gate:**34/34 passed in verified local scope; matrix below. Only6A marked implemented/tested. FullPhase6 remains incomplete. No blocking source-snapshot/schema issue and no remaining important review finding.
+29. **Exact remaining6B:** cookbook recipe search/duplicate/cooking mode and remaining library/reuse polish are unimplemented. Favorites/pins/portion basis/pending recovery require separate approved persistent-data contract/schema decisions; cooked-weight/yield repartition/shopping list remain later proposals. No6B code started. **STOP here; await a separate task.**
+
+## Phase6A 34-gate evidence
+
+| Gate | Evidence / result |
+| --- | --- |
+|1 Baseline231 |PASS; originals unchanged,262final |
+|2 Schema8 |PASS; no fields/migration |
+|3 Recent by meal |PASS; order/dedupe/fallback pure+browserA |
+|4 Recent0writes |PASS; probe/raw equality |
+|5 Multi-select |PASS;3 through query/type changes |
+|6 Explicit review |PASS; no selection writes |
+|7 Amount each |PASS; independent2/1/1, decimals |
+|8 Atomic batch |PASS; validate all before append/save once |
+|9 ExactN |PASS;3/2 actual, mobileadd2+copy2 |
+|10 FreshIDs |PASS; unique/new IDs and collision tests |
+|11 Double submit |PASS; delayed writer + disabled pending pointer attempts |
+|12 Date |PASS; historicalSep20, exact local string |
+|13 Meal |PASS; Dinner/Lunch/preserve-source |
+|14 Snapshots |PASS; independent per-serving food/recipe |
+|15 Edit/delete isolation |PASS; old/new snapshots and browserJ |
+|16 Invalid all rejects |PASS; blank row0writes |
+|17 Stale safe |PASS; source/destination reject; unrelated merge |
+|18 Failure atomic |PASS; exact JSON unchanged on injectedquota |
+|19 Pending retained |PASS;3rows2/1/1 + retry |
+|20 Selective subset |PASS; pure1of3/2of3, browser2of3 |
+|21 Source unchanged |PASS; full original logged records comparison |
+|22 CopyIDs fresh |PASS; UUID/new/unique append |
+|23 Deleted source |PASS; recent disabled, copy historical allowed |
+|24 MyDay |PASS;3items/1meal650macro browser+pure |
+|25 Recipe scale |PASS; retained tests and4→2 browser |
+|26 Search |PASS; accent behavior and pending retention |
+|27 Backup roundtrip |PASS; create/parse/restore deep compare8 |
+|28 Readonly0writes |PASS; opening/select/review/edit/Back/Cancel |
+|29 Mobile3widths |PASS; no overflow and above-nav focus |
+|30 Keyboard/focus |PASS; Enter/Space/Tab/ShiftTab/Escape and fixes |
+|31 Full suite |PASS;262/262,56syntax |
+|32 No migration |PASS; version8/code diff |
+|33 No6B |PASS; scope/source review |
+|34 No push |PASS; local checkpoints only |
+
+---
+
 # Tracker V4 — Phase5B Journal Retrieval / Phase5 release
 
 06/10/2026 · **5B IMPLEMENTED / TESTED; Phase5 IMPLEMENTED / TESTED in verified local scope. All29 gates passed. STOP before Phase6.** Schema8 stays8. Baseline clean main d3f2e83 (5A code ffe8279); code334d541, contrast fix79e60eb; separate docs checkpoint follows in local Git log. No push/fetch/reset/history rewrite. Reports below are historical.

@@ -1,9 +1,10 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase5A+5B complete in verified local scope; STOP before6)
+Updated: 2026-10-06 (Phase6A complete in verified local scope; STOP before6B)
 
 CURRENT PROJECT STATE
-Phase4 + Phase5 Xem ngày / Journal Retrieval IMPLEMENTED / TESTED;
-231 tests /53 syntax checks; all29 Phase5B gates passed, schema8 unchanged.
+Phase0-5 +6A Faster Meal Logging IMPLEMENTED / TESTED;
+262 tests /56 syntax checks; all34 Phase6A gates passed, schema8 unchanged.
+FullPhase6 NOT DONE; STOP before6B cookbook/remaining library improvements.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -259,7 +260,7 @@ DECISIONS: home promotion/richer mood/catalog/remote AI/backend/privacy DECIDE L
 BACKLOG:5B;6food reuse/cookbook;7reviews/memories;8experiments. No5B implemented here.
 
 
-V4 PHASE 5B — CURRENT STATUS — 2026-10-06
+V4 PHASE 5B — HISTORICAL STATUS — 2026-10-06
 CURRENT PHASE:5A+5B IMPLEMENTED / TESTED in verified local scope; Phase5 DONE.
 CURRENT STEP: handoff; STOP before Phase6. Schema8/photo DB1/format1 unchanged.
 COMPLETED:local title/note/tag substring retrieval, Vietnamese normalization,
@@ -289,3 +290,38 @@ Done conditions next:review selected items/count/date, preserve nutrition
 snapshots, validate quantities and migrate only necessary persistent fields.
 BACKLOG:6food reuse/cookbook;7reviews/memories;8experiments. No6 started.
 Evidence/detailed limits:V4_IMPLEMENTATION_REPORT.md; plan:V4_ROADMAP.md.
+
+
+V4 PHASE 6A — CURRENT STATUS — 2026-10-06
+CURRENT PHASE:6A IMPLEMENTED / TESTED; full6 NOT DONE; schema8/photo1 unchanged.
+CURRENT STEP:handoff, STOP before6B. IN PROGRESS:none. BLOCKERS:none in6A.
+COMPLETED:derived same-meal recents/global fallback; food+recipe search;
+multi-select/review/independent amount/remove; one atomic guarded write;
+selective snapshot copy with fresh IDs and exact target date/meal.
+DEPENDENCIES/STEPS:1 RED29groups ->2 GREEN domain/writer ->3 inline UI ->4
+browser A-L/mobile/readonly/keyboard ->5 review/31groups/final suite/docs.
+All DONE; dependencies1->2->3->4->5. Model/reasoning: coding model/high for
+atomicity/snapshot/constraints/UI verification, medium for documentation.
+TESTS:231->262,31new groups, original231 assertions unchanged;56syntax;
+schema8 backup create/parse/restore deep equality, MyDay/search/scale pass.
+Browser8783:batch3 exactSep20/Dinner650kcal,onewrite; invalid0,quota0+
+retained2/1/1amounts,retryonce; pending disable/repeated clicks no2N;
+remove3->2 saves2; copy2of3 snapshot550kcal after source food/recipe deleted;
+source records unchanged, all IDs unique; original copy-all/Escape preserved.
+Readonly recent/search/select/unselect/amount/review/Back/Cancel0JSON/0IDB
+plus exact raw JSON/metadata equality. Reload keeps Save, discards pending.
+Mobile320/360/390 client/scroll305/305,345/345,375/375; long names,3rows,
+error/remove/add/copy, keyboard Tab/ShiftTab/Enter/Space;48px launcher focus
+bottom404px above nav673/688/688. Independent review: no important defect.
+CODE CHECKPOINT:2d27a81; docs/whitespace checkpoint follows in git log.
+KNOWN BUGS:none important in exercised scope; private master unchanged.
+NOT VERIFIED:physical phones/Safari/other engines/screen reader/nativequota/
+powerloss/very large libraries/all editor races/manual full-photo restore.
+DECISIONS NEEDED:none for6A. Pending remains transient, current amount rules
+0.01-100; unknown macros rejected for new log/copy, historical read unchanged.
+NEXT/REMAINING6B:recipe search/duplicate/cooking-mode and library/reuse polish
+require a separate bounded task. Persistent favorites/pins/portion basis or
+pending recovery need approved data contract/schema first; cooked-weight,
+yield repartition/shopping remain later proposals. No6B started; no push.
+BACKLOG:remaining6;7reviews/memories;8experiments;remote services DECIDE LATER.
+Full evidence/34gates:V4_IMPLEMENTATION_REPORT.md; plan:V4_ROADMAP.md.

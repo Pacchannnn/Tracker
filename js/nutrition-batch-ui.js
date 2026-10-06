@@ -131,7 +131,7 @@ export function createNutritionBatchUI({ main, getData, getLatest, write, accept
         const next=await writer.commit(review);acceptData(next);const destination=review.date,count=review.rows.length;
         state=null;error='';busy=false;onSaved(destination,count);
       } catch(problem) {
-        busy=false;error=problem.message;render();focus(main.querySelector('.nutrition-batch .notice')); 
+        busy=false;error=problem.message;render();focus(main.querySelector('.nutrition-batch .notice'));
       }
     },'primary');
     box.append(div('actions',save,back,cancel));
