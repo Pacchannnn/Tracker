@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=30';
+import { validDate } from './data.js?v=31';
 
 export const MOODS = [
   { value: 'drained', label: 'Mệt', mark: '·' },

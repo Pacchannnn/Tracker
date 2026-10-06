@@ -1,4 +1,4 @@
-import { materializeLegacySession, sessionGeneration, validateSessionIdentity } from './session-identity.js?v=30';
+import { materializeLegacySession, sessionGeneration, validateSessionIdentity } from './session-identity.js?v=31';
 
 export function runtimeView(session, exerciseNotes = {}) {
   const result = materializeLegacySession(session, exerciseNotes);

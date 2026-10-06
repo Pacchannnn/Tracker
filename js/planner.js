@@ -1,4 +1,4 @@
-import { MUSCLES, EQUIPMENT, validateSlot, validateWorkoutSnapshot, muscleMatches, labelFor } from './custom-workout.js?v=30';
+import { MUSCLES, EQUIPMENT, validateSlot, validateWorkoutSnapshot, muscleMatches, labelFor } from './custom-workout.js?v=31';
 
 // Provider-neutral contract. No network, credentials, medical interpretation or automatic saving.
 export function createPlannerRequest(raw) {

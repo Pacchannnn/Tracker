@@ -1,22 +1,23 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=30';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=30';
-import { createDraftStore } from './planning-draft.js?v=30';
-import { navigationGroup } from './navigation.js?v=30';
-import { restSeconds } from './workout.js?v=30';
-import { weeklySummary, exerciseHistory } from './progress.js?v=30';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=30';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=30';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=30';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=30';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=30';
-import { createGymBuilder } from './gym-builder-ui.js?v=30';
-import { createPlannerUI } from './planner-ui.js?v=30';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=30';
-import { createSessionStore } from './session-runtime.js?v=30';
-import { runtimeView } from './session-readers.js?v=30';
-import { createSessionUI } from './session-ui.js?v=30';
-import { createMyDayUI } from './my-day-ui.js?v=30';
-import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=30';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=31';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=31';
+import { createDraftStore } from './planning-draft.js?v=31';
+import { navigationGroup } from './navigation.js?v=31';
+import { restSeconds } from './workout.js?v=31';
+import { weeklySummary, exerciseHistory } from './progress.js?v=31';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=31';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=31';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=31';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=31';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=31';
+import { createGymBuilder } from './gym-builder-ui.js?v=31';
+import { createPlannerUI } from './planner-ui.js?v=31';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=31';
+import { createSessionStore } from './session-runtime.js?v=31';
+import { runtimeView } from './session-readers.js?v=31';
+import { createSessionUI } from './session-ui.js?v=31';
+import { createMyDayUI } from './my-day-ui.js?v=31';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=31';
+import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=31';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -167,6 +168,10 @@ async function sessionAction(operation, success = 'Đã lưu buổi.', { renderA
 
 const myDay = createMyDayUI({ main, getData: () => data, render, openSource: openDaySource,
   registerUrl: url => photoUrls.push(url), helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
+const nutritionBatch = createNutritionBatchUI({ main, getData:()=>data, getLatest:()=>loadData(localStorage),
+  write:change=>updateData(localStorage,navigator.locks,change), acceptData:next=>data=next, render,
+  onSaved:(date,count)=>{foodDateSelection={mode:'selected',date};nutritionSubView='daily';render();message(`Đã thêm ${count} món vào ${date}.`);const launch=main.querySelector('[data-batch-launch]');launch?.focus();launch?.scrollIntoView({block:'center'});},
+  helpers:{node,button,field,panel,div,p,h2,h3,fmt,id} });
 const journalRetrieval = createJournalRetrievalUI({ main, getEntries: () => data.journalEntries,
   openEntry: entry => { journalDate = entry.date; journalSection = 'entry'; journalReturnToResults = true; show('journal'); },
   helpers: { node, button, panel, div, p, h2, h3, field } });
@@ -490,6 +495,7 @@ function nutritionView() {
     next.entries.push(...copyDayEntries(next.entries, sourceDate, foodDate, id));
   }, 'Đã sao chép nhật ký ăn.'))));
   main.append(summary);
+  nutritionBatch.render(foodDate);
   renderFoodEntries(foodDate);
 }
 

@@ -1,6 +1,6 @@
-import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=30';
-import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=30';
-import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=30';
+import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=31';
+import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=31';
+import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=31';
 
 const clone = value => structuredClone(value);
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);

@@ -263,3 +263,9 @@ dialog::backdrop { background: #2d2d2db0; }
 .journal-retrieval button { max-width: 100%; overflow-wrap: anywhere; }
 .journal-retrieval-tags button[aria-pressed=true] { color: var(--ink); background: var(--yellow); border-style: dashed; }
 .journal-retrieval .list-card { scroll-margin-block: 100px; }
+.nutrition-batch .batch-choice { min-width: 0; }
+.nutrition-batch button { max-width: 100%; overflow-wrap: anywhere; }
+.nutrition-batch .batch-choices, .nutrition-batch .batch-recent { display: grid; gap: 12px; }
+.nutrition-batch .batch-recent { grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); }
+.nutrition-batch button[aria-pressed=true] { color: var(--ink); background: var(--yellow); border-style: dashed; }
+.nutrition-batch .batch-review .list-card { scroll-margin-block: 100px; }

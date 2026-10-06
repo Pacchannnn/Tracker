@@ -1,7 +1,7 @@
-import { createExercisePicker } from './exercise-picker-ui.js?v=30';
-import { libraryExercises } from './custom-workout.js?v=30';
-import { liveStructureAllowed, activeNeighbor, reviewLiveExercise, reviewReplacement, replacementRemaining } from './session-structure.js?v=30';
-import { validateSet } from './data.js?v=30';
+import { createExercisePicker } from './exercise-picker-ui.js?v=31';
+import { libraryExercises } from './custom-workout.js?v=31';
+import { liveStructureAllowed, activeNeighbor, reviewLiveExercise, reviewReplacement, replacementRemaining } from './session-structure.js?v=31';
+import { validateSet } from './data.js?v=31';
 
 export function createLiveWorkoutUI({ main, getData, command, render, dirtyForms, saveForms, pendingWrite, focusSlot, helpers }) {
   const { node, button, panel, div, p, h2, h3, field, confirmAction, message } = helpers;
