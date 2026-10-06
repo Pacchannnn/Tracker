@@ -1,25 +1,28 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=34';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=34';
-import { createDraftStore } from './planning-draft.js?v=34';
-import { navigationGroup } from './navigation.js?v=34';
-import { restSeconds } from './workout.js?v=34';
-import { weeklySummary, exerciseHistory } from './progress.js?v=34';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=34';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=34';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=34';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=34';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=34';
-import { createGymBuilder } from './gym-builder-ui.js?v=34';
-import { createPlannerUI } from './planner-ui.js?v=34';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=34';
-import { createSessionStore } from './session-runtime.js?v=34';
-import { runtimeView } from './session-readers.js?v=34';
-import { createSessionUI } from './session-ui.js?v=34';
-import { createMyDayUI } from './my-day-ui.js?v=34';
-import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=34';
-import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=34';
-import { createCookbookUI } from './cookbook-ui.js?v=34';
-import { recipeFormValues } from './cookbook.js?v=34';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=36';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=36';
+import { createDraftStore } from './planning-draft.js?v=36';
+import { navigationGroup } from './navigation.js?v=36';
+import { restSeconds } from './workout.js?v=36';
+import { weeklySummary, exerciseHistory } from './progress.js?v=36';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=36';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=36';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=36';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=36';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=36';
+import { createGymBuilder } from './gym-builder-ui.js?v=36';
+import { createPlannerUI } from './planner-ui.js?v=36';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=36';
+import { createSessionStore } from './session-runtime.js?v=36';
+import { runtimeView } from './session-readers.js?v=36';
+import { createSessionUI } from './session-ui.js?v=36';
+import { createMyDayUI } from './my-day-ui.js?v=36';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=36';
+import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=36';
+import { createCookbookUI } from './cookbook-ui.js?v=36';
+import { recipeFormValues } from './cookbook.js?v=36';
+import { createLifeReviewUI } from './life-review-ui.js?v=36';
+import { readLifeData, resolveLifeSource } from './life-review-source.js?v=36';
+import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=36';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -62,6 +65,11 @@ let photoFilter = 'all';
 let editingPhoto = null;
 let photoUrls = [];
 let daySourceContext = null;
+let lifeSourceContext = null;
+let lifeReturnContext = null;
+let lifeSourceGeneration = 0;
+let sourceFormBaseline = [];
+let sourceNavigationBaseline = null;
 
 function node(tag, options = {}, children = []) {
   const element = document.createElement(tag);
@@ -164,7 +172,7 @@ const sessionUI = createSessionUI({ main, getData: () => data, getLatest: () => 
   startRest: (name, rest) => { const duration = restSeconds(rest); if (!duration) return; restTimer = { exercise: name, planRest: rest, duration, remaining: duration, endAt: Date.now() + duration * 1000, running: true }; render(); },
   registerUrl: url => photoUrls.push(url), helpers: { node, button, panel, div, p, h2, h3, field, fmt, confirmAction, message } });
 async function sessionAction(operation, success = 'Đã lưu buổi.', { renderAfter = true } = {}) {
-  try { await operation(); if (renderAfter) render(); message(success); return true; }
+  try { await operation(); sourceFormBaseline = sourceFormValues(); if (renderAfter) render(); message(success); return true; }
   catch (error) { message(error.message || 'Không thể lưu buổi.', true); return false; }
 }
 
@@ -181,6 +189,52 @@ const cookbook = createCookbookUI({main,getData:()=>data,getLatest:()=>loadData(
 const journalRetrieval = createJournalRetrievalUI({ main, getEntries: () => data.journalEntries,
   openEntry: entry => { journalDate = entry.date; journalSection = 'entry'; journalReturnToResults = true; show('journal'); },
   helpers: { node, button, panel, div, p, h2, h3, field } });
+const lifeReview = createLifeReviewUI({ main, readData: () => readLifeData(() => loadData(localStorage)),
+  openSource: openLifeSource, openDay: (date, context) => openLifeSource({ kind: 'day', date }, context),
+  helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
+
+function sourceFormValues() {
+  return [...main.querySelectorAll('form')].map(form => [...form.querySelectorAll('input,textarea,select')]
+    .map(input => [input.name, input.value, input.checked, input.validity?.badInput]).flat());
+}
+function guardLifeSource() {
+  if (!lifeSourceContext || JSON.stringify(sourceFormBaseline) === JSON.stringify(sourceFormValues())) return true;
+  message('Có phần nhập chưa lưu. Lưu hoặc đưa các ô về giá trị ban đầu trước khi quay lại tuần.', true); return false;
+}
+async function openLifeSource(ref, context) {
+  if (!guardLifeSource()) return;
+  const generation = ++lifeSourceGeneration;
+  let latest, photos = [];
+  try {
+    if (ref.kind !== 'photo') latest = loadData(localStorage);
+    else photos = await listPhotoMetadata();
+    if (generation !== lifeSourceGeneration) return;
+    if (context?.weekAnchor && lifeReview.getContext().weekAnchor !== context.weekAnchor) return;
+    const resolved = resolveLifeSource(latest, photos, ref);
+    lifeReturnContext = context; lifeSourceContext = { ref: structuredClone(ref), metadata: resolved.record };
+    daySourceContext = null;
+    if (latest) data = latest;
+    if (ref.kind === 'photo') { show('life-photo'); return; }
+    if (ref.kind === 'day') { myDay.setDate(ref.date); show('my-day', latest); return; }
+    if (ref.kind === 'journal') { journalDate = ref.date; journalSection = 'entry'; journalReturnToResults = false; show('journal', latest); }
+    else if (ref.kind === 'nutrition') { foodDateSelection = { mode: 'selected', date: ref.date }; nutritionSubView = 'daily'; editingEntry = null; show('nutrition', latest); }
+    else if (ref.kind === 'workout' || ref.kind === 'set') show('history', latest);
+    else if (ref.kind === 'cardio' || ref.kind === 'knee') { editingCardio = ref.kind === 'cardio' ? ref.id : null; editingKnee = ref.kind === 'knee' ? ref.id : null; show('gym-logs', latest); }
+    else if (ref.kind === 'checkin') { progressSubView = 'checkins'; editingCheckin = ref.id; show('checkins', latest); }
+  } catch (error) { message(error.message || 'Chưa đọc được nguồn.', true); }
+}
+function returnLifeReview() {
+  if (!guardLifeSource() || (view === 'workout' && !sessionUI.guardUnsaved())) return;
+  const context = lifeReturnContext;
+  lifeSourceContext = null; lifeReturnContext = null; daySourceContext = null;
+  progressSubView = 'weekly'; lifeReview.returnTo(context); show('checkins');
+}
+function lifePhotoSourceView() {
+  const item = lifeSourceContext?.metadata;
+  main.append(panel(h2('Bản ghi ảnh'), p(`${item?.date} · ID ${item?.id}`, 'summary'),
+    p(`Loại: ${item?.category || 'Chưa ghi'} · Góc: ${item?.pose || 'Chưa ghi'}`, 'hint'), p(item?.note || 'Chưa có ghi chú'),
+    p('Đây là metadata của ảnh được chọn. Tuần đã ghi không tải ảnh gốc hoặc thư viện ảnh.', 'hint')));
+}
 function openDaySource(kind, date, recordId) {
   daySourceContext = { kind, date };
   if (kind === 'journal' || kind === 'photos') {
@@ -199,25 +253,33 @@ function openDaySource(kind, date, recordId) {
 async function mutate(change, success = 'Đã lưu.') {
   try {
     data = await updateData(localStorage, navigator.locks, change);
+    sourceFormBaseline = sourceFormValues();
     render();
     message(success);
     return true;
   } catch (error) { message(error.message || 'Không thể lưu dữ liệu.', true); return false; }
 }
 
-function show(next) {
+function show(next, verifiedSnapshot = null) {
+  if (!guardLifeSource()) return;
   if (view === 'workout' && !sessionUI.guardUnsaved()) return;
   if (view === 'workout') sessionUI.clearReview();
-  try { data = loadData(localStorage); }
-  catch (error) { message(error.message, true); return; }
+  try { data = verifiedSnapshot ?? loadData(localStorage); }
+  catch (error) {
+    if (!(next === 'life-photo' || next === 'checkins')) { message(error.message, true); return; }
+    progressSubView = 'weekly';
+  }
+  lifeReview.invalidate(); ++lifeSourceGeneration;
   sessionStore.reset();
   if (next === 'dashboard' || next === 'my-day') daySourceContext = null;
+  if (!['history','journal','nutrition','gym-logs','checkins','my-day','life-photo','workout'].includes(next)) { lifeSourceContext = null; lifeReturnContext = null; }
   view = next;
   notice.hidden = true;
   updateNavigation();
   render();
   main.focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
+  focusLifeSource();
 }
 tabs.forEach(tab => tab.addEventListener('click', () => show(tab.getAttribute('data-view'))));
 window.addEventListener('storage', event => {
@@ -246,11 +308,32 @@ function updateNavigation() {
 }
 
 function render() {
+  if (!guardLifeSource()) {
+    if (sourceNavigationBaseline) ({ editingFood, editingEntry, editingCheckin, editingCardio, editingKnee,
+      progressSubView, nutritionSubView, journalDate, journalSection, journalReturnToResults, foodDateSelection } = sourceNavigationBaseline);
+    return;
+  }
+  lifeReview.invalidate();
   photoUrls.forEach(url => URL.revokeObjectURL(url));
   photoUrls = [];
   main.replaceChildren();
+  if (lifeSourceContext) main.append(div('my-day-return', button('← Quay lại Tuần đã ghi', returnLifeReview)));
   if (daySourceContext) main.append(div('my-day-return', button(`← Quay lại Xem ngày · ${daySourceContext.date}`, () => show('my-day'))));
-  ({ dashboard: dashboardView, 'my-day': myDay.renderView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView })[view]();
+  ({ dashboard: dashboardView, 'my-day': myDay.renderView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView, 'life-photo': lifePhotoSourceView })[view]();
+  sourceFormBaseline = sourceFormValues();
+  sourceNavigationBaseline = { editingFood, editingEntry, editingCheckin, editingCardio, editingKnee,
+    progressSubView, nutritionSubView, journalDate, journalSection, journalReturnToResults, foodDateSelection };
+  focusLifeSource();
+}
+function focusLifeSource() {
+  if (lifeSourceContext) {
+    const ref = lifeSourceContext.ref;
+    const focus = [...main.querySelectorAll('[data-source-id]')].find(item => item.dataset.sourceId === ref.id
+      && (item.dataset.sourceKind ?? ref.kind) === ref.kind
+      && (ref.kind !== 'set' || item.dataset.sessionId === ref.sessionId))
+      || (['cardio','knee','checkin','journal'].includes(ref.kind) ? main.querySelector('form') : null);
+    if (focus) { focus.setAttribute('tabindex','-1'); focus.focus(); focus.scrollIntoView({block:'center'}); }
+  }
 }
 
 function latestCheckin(key) { return [...data.checkins].filter(item => item[key] !== null).sort((a, b) => b.date.localeCompare(a.date))[0]; }
@@ -352,8 +435,12 @@ async function openWorkout(key) {
 }
 const workoutView = () => sessionUI.workoutView();
 const historyView = () => {
-  const date = daySourceContext?.kind === 'gym' ? daySourceContext.date : null;
-  if (date) main.append(panel(p(`Lịch sử ngày ${date}`, 'hint'), button('Xem toàn bộ lịch sử tập', () => { daySourceContext.kind = 'all-history'; render(); })));
+  const date = ['workout','set'].includes(lifeSourceContext?.ref.kind) ? lifeSourceContext.ref.date : daySourceContext?.kind === 'gym' ? daySourceContext.date : null;
+  if (date) main.append(panel(p(`Lịch sử ngày ${date}`, 'hint'), button('Xem toàn bộ lịch sử tập', () => {
+    if (daySourceContext) daySourceContext.kind = 'all-history';
+    if (lifeSourceContext) lifeSourceContext.ref = { kind: 'all-history', date };
+    render();
+  })));
   sessionUI.historyView(date);
 };
 
@@ -397,6 +484,8 @@ function gymLogsView() {
     node('button', { type: 'submit', class: 'primary', text: cardio ? 'Lưu cardio' : 'Thêm cardio' })
   ]);
   if (cardio) cardioForm.append(button('Hủy sửa', () => { editingCardio = null; render(); }));
+  if (cardio) cardioForm.dataset.sourceId = cardio.id;
+  cardioForm.dataset.sourceKind = 'cardio';
   cardioForm.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(cardioForm));
@@ -438,6 +527,8 @@ function gymLogsView() {
     node('button', { type: 'submit', class: 'primary', text: knee ? 'Lưu ghi nhận gối' : 'Thêm ghi nhận gối' })
   ]);
   if (knee) kneeForm.append(button('Hủy sửa', () => { editingKnee = null; render(); }));
+  if (knee) kneeForm.dataset.sourceId = knee.id;
+  kneeForm.dataset.sourceKind = 'knee';
   kneeForm.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(kneeForm));
@@ -600,7 +691,8 @@ function renderFoodEntries(foodDate) {
   if (!entries.length) box.append(p('Chưa có bữa ăn cho ngày này.', 'empty'));
   for (const entry of entries) {
     const macros = dailyTotals([entry], entry.date);
-    box.append(div('list-card', h3(`${entry.meal} · ${entry.food.name}`), p(`${fmt(entry.servings)} × ${entry.food.serving} · ${fmt(macros.calories)} kcal · P ${fmt(macros.protein)} · C ${fmt(macros.carbs)} · F ${fmt(macros.fat)}`, 'summary'), div('actions', button('Sửa', () => { editingEntry = entry.id; render(); }), button('Xóa', () => confirmAction('Xóa bữa ăn này?', () => mutate(next => { next.entries = next.entries.filter(item => item.id !== entry.id); }, 'Đã xóa bữa ăn.')), 'danger'))));
+    const card = div('list-card', h3(`${entry.meal} · ${entry.food.name}`), p(`${fmt(entry.servings)} × ${entry.food.serving} · ${fmt(macros.calories)} kcal · P ${fmt(macros.protein)} · C ${fmt(macros.carbs)} · F ${fmt(macros.fat)}`, 'summary'), div('actions', button('Sửa', () => { editingEntry = entry.id; render(); }), button('Xóa', () => confirmAction('Xóa bữa ăn này?', () => mutate(next => { next.entries = next.entries.filter(item => item.id !== entry.id); }, 'Đã xóa bữa ăn.')), 'danger')));
+    card.dataset.sourceId = entry.id; card.dataset.sourceKind = 'nutrition'; box.append(card);
   }
   main.append(box);
 }
@@ -802,6 +894,8 @@ function journalView() {
     journalSection = 'calendar'; show('journal'); journalRetrieval.focusSearch();
   }));
   const form = node('form', { class: 'journal-form' });
+  if (existing) form.dataset.sourceId = existing.id;
+  form.dataset.sourceKind = 'journal';
   const dateField = field('Ngày', 'date', journalDate, { type: 'date', required: true });
   dateField.querySelector('input').addEventListener('change', event => {
     if (!validDate(event.target.value)) { message('Ngày không hợp lệ.', true); return; }
@@ -873,14 +967,18 @@ function journalView() {
   if (related.length) box.append(p(`Buổi tập cùng ngày: ${related.map(sessionTitle).join(', ')}`, 'hint'));
   const attached = div('journal-attached');
   box.append(attached);
-  listPhotos().then(photos => {
+  const metadataOnly = Boolean(lifeSourceContext), attachedDate = journalDate;
+  (metadataOnly ? listPhotoMetadata() : listPhotos()).then(async photos => {
     if (!attached.isConnected) return;
-    const matches = photos.filter(item => item.category === 'daily' && item.date === journalDate);
+    const matches = photos.filter(item => item.category === 'daily' && item.date === attachedDate);
     if (!matches.length) return;
     attached.append(h3(`Ảnh ngày này (${matches.length})`));
     const strip = div('photo-strip');
     for (const item of matches) {
-      const url = URL.createObjectURL(item.thumbnail || item.blob);
+      const image = metadataOnly ? await getPhotoThumbnail(item.id) : item.thumbnail || item.blob;
+      if (!attached.isConnected) return;
+      if (!image) { strip.append(p(`Chưa đọc được ảnh thu nhỏ · ${item.id}`, 'hint')); continue; }
+      const url = URL.createObjectURL(image);
       photoUrls.push(url);
       strip.append(node('img', { src: url, alt: `Ảnh nhật ký ${item.date}`, loading: 'lazy' }));
     }
@@ -906,7 +1004,7 @@ function renderJournalCalendar() {
   }
   month.append(grid);
   main.append(month);
-  listPhotos().then(photos => {
+  (lifeSourceContext ? listPhotoMetadata() : listPhotos()).then(photos => {
     if (!grid.isConnected) return;
     const dates = new Set(photos.filter(item => item.category === 'daily').map(item => item.date));
     grid.querySelectorAll('.calendar-day').forEach(day => {
@@ -989,8 +1087,16 @@ function renderPhotos() {
 }
 
 function checkinsView() {
-  const nav = div('subtabs', button('Tổng quan tiến độ', () => { progressSubView = 'overview'; render(); }), button('Nhập & xem check-in', () => { progressSubView = 'checkins'; render(); }));
+  const nav = div('subtabs progress-tabs', ...[['overview','Tổng quan tiến độ'],['checkins','Nhập & xem check-in'],['weekly','Tuần đã ghi']].map(([key,label]) => {
+    const control = button(label, () => {
+      if (!guardLifeSource()) return;
+      if (key !== 'weekly') { try { data = loadData(localStorage); } catch (error) { message(error.message, true); return; } }
+      progressSubView = key; render();
+    });
+    control.setAttribute('aria-pressed', String(progressSubView === key)); return control;
+  }));
   main.append(nav);
+  if (progressSubView === 'weekly') { lifeReview.renderView(); return; }
   if (progressSubView === 'overview') { progressOverview(); return; }
   const editing = data.checkins.find(item => item.id === editingCheckin);
   const box = panel(h2('Check-in cơ thể'), p('Cân nặng và vòng eo là dữ liệu quan sát. Ghi chú gối không phải chẩn đoán hoặc chỉ dẫn tăng tải.', 'hint'));
@@ -1004,6 +1110,8 @@ function checkinsView() {
   ]);
   form.append(node('button', { type: 'submit', class: 'primary', text: editing ? 'Lưu check-in' : 'Thêm check-in' }));
   if (editing) form.append(button('Hủy sửa', () => { editingCheckin = null; render(); }));
+  if (editing) form.dataset.sourceId = editing.id;
+  form.dataset.sourceKind = 'checkin';
   form.addEventListener('submit', async event => {
     event.preventDefault();
     const raw = Object.fromEntries(new FormData(form));
@@ -1211,7 +1319,11 @@ function exportData() {
 }
 
 try { data = loadData(localStorage); }
-catch (error) { data = emptyData(); message(error.message, true); document.querySelectorAll('button').forEach(button => button.disabled = true); throw error; }
+catch (error) {
+  data = emptyData(); view = 'checkins'; progressSubView = 'weekly';
+  // Keep the independent read screen accessible; existing editors still use loadData.
+  message('Chưa đọc được dữ liệu JSON. Tuần đã ghi vẫn có thể đọc metadata ảnh riêng.', true);
+}
 drafts.reset();
 sessionStore.reset();
 updateNavigation();

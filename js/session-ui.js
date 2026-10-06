@@ -1,8 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=34';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=34';
-import { sessionTitle } from './custom-workout.js?v=34';
-import { restSeconds } from './workout.js?v=34';
-import { createLiveWorkoutUI } from './live-workout-ui.js?v=34';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=36';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=36';
+import { sessionTitle } from './custom-workout.js?v=36';
+import { restSeconds } from './workout.js?v=36';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=36';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;
@@ -232,15 +232,24 @@ export function createSessionUI(context) {
     if (!sessions.length) { main.append(panel(p('Chưa có buổi tập nào. Ghi ít nhất một hiệp và Complete.', 'empty'))); return; }
     for (const session of sessions) {
       const box = panel(h3(`${session.date} · ${sessionTitle(session)}`), p(`${session.workoutSnapshot?.planName || 'Original Plan'} · ${session.sets.length} hiệp${session.notes ? ` · ${session.notes}` : ''}`, 'summary'));
+      box.dataset.sourceId = session.id;
+      box.dataset.sourceKind = 'workout';
       if (sessionGeneration(session) === 'structured') {
         for (const [index,slot] of runtimeView(session).slots.entries()) {
           const sets = session.sets.filter(set => set.slotId === slot.id);
           box.append(h3(`${index + 1}. ${slot.snapshot.name}`), p(`${slot.status === 'removed' ? 'Dừng bài' : slot.status === 'replaced' ? 'Dừng / Đã đổi bài' : 'Bài trong buổi'} · đã ghi ${sets.length}/${slot.snapshot.sets} hiệp`, 'hint'));
           const replacement = replacementLabel(session, slot); if (replacement) box.append(p(replacement, 'summary'));
-          box.append(p(sets.length ? sets.map(set => `Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`).join(' | ') : 'Chưa ghi hiệp', 'hint'));
+          if (!sets.length) box.append(p('Chưa ghi hiệp', 'hint'));
+          for (const set of sets) {
+            const line = p(`Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'hint');
+            line.dataset.sourceId = set.id; line.dataset.sourceKind = 'set'; line.dataset.sessionId = session.id; box.append(line);
+          }
         }
       } else {
-        const list = node('ul', { class: 'history-list' }); session.sets.forEach(set => list.append(node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` }))); box.append(list);
+        const list = node('ul', { class: 'history-list' }); session.sets.forEach(set => {
+          const line = node('li', { text: `${set.exerciseName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}` });
+          line.dataset.sourceId = set.id; line.dataset.sourceKind = 'set'; line.dataset.sessionId = session.id; list.append(line);
+        }); box.append(list);
       }
       box.append(div('actions', button('Mở để sửa', () => {
         const baseline = getData().draft, open = async () => { if (await action(() => store.reopen(session, baseline), 'Đã mở buổi với baseline lịch sử.')) { editingSet = null; focusSlotId = null; show('workout'); } };

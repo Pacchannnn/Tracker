@@ -1,7 +1,7 @@
-import { daySummary, readDay, shiftCalendarDate } from './my-day.js?v=34';
-import { localDate, validDate } from './data.js?v=34';
-import { MOODS } from './journal.js?v=34';
-import { PHOTO_CATEGORIES, PHOTO_POSES, listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=34';
+import { daySummary, readDay, shiftCalendarDate } from './my-day.js?v=36';
+import { localDate, validDate } from './data.js?v=36';
+import { MOODS } from './journal.js?v=36';
+import { PHOTO_CATEGORIES, PHOTO_POSES, listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=36';
 
 export function createMyDayUI({ main, getData, render, openSource, registerUrl, helpers,
   readMetadata = listPhotoMetadata, readThumbnail = getPhotoThumbnail }) {
@@ -116,5 +116,5 @@ export function createMyDayUI({ main, getData, render, openSource, registerUrl, 
       }
     });
   }
-  return { renderView, date: () => selectedDate };
+  return { renderView, date: () => selectedDate, setDate(date) { if (!validDate(date)) throw new Error('Ngày không hợp lệ.'); selectedDate = date; } };
 }

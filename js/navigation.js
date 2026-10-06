@@ -12,6 +12,7 @@ const groups = {
   nutrition: 'food',
   journal: 'journal',
   checkins: 'progress',
+  'life-photo': 'progress',
   settings: 'settings'
 };
 
