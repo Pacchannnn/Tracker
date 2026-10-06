@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase0–5 +6A Faster Meal Logging IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 262 tests.** Tải lại mọi tab để nhận asset/module `v=31`. Buổi đang tập hợp lệ có Add/Remove/Reorder và **Đổi phần còn lại**; lịch sử giữ ownership/CAS. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). FullPhase6 chưa hoàn tất; STOP trước6B.
+**Hiện tại: schema8 · Phase0–6 IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 283 tests.** Tải lại mọi tab để nhận asset/module `v=34`. Cookbook có tìm công thức/thẻ/nguyên liệu, Nhân bản qua review và Chế độ nấu chỉ xem. Buổi tập giữ Add/Remove/Reorder/Đổi phần còn lại và ownership/CAS. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). Full bounded Phase6 hoàn tất; STOP trước Phase7.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -125,4 +125,18 @@ Chọn **Review batch** → chỉnh số khẩu phần từng món, kiểm tra m
 
 **Sao chép có chọn món**: chọn ngày/bữa nguồn → chọn từng bản ghi → ngày đích và giữ bữa nguồn hoặc chọn bữa đích → review/edit lượng → Confirm. Copy dùng macro snapshot đã ghi, kể cả food/recipe thư viện đã sửa/xóa; không dựng lại từ nguồn mới. Món nguồn/ngày đích đang có được giữ, bản copy có ID mới. Nút **Sao chép ngày hôm trước** cũ vẫn hoạt động.
 
-**Quay lại chọn món** giữ lượng đã sửa; **Hủy batch** chỉ bỏ phần đang soạn. Pending chỉ ở bộ nhớ của tab; reload làm mất phần chưa Confirm, món đã Save vẫn còn. Xem ngày tự đọc totals/count mới; cook-size công thức vẫn là preview riêng với số phần đã ăn. Schema8 và backup/ảnh không đổi. Đã kiểm tra iframe320/360/390, keyboard/focus, lỗi storage giả lập; chưa thử điện thoại vật lý/Safari/screen reader/quota thật. Chưa có favorites/pins, portion basis hay cookbook nâng cao;6B chưa triển khai.
+**Quay lại chọn món** giữ lượng đã sửa; **Hủy batch** chỉ bỏ phần đang soạn. Pending chỉ ở bộ nhớ của tab; reload làm mất phần chưa Confirm, món đã Save vẫn còn. Xem ngày tự đọc totals/count mới; cook-size công thức vẫn là preview riêng với số phần đã ăn. Schema8 và backup/ảnh không đổi. Đã kiểm tra iframe320/360/390, keyboard/focus, lỗi storage giả lập; chưa thử điện thoại vật lý/Safari/screen reader/quota thật. Cookbook Phase6B đã triển khai như phần dưới. Favorites/pins, portion basis và pending recovery vẫn là proposals.
+
+## Sổ công thức — Phase 6B
+
+06/10/2026 · **Phase6B IMPLEMENTED / TESTED; full bounded Phase6 IMPLEMENTED / TESTED.** Schema8 unchanged;262→283 tests,59 JS syntax checks;36/36 gates passed in verified local scope. Code checkpoint ad1a8f5, asset34. STOP before Phase7. Favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition and shopping list remain deferred proposals.
+
+Vào **Dinh dưỡng → Công thức**:
+
+- **Tìm công thức:** tên, từng thẻ hoặc tên nguyên liệu; không phân biệt hoa/thường/dấu tiếng Việt, bỏ khoảng trắng thừa. Tìm toàn thư viện; không ghép câu qua nhiều field. Thẻ phải khớp đúng sau normalization; chọn nhiều thẻ nghĩa là phải có tất cả, kết hợp AND với search. **Xóa tìm kiếm và thẻ** trở về toàn bộ. Không sửa dữ liệu khi tìm.
+- **Nhân bản:** mở card → Nhân bản → review/chỉnh → Lưu bản sao. Tên mặc định “— Bản sao”, ID mới; chỉ Save mới ghi. Hủy/reload bỏ nháp. Nguồn đổi/xóa thì Save bị chặn: Hủy, mở nguồn mới rồi review lại. Lỗi storage giữ nháp và cho retry; bấm lặp không tạo nhiều bản sao. Bản sao không copy ảnh hay lịch sử.
+- **Chế độ nấu:** đổi Số phần định nấu để xem nguyên liệu và tổng macro của lượng nấu; macro mỗi phần giữ nguyên. Các bước đánh số theo dữ liệu đã nhập, không sinh hướng dẫn mới. Preview và ghi chú chỉ đọc; không lưu target. **Về lượng gốc** reset; **Quay lại công thức** giữ search/thẻ trong tab và đưa focus về card.
+- **Nấu ≠ ăn:** nấu2 phần với300kcal/phần là600kcal cả lượng nấu. Shortcut **Mở công thức để ghi ăn** chỉ đưa về logger cũ; lượng ăn vẫn mặc định1. Macro chưa biết vẫn DATA NOT DEFINED YET và shortcut bị vô hiệu. Ghi ăn vẫn cần Save riêng.
+- Công thức mới dùng được trong **Thêm nhiều món** như công thức thường. Xóa definition giữ snapshot đã ghi, My Day và copy có chọn. Nút **Bỏ món** ngắn nhưng tên truy cập giữ đầy đủ tên món.
+
+Đã kiểm tra synthetic browser A–L,320/360/390 và keyboard/focus. Chưa kiểm chứng điện thoại vật lý/Safari/screen reader/quota thật; search tuyến tính cho thư viện cá nhân, chưa đo thư viện lớn. Không có persistent cooking checklist. Xem báo cáo để biết giới hạn chính xác.

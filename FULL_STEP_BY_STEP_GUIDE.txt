@@ -1,10 +1,10 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase6A complete in verified local scope; STOP before6B)
+Updated: 2026-10-06 (Phase6B/full bounded6 complete; STOP beforePhase7)
 
 CURRENT PROJECT STATE
-Phase0-5 +6A Faster Meal Logging IMPLEMENTED / TESTED;
-262 tests /56 syntax checks; all34 Phase6A gates passed, schema8 unchanged.
-FullPhase6 NOT DONE; STOP before6B cookbook/remaining library improvements.
+Phase0-6 IMPLEMENTED / TESTED in verified local scope;
+283 tests /59 syntax checks;6A34/34 +6B36/36 gates passed, schema8 unchanged.
+Full boundedPhase6 DONE; STOP beforePhase7.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -325,3 +325,39 @@ pending recovery need approved data contract/schema first; cooked-weight,
 yield repartition/shopping remain later proposals. No6B started; no push.
 BACKLOG:remaining6;7reviews/memories;8experiments;remote services DECIDE LATER.
 Full evidence/34gates:V4_IMPLEMENTATION_REPORT.md; plan:V4_ROADMAP.md.
+
+CURRENT STATUS — PHASE6B FINAL HANDOFF (2026-10-06)
+CURRENT PHASE: Phase0-6 IMPLEMENTED / TESTED in verified local scope.
+CURRENT STEP: cookbook release complete; STOP before Phase7.
+COMPLETED: normalized all-library recipe search, exact ALL tags/query AND;
+  explicit duplicate review/freshID/deepclone/stale/failure/retry protection;
+  read-only cooking scale/numbered steps/back/log shortcut; short Bỏ món;
+  283 tests/59syntax, browser A-L/320/360/390/keyboard and36-gate evidence.
+IN PROGRESS: none. BLOCKERS: none in approved scope.
+KNOWN BUGS: none remaining important in exercised6B paths. Harness observer
+  error recorded; final standalone console empty, attribution unproven.
+NEXT: separately scoped Phase7 weekly life review/monthly memories.
+DECISIONS NEEDED: Phase7 period/coverage/source drilldown contract first.
+BACKLOG: favorites/pins, portion basis, pending recovery, cooked-weight/yield
+  repartition, shopping list; no7/backend/cloud/AI/PWA implemented here.
+
+[DONE]6B.1 Domain design/tests. Depends6A/schema8/Phase1scale/Phase2safety.
+  Model: current coding model; reasoning high. RED20groups before helper;
+  structured-array copy RED before fix; GREEN21groups/original262 retained.
+[DONE]6B.2 Pure search/clone/cooking + guarded duplicate writer. Depends1.
+  Same model/high. Done: source/history/ID/photo isolation and failure tests.
+[DONE]6B.3 Reuse recipe editor/logging; closure-only UI/search/draft/cooking.
+  Depends2; same model/high. Done: no new storage fields/schema, accessible
+  short actions/errors/focus, canonical cooking/consumed distinction.
+[DONE]6B.4 Synthetic browser A-L,0JSON/IDB writes for readonly actions,
+  320/360/390 long names/tags/ingredients/12steps/decimal/keyboard/batch.
+  Depends3; same model/high. Done: reload persists Save/reset transient,
+  deleted copy history/MyDay/copy snapshots retained, safe photo owner.
+[DONE]6B.5 Independent review/fixes/fresh283tests/59syntax/diff/docs/local
+  checkpoints. Depends1-4; same model/high for review, medium for docs.
+  Done: all36 gates, full bounded6 release. Code ad1a8f5; docs separate.
+
+LIMITS: synthetic/injected quota only; not physical phone/Safari/screenreader,
+  native quota/power loss, very large library, real Nutrition two-tab race,
+  or a new manual full-image backup restore. JSON8 roundtrip tested deeply.
+  Optional transient step-check UI omitted; no external integrations.

@@ -38,13 +38,13 @@ Activity absent ≠ không chọn: chỉ tạo comparison sau khi có cách xác
 
 ## 4. Personal Food / Recipe Library — “Sổ món của mình”
 
-**Phase6A status (06/10/2026): IMPLEMENTED / TESTED in verified local scope;262tests/schema8.** Same-meal recents with explicit global fallback, food+recipe multi-select/review/one-write, selective historical snapshot copy. Missing recent source disabled; valid deleted-source snapshots copy safely. Search/amounts/Cancel are transient and0writes;320/360/390 checked. FullPhase6 NOT DONE; recipe search/duplicate/cooking-mode and persistent favorites/pins remain unimplemented decisions for a bounded6B task. Detailed evidence/limits in V4_IMPLEMENTATION_REPORT.md.
+**Phase6A +6B status (06/10/2026): full boundedPhase6 IMPLEMENTED / TESTED;283tests/schema8,36/36 final gates.** Same-meal recents, multi-add/review/selective snapshot copy remain working. Cookbook now searches name/tags/ingredient with exact ALL tag filters, explicit duplicate review/fresh IDs and read-only Cooking. Draft/Cancel/search/target0writes;320/360/390 and keyboard checked. Deleted-copy history/MyDay/copy preserve snapshots; copies start without owned photo. Favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition and shopping list remain deferred proposals. STOP beforePhase7; evidence/limits in V4_IMPLEMENTATION_REPORT.md.
 
 Giữ card ảnh riêng, tên/serving/macros và nguồn nhập. Daily logger tìm trực tiếp trên thư viện đó; sau mới thêm pinned portions và recent theo meal. Search không dấu giúp gõ nhanh tiếng Việt. Kết quả rỗng phải chặn lưu, không âm thầm lấy món trước.
 
 Recipe có ba vùng tách nhau: **bản gốc**, **lượng định nấu**, **lượng đã ăn**. Preview lượng nấu là view arithmetic; reload quay về base. Ví dụ fixture: gốc4, ingredient400g,300kcal/phần → nấu2:200g,600kcal tổng,300kcal/phần. Ghi1.5phần=450kcal. Macro chưa biết vẫn null; không lấy ảnh/ingredients đoán.
 
-Không scale prose/thời gian/nhiệt độ; nhắc xem lại số trong hướng dẫn. Sửa yield ở editor không tự có nghĩa “chia cùng nồi”: thêm contract riêng sau. Search recipes/tags, duplicate và cooking checklist có giá trị trước nested folders/import/cloud. **Status: daily search + cook preview được chọn; còn lại PLANNED.**
+Không scale prose/thời gian/nhiệt độ; nhắc xem lại số trong hướng dẫn. Sửa yield ở editor không tự có nghĩa “chia cùng nồi”: thêm contract riêng sau. Search recipes/tags, duplicate review và read-only cooking đã IMPLEMENTED / TESTED trong6B. Optional step checklist không triển khai; nested folders/import/cloud và persistent favorites/pins/portion/recovery/yield/shopping vẫn là proposals.
 
 ## 5. Flexible Gym Session — “Hôm nay linh hoạt”
 

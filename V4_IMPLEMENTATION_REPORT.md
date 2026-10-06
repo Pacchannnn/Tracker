@@ -1,4 +1,90 @@
-# Tracker V4 — Phase6A Faster Meal Logging release
+# Tracker V4 — Phase6B Cookbook / full bounded Phase6 release
+
+06/10/2026 · **Phase6B IMPLEMENTED / TESTED; full bounded Phase6 IMPLEMENTED / TESTED. All36 gates passed in verified local scope.** Schema8 stays8. Code checkpoint **ad1a8f5**; separate local documentation checkpoint named **Record Phase6B cookbook evidence and bounded Phase6 release**. Asset34. **STOP before Phase7.** Earlier dated sections below are historical checkpoint reports.
+
+## Phase6B final report — 34 requested items
+
+1. **Baseline → final tests:** verified clean main4864322,6A code2d27a81,262/262 tests and56 JS syntax checks before code. Final fresh npm test:283/283,0fail/cancel/skipped/todo;59 JS syntax checks; git diff --check and staged diff check pass.21 new cookbook groups; all original262 tests/assertions unchanged.20 groups failed before missing helpers were implemented; the imported structured-separator case failed before its fix. Independent final reviewer reports no remaining actionable finding.
+2. **Schema:**8→8, same localStorage key/root/entities/backup JSON8. No persistent6B fields or migration. Photo IndexedDB DB1/backup format1 unchanged. No dependencies/package changes.
+3. **Search semantics:** entire recipe library filtered in memory, stable source order; substring checked independently in name, each tag and each ingredient name. No cross-field phrase concatenation. Blank returns all subject to tags; clear empties query and tags. Results count, no-result and empty-library messages are distinct. No fuzzy matching/network/index.
+4. **Fields/normalization:** name/tags/ingredient.name only; NFD combining-mark removal, Vietnamese đ/Đ→d, lowercase, trim and collapse whitespace. Only derived strings normalize; stored text unchanged. Browser COM GA / DAU DO / muoi / gia vi cases exercised.
+5. **Filters:** choices derived from existing tags, first existing label per normalized key; exact normalized tag matching, ALL selected tags plus query AND. No taxonomy/favorite/pin added. Selected stale tags remain removable. Keyboard Space/Enter/Clear verified.
+6. **Duplicate architecture:** existing inline recipe editor reused for explicit Nhân bản→review/edit→Lưu bản sao. Closure stores reviewed source/raw fields. No write on opening/editing/Cancel; Save uses canonical validateRecipe/locked updateData/ensureUnchanged. No second editor, router, merge framework or logging implementation.
+7. **Identity/deep clone:** new unique UUID, whitelist current definition fields only: name,description,servings,ingredients,steps,tags,notes,nutritionPerServing. Default name ends “— Bản sao”, editable. No source ID/timestamps/UI/history/photo ownership copied; current recipe schema has no created/updated timestamps. Nested arrays/macros clone independently both ways. Untouched structured arrays preserve valid imported newline/comma/pipe text exactly; edited text uses the original editor grammar.
+8. **Stale source:** complete source baseline compared inside locked write. Edited/deleted source rejects without writing or resurrecting it; draft remains for inspection, Cancel/reopen latest source to review again. Browser parent controls changed/deleted source while review open:0attempts/0writes, no new recipe. Other unrelated latest domains merge through existing updateData, tested automatically.
+9. **Failure/double-submit:** injected quota gives0new recipes/0successful writes, exact disk unchanged, name/ingredient/raw draft retained and retry enabled. Healthy explicit retry adds exactly1. Pending controls disabled; writer also rejects in-flight/already accepted review. Held Save + repeated pointer attempts produced1 successful copy; pure test repeats before/after acceptance. Review fixed failure-after-navigation updating a detached old form: live editor now gets enabled/error/focus on return. Native quota was not simulated by filling real storage.
+10. **Cooking architecture:** explicit Chế độ nấu opens a read-only subview, snapshot/target in closure. Reuses scaleRecipe + recipeTotals; no arithmetic fork or definition save. Missing/changed source fails closed; invalid target clears ingredients/steps/macros/notes before error. Back and base reset remain available. No optional cooking step checkboxes implemented.
+11. **Scaling:** base4/400g/300kcal per serving; target2→200g and600kcal batch, per-serving300 unchanged. Base4/target8/fractional1.5/known0/null and invalid empty/<=0/>100/infinite/text tested. Browser fractional ingredient0.125×1.5/4=0.046875,8serves=0.25; no nutrient estimation.
+12. **Cook vs consumed proof:** changing cook target2 wrote0; shortcut returned to existing single recipe logger with consumed amount1, not2. Explicit original recipe log1.5 at Sep20/Dinner produced450kcal/P45/C60/F7.5; no automatic meal was created by Cooking.
+13. **Steps:** exact stored strings/order rendered safely into numbered ol/li; notes preserved, no instruction/time/prose generation. Long fixture has12 steps including literal HTML-looking text;0img/script descendants in its ol. CSS visual QA found old history-list style hid numbers and corrected list-style decimal; final asset34 confirmed decimal markers at320/360/390. Empty-step defensive message is neutral (pure helper preserves[]); strict current recipe editor/backup still expects a valid nonempty steps array.
+14. **Transient cooking state:** query/tags/cooking source/target/duplicate raw stay only in memory; no backup fields/keys. Reload reset query blank and Cooking absent; reopening saved copy gave canonical base4 after previously previewing2. Saved duplicate remained. No persistent checklist/pending recovery.
+15. **Navigation/state:** Back returns to source card and keeps query/tag context, focuses Chế độ nấu above bottom nav. Duplicate Cancel returns to original Nhân bản; successful Save focuses new copy Cooking action or search if copy excluded by current filter. Latest deleted/filtered source falls back to search. Search retains focus while results refresh; photo object URLs revoked on card replacement. Existing navigation/source-date flow retained.
+16. **Recipe→logging:** Cooking shortcut routes to existing single logger only and leaves consumed default1. Unknown macros stay DATA NOT DEFINED YET and disable shortcut. Existing explicit recipe log snapshots per-serving macros using recipe:<id>/1 phần; logging body unchanged. No second direct writer or cook-target transfer.
+17. **Phase6A regression:** duplicate appears in Add-many/search/review like any recipe; default1 verified. Explicit copied recipe batch log into Sep21/Lunch appended1 with300kcal/P30/C40/F5 and fresh entry ID. Recents/selection/copy/MyDay helpers tested automatically; original31 batch groups pass. Existing single log and selective copy exercised in browser. No amount-default/deletion/meal semantics change.
+18. **Deleted-source/history:** deleted duplicate disappears from cookbook; saved Lunch snapshot still300kcal in daily log/My Day (1item/1meal). Selective copy of that deleted-definition snapshot into Sep22/Dinner at2serves gave600kcal/P60/C80/F10. Old6 entries stayed byte-equal in audit; source date and other domains unaffected. No history relink/rewrite/cascade.
+19. **Photo ownership:** synthetic r1 owns recipe-photo in IDB. Duplicate has no owned photo and displays the existing empty state. All tested duplicate/search/cooking/delete/log flows wrote0 IDB; source photo metadata/owner retained exactly. No cloned bytes/re-owned references/schema change. Existing explicit photo management remains available; full manual image-backup restore not newly tested in6B.
+20. **Batch UI polish:** visible Bỏ món, aria-label Bỏ <full name> khỏi batch. Long recipe review at320/360/390 retained full accessible name and48px height without horizontal overflow. Removal uses unchanged6A row/focus semantics. Recipe card Nhân bản/Chế độ nấu similarly short with contextual accessible names.
+21. **Zero-write audit:** synthetic Storage set/remove/clear attempts/success + IDB readwrite probes, exact JSON comparison and photo metadata comparison. Open cookbook/search/filter/Clear/open Cooking/change target/reset/Back/open Duplicate/edit draft/Cancel:0JSON/0IDB. Final v34 Cooking/draft/Cancel repeated:0attempts,0writes,0photoWrites, jsonUnchanged=true, photosUnchanged=true. Explicit duplicate Save writes only recipes1time; explicit nutrition logging/deletion writes normally. Parent fixture mutations are outside frame counters and never claimed read-only.
+22. **Backup/restore:** automated schema8 createBackup→parseBackup→restoreBackupData→deep comparison includes original+copy+original log+copy log+deleted-definition historical log. No transient field enters backup. All existing migration/reliability/photo suites pass unchanged. This6B gate is automated JSON roundtrip, not a new manual full-photo export/restore claim.
+23. **Browser A–L:** all executed on disposable127.0.0.1:8784. A accent-name search; B ingredient; C no-result/Clear; D name+ingredient review/save fresh1copy/source unchanged; E Cancel0writes; F held quota failure/live-form retained/explicit retry1; G4→2 ingredient/batch/per; H invalid clears; I Back/filter/focus; J duplicate Add-many snapshot; K delete/history/MyDay/copy; L reload saved copy/search reset/canonical cook target. Additional source-stale/delete/unknown macro/long HTML-looking content checks. Final standalone index app warning/error logs empty. Harness captured one MutationObserver.observe Node error; no MutationObserver exists in app/harness source, attribution unproven. Do not claim every harness console clean.
+24. **Mobile:** actual iframe viewport widths320/360/390, inner client/scroll widths305/305,345/345,375/375 with15px scrollbar. Cookbook/search/filter/long names/editor/ingredients12steps/fractional targets/macros/Back/bottomnav and short batch Remove exercised. No horizontal overflow. Final v34 decimal marker/12steps geometry rechecked at all widths. Screenshots inspected; evidence remains ignored.local. No physical-phone claim.
+25. **Accessibility:** wrapped native labels/search/number controls, real buttons, pressed tags/status/count, ordered ol/li, safe text, visible solid focus;48px exercised actions. Tab target→Reset and ShiftTab reverse, Enter/Space search tags/summary/duplicate/Cancel/Save/Cooking/Back/Remove/review tested. Source-return action observed above mobile nav, Cancel/Save focus explicit; failed Save focuses role=alert tabindex=-1 and retry enabled. No new modal/Escape contract; unchanged copy-all Escape already exercised6A and tests remain. No screen-reader/WCAG certification.
+26. **Privacy/security:** no external calls/recipes/images/CDN/analytics/AI/account/backend/cloud/PWA/dependency added. Recipe text uses textContent/node text, literal HTML stays text. Only synthetic owned origin used; user's8765 storage untouched. MASTER_PLAN unmodified; private summary and fixtures ignored/uncommitted. One existing localStorage JSON/IDB photos remain local.
+27. **Performance:** linear in-memory search for personal dataset, no index/worker/backend. No large-library speed claim. Object URLs for obsolete search result images revoked; photo-storage logic reused unchanged.
+28. **Files changed:** new js/cookbook.js, js/cookbook-ui.js, tests/cookbook.test.js. Runtime integrations js/app.js, canonical structured-array input validation js/nutrition.js, concise action js/nutrition-batch-ui.js,6 CSS rules/index. Other changed JS import URLs only31→34; data/photo/runtime contracts unchanged. Docs V4_ROADMAP,V4_IMPLEMENTATION_REPORT,DATA_MODEL,README,FULL_STEP_BY_STEP_GUIDE.txt,TRACKER_PRODUCT_IDEAS and ignored private summary. No original tests/package/MASTER_PLAN edits.
+29. **Git:** local main code ad1a8f5 and separate documentation checkpoint named above. Explicit stage lists exclude private/synthetic files. Status/staged diff inspected; no fetch/push/reset/rebase/history rewrite or extra branch. Final local status confirmed after docs commit; cached origin/main is not remote verification. Owned test tab/server cleanup only, user's8765 remains running.
+30. **NOT VERIFIED:** physical phones/Safari/other engines/screen reader/WCAG certification/native quota/power loss/very large recipe library/real simultaneous Nutrition two-tab writes/new manual full-image restore/every pre-existing form workflow. Current automated regressions pass; browser quota injected. Browser instrumentation attribution unproven. Optional step checks omitted. User-origin personal data not accessed for tests.
+31. **Phase6B gate result:**36/36 below passed in verified local scope. No blocker/new persistent structure needed; no remaining important review finding after fixes.
+32. **Full Phase6 release:** approved bounded6A+6B IMPLEMENTED / TESTED.6A34gates retained; final suite preserves original262 assertions and all earlier functionality under automated regression. DONE does not include deferred proposals.
+33. **Exact deferred proposals:** favorites/pins; portion basis (including grams mapping); pending-batch recovery; cooked-weight/yield repartition; shopping list. Also no persistent cooking progress, AI/nutrition recommendations/backend/cloud/auth/PWA. None described as implemented.
+34. **Exact next phase:** Phase7 — Weekly Life Review and Monthly Memories, separately scoped/approved period/coverage/denominator/source drilldown contract first. Recommended current coding model with high reasoning for that contract and data tests, medium for documentation. **STOP; no Phase7 implementation started.**
+
+## Phase6B / full boundedPhase6 — 36-gate evidence
+
+| Gate | Evidence / result |
+| --- | --- |
+|1 baseline262 retained|Original tests/assertions unchanged; final283/283|
+|2 schema8|Same SCHEMA_VERSION8, no fields/migration|
+|3 recipe search|Pure groups + browser A/C|
+|4 Vietnamese accents|COM GA/DAU DO, đ/case/whitespace tests|
+|5 ingredient search|muoi/gia vi browser B + pure|
+|6 search0writes|Storage/IDB probes + exact bytes|
+|7 duplicate explicit review|Editor open/edit/Save separately|
+|8 fresh ID|Unique UUID audit/new record|
+|9 deep clone|Nested independence both directions|
+|10 original immutable|Source record array/macros audit/tests|
+|11 history unchanged|Old6 snapshots byte-equal|
+|12 no nutrition by duplicate|6 entries before/after duplicate Save|
+|13 double-save safe|Held/pending UI + writer pending/accepted tests|
+|14 stale-source safe|Edited/deleted rejection0attempts0writes|
+|15 storage failure safe|Injected quota retained/retry exactly1|
+|16 cooking read-only|0writes + source equality|
+|17 canonical scaling|scaleRecipe/recipeTotals reused|
+|18 cook≠consumed|Target2→existing logger amount1|
+|19 per-serving unchanged|300kcal/P30/C40/F5 at4/2/8/1.5|
+|20 batch correct|Target2=600;8=2400;1.5=450|
+|21 steps order/content|Exact12 strings, ol decimal, literal text|
+|22 cooking target0writes|Probe/reset/invalid/Back tests|
+|23 Phase6A integration|Duplicate select/review/log1; prior suite|
+|24 selective copy|Deleted-copy snapshot2serves→600 at new date|
+|25 MyDay|Deleted copy1item/1meal300kcal|
+|26 deleted snapshots|Original/copy history/source old entries retained|
+|27 photo ownership|recipe-photo remains r1; copy has no owned photo|
+|28 backup8 roundtrip|create/parse/restore deep comparison|
+|29 mobile3widths|Actual320/360/390, no overflow long content|
+|30 keyboard/focus|Tab/ShiftTab/Enter/Space/error/Cancel/Save/Back|
+|31 remove polish|Visible Bỏ món/full aria-label/48px|
+|32 full tests|283/283;59syntax;diff check|
+|33 no persistent6B fields|Closure UI, stored schema unchanged|
+|34 no favorites/pins/etc|Scope/source diff inspected|
+|35 no Phase7|No implementation, STOP|
+|36 no GitHub push|Local code/docs checkpoints only|
+
+Private evidence: .local/cookbook-history-evidence.json, cookbook-copy-evidence.json, cookbook-stale-evidence.json, cookbook-mobile-evidence.json, cookbook-reload-evidence.json, cookbook-final-zero-write.json; inspected screenshot cookbook-final.png and mobile renders. They are synthetic/ignored and intentionally excluded from commits.
+
+---
+
+# Historical Phase6A Faster Meal Logging release
 
 06/10/2026 · **6A IMPLEMENTED / TESTED in verified local scope; all34 gates passed. FullPhase6 NOT DONE. STOP before6B.** Schema8 stays8. Baseline clean local main88bba6b; code2d27a81; separate docs/whitespace checkpoint follows in local Git log. No push/fetch/reset/history rewrite. Earlier reports below are historical.
 

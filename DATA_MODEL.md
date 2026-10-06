@@ -2,6 +2,20 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Phase 6B cookbook — schema8 unchanged (06/10/2026)
+
+06/10/2026 · **Phase6B IMPLEMENTED / TESTED; full bounded Phase6 IMPLEMENTED / TESTED.** Schema8 unchanged;262→283 tests,59 JS syntax checks;36/36 gates passed in verified local scope. Code checkpoint ad1a8f5, asset34. STOP before Phase7. Favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition and shopping list remain deferred proposals.
+
+No persistent fields, schema/migration, storage keys or photo changes. Current Recipe definition remains id,name,description,servings,ingredients[{quantity,unit,name}],steps[],tags[],notes,nutritionPerServing (null or complete nonnegative finite macros). Recipes have no createdAt/updatedAt fields today. Search derives temporary normalized strings: independent substring name/tag/ingredient-name, Vietnamese NFD/combining marks/đ→d/lowercase/trim/collapse whitespace; exact normalized tags ALL and query AND; source order retained. No index or taxonomy.
+
+Duplicate review stores source baseline and raw editor values in a closure. Whitelisted definition is deep cloned; ID/UI/history/photo metadata excluded. Untouched ingredients/steps/tags retain original structured arrays through validateRecipe rather than lossy text parsing (valid imported newline steps/comma tags/pipe ingredient names stay exact). Changed text uses the existing editor grammar. Unchanged description/notes retain original text. The canonical validator accepts cloned structured arrays for this path and keeps existing string validation. No schema acceptance bypass; existing updateData validates/saves the resulting complete state.
+
+Explicit Save uses the existing origin Web Lock/updateData: validate, compare the complete latest source with reviewed baseline, assign a fresh unique ID, append exactly one recipe, persist once. Changed/deleted source rejects; unrelated changes merge from latest. Pending/already accepted reviews reject repeats; quota failure retains exact raw draft and allows explicit retry. UI freezes Save/fields while pending; a failure after navigation updates the live editor when it returns, not a detached old form. Cancel/reload discard only transient draft. Original and historical snapshots never rewritten.
+
+Cooking owns a source snapshot and target string in memory. Preview reuses scaleRecipe + recipeTotals; scales ingredients/batch only, preserves per-serving macros, stored step order/prose and notes. Invalid/changed source clears preview before error. No step progress implemented. Back retains filter context and returns focus to current card; log shortcut routes to the existing single logger and does not transfer cook target. Unknown macros remain null and disable shortcut. Every readonly/draft/Cancel action writes0 JSON/IDB. Reload resets query/tags/cooking state and leaves saved copies intact.
+
+Recipe photos remain IndexedDB DB1/format1 ownerType=recipe/ownerId=recipeId. A duplicate starts without an owned photo; bytes/metadata/source ownership are not cloned/reassigned. Existing definition deletion leaves historical nutrition snapshots and photo management unchanged. JSON backup8 roundtrip includes original/copy/original-log/copy-log/deleted-source history; no transient state enters backup. Detailed36 gates/browser evidence and limitations in V4_IMPLEMENTATION_REPORT.md.
+
 ## Phase 6A faster meal logging — schema8 unchanged (06/10/2026)
 
 No fields, migrations, persisted recent list, pending batch, favorites or photo-format changes. `recentNutritionChoices(data,meal,{limit:6})` derives usage from entries: same exact meal label first, then global fallback; within each group date descending, ties newest append position. Deduplicate by food:<definitionId> or recipe:<definitionId>, current recipe entry references use foodId=recipe:<id>. Original historical label is retained for missing/invalid definitions and its recent button is disabled. Live selection requires a current complete per-serving snapshot, never resurrects a library record. Search reuses searchFoods with food/recipe name projections; its accent matching/ordering remains unchanged.
@@ -12,7 +26,7 @@ Confirm uses one guarded writer over existing updateData/Web Lock: clone latest,
 
 New food logging reuses foodSnapshotForEntry; recipes snapshot per-serving nutrition with foodId recipe:<id>, independent of cook-size preview. Selective copy starts from historical food object/foodId and source entry fields; amount changes use those per-serving macros, never current library values. Missing/deleted definitions are allowed for valid independent snapshots, matching existing strict backup and copy-all behavior. Source entry edits/deletion after review reject; library edits/deletions do not affect copy. Default copy preserves each old meal label or user explicitly chooses one destination meal for all. Destination date is an exact local YYYY-MM-DD, fresh IDs, append only. Existing single-entry editor/copy-all/saved-meal/recipe logging behavior retained. No changes to MyDay: it derives new records through canonical dailyTotals.
 
-Verification:231→262 tests,31 new groups,56syntax; schema8 create/parse/restore deep comparison with old/batch/copy/deleted-source snapshots/recipes, zero-write probes, browser A-L and320/360/390. Code2d27a81; detailed limits in V4_IMPLEMENTATION_REPORT.md. Only6A implemented/tested; full6 incomplete, STOP6B.
+Verification:231→262 tests,31 new groups,56syntax; schema8 create/parse/restore deep comparison with old/batch/copy/deleted-source snapshots/recipes, zero-write probes, browser A-L and320/360/390. Code2d27a81; detailed limits in V4_IMPLEMENTATION_REPORT.md. This was the6A checkpoint; current bounded6B/full6 release is documented above.
 
 ## Phase 5B Journal retrieval — transient UI only (06/10/2026)
 
