@@ -1,7 +1,7 @@
-import { deriveLifeWeek, lifeReviewPeriod } from './life-review.js?v=36';
-import { localDate, validDate } from './data.js?v=36';
-import { MOODS } from './journal.js?v=36';
-import { listPhotoMetadata } from './photo-store.js?v=36';
+import { deriveLifeWeek, lifeReviewPeriod } from './life-review.js?v=38';
+import { localDate, validDate } from './data.js?v=38';
+import { MOODS } from './journal.js?v=38';
+import { listPhotoMetadata } from './photo-store.js?v=38';
 
 const LABELS = { journal: 'Nhật ký', mood: 'Tâm trạng', nutrition: 'Dinh dưỡng', workout: 'Tập luyện', cardio: 'Cardio', checkin: 'Check-in', knee: 'Gối', photos: 'Ảnh', photo: 'Ảnh', set: 'Hiệp đã lưu' };
 const MACROS = { calories: 'Calories', protein: 'Protein', carbs: 'Carbs', fat: 'Fat' };

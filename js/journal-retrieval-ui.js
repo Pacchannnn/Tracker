@@ -1,4 +1,4 @@
-import { MOODS, normalizeJournalText, journalTagOptions, retrieveJournalEntries } from './journal.js?v=36';
+import { MOODS, normalizeJournalText, journalTagOptions, retrieveJournalEntries } from './journal.js?v=38';
 
 export function createJournalRetrievalUI({ main, getEntries, openEntry, helpers }) {
   const { node, button, panel, div, p, h2, h3, field } = helpers;

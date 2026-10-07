@@ -1,7 +1,7 @@
-import { validDate, dailyTotals } from './data.js?v=36';
-import { MOODS } from './journal.js?v=36';
-import { validateSessionIdentity } from './session-identity.js?v=36';
-import { validateWorkoutSnapshot, sessionTitle } from './custom-workout.js?v=36';
+import { validDate, dailyTotals } from './data.js?v=38';
+import { MOODS } from './journal.js?v=38';
+import { validateSessionIdentity } from './session-identity.js?v=38';
+import { validateWorkoutSnapshot, sessionTitle } from './custom-workout.js?v=38';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = value => typeof value === 'string' && value.length > 0;
@@ -198,8 +198,8 @@ function nutrition(domain,period) {
 function recordCount(domain,kind) {
   return domain.status==='unavailable'?domain:available({recordCount:count(domain.value.length,domain.value.map(record=>ref(kind,record)))});
 }
-export function deriveLifeWeek(dataRead,photoRead,weekAnchor,today) {
-  const period=lifeReviewPeriod('week',weekAnchor,today),sources={},full={},eligible={},unavailableDomains=[],futureRecords={},coverages={};
+function reviewCommon(dataRead,photoRead,period) {
+  const today=period.today,sources={},full={},eligible={},unavailableDomains=[],futureRecords={},coverages={};
   for(const kind of [...Object.keys(sourceKeys),'photos']) {
     const source=kind==='photos'?readPhotos(photoRead):readDomain(dataRead,kind);
     sources[kind]=source;
@@ -215,18 +215,57 @@ export function deriveLifeWeek(dataRead,photoRead,weekAnchor,today) {
   const rawJournal=sources.journal;
   const moodFailure=rawJournal.status==='available'&&!rawJournal.value.every(record=>record.mood===''||MOODS.some(mood=>mood.value===record.mood));
   coverages.mood=coverage(moodFailure?unavailable(reason('invalid-source','mood')):moodValid,'journal',period);
+  if(moodFailure)unavailableDomains.push({domain:'mood',reason:reason('invalid-source','mood')});
+  const dayMap=new Map();
+  for(const kind of Object.keys(full))if(full[kind].status==='available')for(const day of dateRefs(full[kind].value,kind)) {if(!dayMap.has(day.date))dayMap.set(day.date,[]);dayMap.get(day.date).push(...day.refs);}
+  const sourceDays=[...dayMap].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([date,refs])=>({date,refs}));
+  const common={period,empty:sourceDays.length?false:unavailableDomains.length?null:true,coverage:{journal:coverages.journal,mood:coverages.mood,nutrition:coverages.nutrition,workout:coverages.workout,cardio:coverages.cardio,checkin:coverages.checkin,knee:coverages.knee,photos:coverages.photos},
+    futureRecords,unavailableDomains,sourceDays};
+  return {common,full,eligible,moodFailure};
+}
+export function deriveLifeWeek(dataRead,photoRead,weekAnchor,today) {
+  const period=lifeReviewPeriod('week',weekAnchor,today),{common,eligible,moodFailure}=reviewCommon(dataRead,photoRead,period);
   const moodOutput=moodFailure?unavailable(reason('invalid-source','mood')):moods(eligible.journal,period);
-  if(moodFailure)unavailableDomains.push({domain:'mood',reason:moodOutput.reason});
   let minutes;
   if(eligible.cardio.status==='unavailable')minutes=eligible.cardio;
   else {
     const refs=eligible.cardio.value.map(record=>ref('cardio',record)),sum=eligible.cardio.value.reduce((total,record)=>total+record.durationMinutes,0);
     minutes=available({recordCount:count(refs.length,refs),minutes:!Number.isFinite(sum)?value('unavailable',null,'min',refs,reason('arithmetic-error')):value(refs.length?'known':'missing',refs.length?sum:null,'min',refs)});
   }
-  const dayMap=new Map();
-  for(const kind of Object.keys(full))if(full[kind].status==='available')for(const day of dateRefs(full[kind].value,kind)) {if(!dayMap.has(day.date))dayMap.set(day.date,[]);dayMap.get(day.date).push(...day.refs);}
-  const sourceDays=[...dayMap].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([date,refs])=>({date,refs}));
-  return {period,empty:sourceDays.length?false:unavailableDomains.length?null:true,coverage:{journal:coverages.journal,mood:coverages.mood,nutrition:coverages.nutrition,workout:coverages.workout,cardio:coverages.cardio,checkin:coverages.checkin,knee:coverages.knee,photos:coverages.photos},
-    futureRecords,unavailableDomains,sourceDays,journal:recordCount(eligible.journal,'journal'),moods:moodOutput,tags:tags(eligible.journal),workouts:workouts(eligible.workout),nutrition:nutrition(eligible.nutrition,period),
+  return {...common,journal:recordCount(eligible.journal,'journal'),moods:moodOutput,tags:tags(eligible.journal),workouts:workouts(eligible.workout),nutrition:nutrition(eligible.nutrition,period),
     cardio:minutes,checkins:recordCount(eligible.checkin,'checkin'),knees:recordCount(eligible.knee,'knee'),photos:eligible.photos.status==='unavailable'?eligible.photos:available({photoCount:count(eligible.photos.value.length,eligible.photos.value.map(record=>ref('photos',record))),photoDays:new Set(eligible.photos.value.map(record=>record.date)).size})};
+}
+
+function memoryPreview(kind,record) {
+  switch(kind) {
+    case 'journal': {
+      const characters=Array.from(record.note);
+      const moodID=record.mood===''||MOODS.some(mood=>mood.value===record.mood)?record.mood:null;
+      return {title:record.title,noteExcerpt:characters.slice(0,280).join('')+(characters.length>280?'…':''),moodID,tags:[...record.tags]};
+    }
+    case 'workout':return {savedTitle:sessionTitle(record),setCount:record.sets.length};
+    case 'nutrition':return {name:record.food.name,serving:record.food.serving,servings:record.servings,meal:record.meal};
+    case 'cardio':return {activity:record.activity,durationMinutes:record.durationMinutes,distanceKm:record.distanceKm,intensity:record.intensity};
+    case 'checkin':return {weight:record.weight,waist:record.waist,sleep:record.sleep,knee:record.knee,notes:record.notes};
+    case 'knee':return {moment:record.moment,pain:record.pain,swelling:record.swelling,instability:record.instability,stiffness:record.stiffness,notes:record.notes};
+    case 'photos':return {category:record.category,...(record.pose===undefined?{}:{pose:record.pose}),...(record.note===undefined?{}:{note:record.note})};
+  }
+}
+export function deriveMonthMemories(dataRead,photoRead,monthAnchor,today) {
+  const period=lifeReviewPeriod('month',monthAnchor,today),{common,full}=reviewCommon(dataRead,photoRead,period),counts={},days=new Map();
+  for(const kind of ['journal','workout','nutrition','cardio','checkin','knee','photos']) {
+    const domain=full[kind];
+    counts[kind]=domain.status==='unavailable'?{state:'unavailable',value:null,refs:[],reason:domain.reason}:count(domain.value.length,domain.value.map(record=>ref(kind,record)));
+    if(domain.status==='unavailable')continue;
+    const groups=new Map();
+    for(const record of domain.value) {
+      if(!groups.has(record.date))groups.set(record.date,[]);
+      groups.get(record.date).push({ref:ref(kind,record),preview:memoryPreview(kind,record)});
+    }
+    for(const [date,items] of groups) {
+      if(!days.has(date))days.set(date,{date,temporalState:date<=today?'eligible':'future',groups:[]});
+      days.get(date).groups.push({kind:kind==='photos'?'photo':kind,items});
+    }
+  }
+  return {...common,counts,timeline:[...days.values()].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)};
 }

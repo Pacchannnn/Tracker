@@ -1,28 +1,29 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=36';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=36';
-import { createDraftStore } from './planning-draft.js?v=36';
-import { navigationGroup } from './navigation.js?v=36';
-import { restSeconds } from './workout.js?v=36';
-import { weeklySummary, exerciseHistory } from './progress.js?v=36';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=36';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=36';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=36';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=36';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=36';
-import { createGymBuilder } from './gym-builder-ui.js?v=36';
-import { createPlannerUI } from './planner-ui.js?v=36';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=36';
-import { createSessionStore } from './session-runtime.js?v=36';
-import { runtimeView } from './session-readers.js?v=36';
-import { createSessionUI } from './session-ui.js?v=36';
-import { createMyDayUI } from './my-day-ui.js?v=36';
-import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=36';
-import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=36';
-import { createCookbookUI } from './cookbook-ui.js?v=36';
-import { recipeFormValues } from './cookbook.js?v=36';
-import { createLifeReviewUI } from './life-review-ui.js?v=36';
-import { readLifeData, resolveLifeSource } from './life-review-source.js?v=36';
-import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=36';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=38';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=38';
+import { createDraftStore } from './planning-draft.js?v=38';
+import { navigationGroup } from './navigation.js?v=38';
+import { restSeconds } from './workout.js?v=38';
+import { weeklySummary, exerciseHistory } from './progress.js?v=38';
+import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=38';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=38';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=38';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=38';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=38';
+import { createGymBuilder } from './gym-builder-ui.js?v=38';
+import { createPlannerUI } from './planner-ui.js?v=38';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=38';
+import { createSessionStore } from './session-runtime.js?v=38';
+import { runtimeView } from './session-readers.js?v=38';
+import { createSessionUI } from './session-ui.js?v=38';
+import { createMyDayUI } from './my-day-ui.js?v=38';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=38';
+import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=38';
+import { createCookbookUI } from './cookbook-ui.js?v=38';
+import { recipeFormValues } from './cookbook.js?v=38';
+import { createLifeReviewUI } from './life-review-ui.js?v=38';
+import { createMonthMemoriesUI } from './month-memories-ui.js?v=38';
+import { readLifeData, resolveLifeSource } from './life-review-source.js?v=38';
+import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=38';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -192,6 +193,9 @@ const journalRetrieval = createJournalRetrievalUI({ main, getEntries: () => data
 const lifeReview = createLifeReviewUI({ main, readData: () => readLifeData(() => loadData(localStorage)),
   openSource: openLifeSource, openDay: (date, context) => openLifeSource({ kind: 'day', date }, context),
   helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
+const monthMemories = createMonthMemoriesUI({ main, readData: () => readLifeData(() => loadData(localStorage)),
+  openSource: openLifeSource, openDay: (date, context) => openLifeSource({ kind: 'day', date }, context),
+  helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
 
 function sourceFormValues() {
   return [...main.querySelectorAll('form')].map(form => [...form.querySelectorAll('input,textarea,select')]
@@ -199,17 +203,20 @@ function sourceFormValues() {
 }
 function guardLifeSource() {
   if (!lifeSourceContext || JSON.stringify(sourceFormBaseline) === JSON.stringify(sourceFormValues())) return true;
-  message('Có phần nhập chưa lưu. Lưu hoặc đưa các ô về giá trị ban đầu trước khi quay lại tuần.', true); return false;
+  message('Có phần nhập chưa lưu. Lưu hoặc đưa các ô về giá trị ban đầu trước khi quay lại Life Review.', true); return false;
 }
 async function openLifeSource(ref, context) {
   if (!guardLifeSource()) return;
   const generation = ++lifeSourceGeneration;
+  const sourceControl = main.querySelector(context?.mode === 'month' ? '[name=monthMemoriesMonth]' : '[name=lifeReviewDate]');
   let latest, photos = [];
   try {
     if (ref.kind !== 'photo') latest = loadData(localStorage);
     else photos = await listPhotoMetadata();
     if (generation !== lifeSourceGeneration) return;
+    if (sourceControl && !sourceControl.isConnected) return;
     if (context?.weekAnchor && lifeReview.getContext().weekAnchor !== context.weekAnchor) return;
+    if (context?.monthAnchor && monthMemories.getContext().monthAnchor !== context.monthAnchor) return;
     const resolved = resolveLifeSource(latest, photos, ref);
     lifeReturnContext = context; lifeSourceContext = { ref: structuredClone(ref), metadata: resolved.record };
     daySourceContext = null;
@@ -227,7 +234,8 @@ function returnLifeReview() {
   if (!guardLifeSource() || (view === 'workout' && !sessionUI.guardUnsaved())) return;
   const context = lifeReturnContext;
   lifeSourceContext = null; lifeReturnContext = null; daySourceContext = null;
-  progressSubView = 'weekly'; lifeReview.returnTo(context); show('checkins');
+  progressSubView = context?.mode === 'month' ? 'monthly' : 'weekly';
+  (context?.mode === 'month' ? monthMemories : lifeReview).returnTo(context); show('checkins');
 }
 function lifePhotoSourceView() {
   const item = lifeSourceContext?.metadata;
@@ -267,9 +275,9 @@ function show(next, verifiedSnapshot = null) {
   try { data = verifiedSnapshot ?? loadData(localStorage); }
   catch (error) {
     if (!(next === 'life-photo' || next === 'checkins')) { message(error.message, true); return; }
-    progressSubView = 'weekly';
+    if (next === 'checkins' && !['weekly','monthly'].includes(progressSubView)) progressSubView = 'weekly';
   }
-  lifeReview.invalidate(); ++lifeSourceGeneration;
+  lifeReview.invalidate(); monthMemories.invalidate(); ++lifeSourceGeneration;
   sessionStore.reset();
   if (next === 'dashboard' || next === 'my-day') daySourceContext = null;
   if (!['history','journal','nutrition','gym-logs','checkins','my-day','life-photo','workout'].includes(next)) { lifeSourceContext = null; lifeReturnContext = null; }
@@ -313,11 +321,11 @@ function render() {
       progressSubView, nutritionSubView, journalDate, journalSection, journalReturnToResults, foodDateSelection } = sourceNavigationBaseline);
     return;
   }
-  lifeReview.invalidate();
+  lifeReview.invalidate(); monthMemories.invalidate(); ++lifeSourceGeneration;
   photoUrls.forEach(url => URL.revokeObjectURL(url));
   photoUrls = [];
   main.replaceChildren();
-  if (lifeSourceContext) main.append(div('my-day-return', button('← Quay lại Tuần đã ghi', returnLifeReview)));
+  if (lifeSourceContext) main.append(div('my-day-return', button(lifeReturnContext?.mode === 'month' ? '← Quay lại Ký ức tháng' : '← Quay lại Tuần đã ghi', returnLifeReview)));
   if (daySourceContext) main.append(div('my-day-return', button(`← Quay lại Xem ngày · ${daySourceContext.date}`, () => show('my-day'))));
   ({ dashboard: dashboardView, 'my-day': myDay.renderView, program: programView, 'original-program': originalProgramView, 'exercise-library': gymBuilder.libraryView, plans: gymBuilder.plansView, builder: gymBuilder.oneOffView, planner: plannerView, workout: workoutView, history: historyView, 'gym-logs': gymLogsView, nutrition: nutritionView, journal: journalView, checkins: checkinsView, settings: settingsView, 'life-photo': lifePhotoSourceView })[view]();
   sourceFormBaseline = sourceFormValues();
@@ -1087,16 +1095,17 @@ function renderPhotos() {
 }
 
 function checkinsView() {
-  const nav = div('subtabs progress-tabs', ...[['overview','Tổng quan tiến độ'],['checkins','Nhập & xem check-in'],['weekly','Tuần đã ghi']].map(([key,label]) => {
+  const nav = div('subtabs progress-tabs', ...[['overview','Tổng quan tiến độ'],['checkins','Nhập & xem check-in'],['weekly','Tuần đã ghi'],['monthly','Ký ức tháng']].map(([key,label]) => {
     const control = button(label, () => {
       if (!guardLifeSource()) return;
-      if (key !== 'weekly') { try { data = loadData(localStorage); } catch (error) { message(error.message, true); return; } }
+      if (!['weekly','monthly'].includes(key)) { try { data = loadData(localStorage); } catch (error) { message(error.message, true); return; } }
       progressSubView = key; render();
     });
     control.setAttribute('aria-pressed', String(progressSubView === key)); return control;
   }));
   main.append(nav);
   if (progressSubView === 'weekly') { lifeReview.renderView(); return; }
+  if (progressSubView === 'monthly') { monthMemories.renderView(); return; }
   if (progressSubView === 'overview') { progressOverview(); return; }
   const editing = data.checkins.find(item => item.id === editingCheckin);
   const box = panel(h2('Check-in cơ thể'), p('Cân nặng và vòng eo là dữ liệu quan sát. Ghi chú gối không phải chẩn đoán hoặc chỉ dẫn tăng tải.', 'hint'));

@@ -279,7 +279,7 @@ dialog::backdrop { background: #2d2d2db0; }
 .life-review { min-width: 0; overflow-wrap: anywhere; }
 .life-review [role="alert"]:empty { display: none; }
 .progress-tabs button { min-height: 48px; }
-.progress-tabs button[aria-pressed=true] { background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); }
+.progress-tabs button[aria-pressed=true] { color: var(--ink); background: var(--yellow); box-shadow: 3px 3px 0 var(--ink); }
 .life-review button { min-height: 48px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .life-review summary { min-height: 48px; }
 .life-review-record + .life-review-record { border-top: 2px dashed var(--old-paper); padding-top: 12px; margin-top: 12px; }
@@ -287,3 +287,13 @@ dialog::backdrop { background: #2d2d2db0; }
 .life-review-sources li { margin: 10px 0; }
 .life-review [data-life-focus], [data-source-id] { scroll-margin-block: 100px; }
 .life-review [tabindex="-1"]:focus-visible, [data-source-id]:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+.month-memories { min-width: 0; overflow-wrap: anywhere; }
+.month-memories [role="alert"]:empty { display: none; }
+.month-memories button, .month-memories summary { min-height: 48px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.month-memories ol { padding-left: 1.2rem; }
+.month-memories li { margin-block: 12px; }
+.month-memories p { white-space: pre-wrap; }
+.month-memories img { display: block; max-width: 100%; height: auto; margin-block: 12px; }
+.month-memories [data-month-focus] { scroll-margin-block: 110px; }
+.month-memories [tabindex="-1"]:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }

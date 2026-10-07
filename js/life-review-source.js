@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=36';
+import { validDate } from './data.js?v=38';
 
 export function readLifeData(load) {
   try { return { status: 'available', data: structuredClone(load()) }; }

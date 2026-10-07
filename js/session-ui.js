@@ -1,8 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=36';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=36';
-import { sessionTitle } from './custom-workout.js?v=36';
-import { restSeconds } from './workout.js?v=36';
-import { createLiveWorkoutUI } from './live-workout-ui.js?v=36';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=38';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=38';
+import { sessionTitle } from './custom-workout.js?v=38';
+import { restSeconds } from './workout.js?v=38';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=38';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;

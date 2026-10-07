@@ -1,6 +1,6 @@
-import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=36';
-import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=36';
-import { validateIdentityData, sessionGeneration } from './session-identity.js?v=36';
+import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=38';
+import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=38';
+import { validateIdentityData, sessionGeneration } from './session-identity.js?v=38';
 export const STORAGE_KEY = 'vshape-tracker';
 export const SCHEMA_VERSION = 8;
 export const emptyData = () => ({

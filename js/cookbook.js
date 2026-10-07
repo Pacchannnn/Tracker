@@ -1,5 +1,5 @@
-import { ensureUnchanged } from './data.js?v=36';
-import { validateRecipe, scaleRecipe, recipeTotals } from './nutrition.js?v=36';
+import { ensureUnchanged } from './data.js?v=38';
+import { validateRecipe, scaleRecipe, recipeTotals } from './nutrition.js?v=38';
 
 export function normalizeRecipeText(value) {
   return String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLocaleLowerCase('vi').trim().replace(/\s+/g,' ');
