@@ -8,6 +8,27 @@
 
 ## Trạng thái và quy ước
 
+### Phase8B-1 — 08/10/2026 (IMPLEMENTED / TESTED)
+
+Strict user authorization: Food Library search + exercise-history paging only.
+Baseline eab9cd9 clean main, fresh388/388 tests and69syntax, schema8→8.
+1. [DONE] RED→GREEN shared Food search and pure existing-set paging tests.
+2. [DONE] App integration: reuse searchFoods, explicit Clear;20→40→60→remaining,
+   count/LoadMore/focus; transient DOM context resets, same order/group/details.
+3. [DONE] Disposable browser/zero-write/backup identity/mobile320/360/390/keyboard,
+   full388 regression + new tests/syntax/diff and independent review.
+4. [DONE] Report/README/guide, local code/docs checkpoints. STOP8B-1; no push.
+Depends1→2→3→4. Main-only preference applies; no schema/key/IDB/dependency change.
+E1/E2/pins/recovery/grams/PWA/AI and all other Phase8 work remain excluded.
+
+Result388→412/412;24new tests,71syntax; original388tests/assertions unchanged.
+Browser8792 Food Search/Clear/noresult/photo,73sets20→40→60→73/context/reset/
+reload, actual320/360/390/keyboard and0Storage/IDBwrites. RawJSON/meta/bytes/
+backup equal, JSON8/photo1 roundtrip; no native restore/destructive tests.
+Domain/final reviews PASS. Code6dea230; docs checkpoint separate;modules40/styles39.
+Only8B-1 complete; fullPhase8 incomplete. NEXT:STOP8B-1, no8B-2/no push.
+Known limitations/device readiness unchanged;17-item evidence in implementation report.
+
 ### Phase8A — 08/10/2026 (DESIGN / RESEARCH ONLY)
 
 User chỉ duyệt product audit/experiment planning, không8B implementation.
@@ -114,8 +135,8 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**8A DESIGN / RESEARCH ONLY complete;schema8;388tests/69syntax baseline. Phase1–7 remains IMPLEMENTED / TESTED in verified local scope;8B NOT STARTED.
-- **CURRENT STEP:**docs handoff. IN PROGRESS:none. NEXT:STOP8A, await explicit experiment scope approval. BLOCKERS:none for audit; user decisions needed before implementation. Current audit/decisions:PHASE8A_DECISION_REPORT.md.
+- **CURRENT PHASE:**8B-1 IMPLEMENTED / TESTED in verified local scope;schema8;412tests/71syntax.8A design remains complete;fullPhase8 incomplete,8B-2 not started.
+- **CURRENT STEP:**handoff. IN PROGRESS:none. NEXT:STOP8B-1; await separately approved next scope. BLOCKERS:none in exercised8B-1 scope. Current implementation evidence:V4_IMPLEMENTATION_REPORT.md; E1/E2 remain proposals in PHASE8A_DECISION_REPORT.md.
 - **BLOCKERS:** none in bounded7 scope. KNOWN BUGS: no material remaining finding in exercised Monthly/Weekly flows. Selected-tab hover contrast corrected; final standalone warning/error logs empty. Earlier6B observer error remains historical and unattributed.
 - **DECIDE LATER:** favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition, shopping list; MyDay-as-Home, richer mood/catalog/backend/AI remain proposals. No blocking6B product decision.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.

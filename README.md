@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Weekly Review / Monthly Memories và toàn bộ Phase7 trong phạm vi đã duyệt IMPLEMENTED / TESTED · 388 tests.** Tải lại mọi tab để nhận module `v=38`, stylesheet `v=39`. Vào **Tiến độ → Tuần đã ghi / Ký ức tháng** để xem dữ kiện đã lưu và mở đúng nguồn. Phase7A contract giữ nguyên; dừng trước Phase8. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · Phase8B-1 Food Search / History Paging IMPLEMENTED / TESTED · 412 tests.** Tải lại mọi tab để nhận module `v=40`, stylesheet `v=39`. Weekly/Monthly và Phase1–7 giữ nguyên; toàn bộ Phase8 chưa hoàn tất. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). Dừng sau8B-1, chưa8B-2.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -22,8 +22,10 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 2. Vào **Gym → Gym hôm nay** để bắt đầu buổi kế tiếp. **Original Plan** giữ nguyên A/B/C/D. Hoặc vào **Kế hoạch** để tạo/nhân bản/chỉnh các buổi riêng và chọn kế hoạch active. **Thư viện bài** có tìm/lọc và bài custom. Nhập tạ, số lần, RIR rồi chọn **Lưu hiệp**; bản nháp đang tập lưu sau mỗi hiệp.
 3. Chọn **Hoàn thành & lưu buổi**. Vào **Gym → Lịch sử** để xem hoặc mở lại sửa.
 4. Tạo món ở **Dinh dưỡng → Thực phẩm**, rồi thêm vào **Nhật ký ngày**. Có thể lưu một bữa đã ghi thành **Bữa lưu sẵn**, sao chép ngày trước, hoặc nhập **Công thức**. Macro công thức là dữ liệu bạn tự nhập; công thức thiếu macro không ghi vào nhật ký ăn.
+   Ô **Tìm thực phẩm** tìm theo tên không phân biệt dấu/hoa thường/đ-d/khoảng trắng: `com ga` tìm “Cơm gà”, `DAU HU` tìm “Đậu hũ”. **Xóa tìm kiếm thực phẩm** hoặc query trống đưa về toàn thư viện theo thứ tự hiện có; không sửa tên/macro/ảnh.
 5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
    **Tiến độ → Tổng quan** cho biết các trung bình theo tuần và lịch sử theo bài khi có dữ liệu. **Gym → Cardio & gối** cho phép ghi hoạt động và tình trạng gối riêng.
+   **Tổng quan tiến độ → Lịch sử theo bài** bắt đầu với20 **hiệp**; **Xem thêm** mở20hiệp kế tiếp, hiển thị số đang thấy/tổng số. Đổi bài, rời view rồi mở lại hoặc reload bắt đầu lại20; history đã lưu vẫn còn. Không đổi cách nhóm theo tên hay đơn vị tạ.
    **Tiến độ → Tuần đã ghi** có tuần trước/sau/hiện tại, chọn ngày và Làm mới. Xem ngày có bản ghi, tâm trạng, thẻ tự ghi, buổi tập, dinh dưỡng và metadata ảnh. Bản ghi tương lai được tách riêng; thiếu/chưa rõ/chưa đọc được không đổi thành số0. Mở nguồn rồi **Quay lại Tuần đã ghi** để đọc lại dữ liệu mới nhất; phần chưa lưu sẽ chặn rời trang. Xem tuần/nguồn không tự lưu hay mở buổi tập để sửa. Ngữ cảnh quay lại chỉ giữ trong tab, mất sau reload.
    **Tiến độ → Ký ức tháng** có tháng trước/sau/hiện tại, chọn tháng và **Làm mới**. Số bản ghi tính cả tháng; ngày có ghi chỉ tính những ngày đã đến hạn. Timeline theo ngày tăng dần, có dữ liệu mới hiện ngày; bản ghi tương lai vẫn hiện với nhãn riêng. Mở nguồn rồi **Quay lại Ký ức tháng** để đọc lại dữ liệu mới nhất và trở về đúng vị trí. Ghi chú nguồn chưa lưu sẽ chặn rời trang.
    Ảnh ban đầu chỉ hiện thông tin. **Mở ảnh** đọc thumbnail ảnh đó; **Xem ảnh đầy đủ** là thao tác riêng để đọc ảnh gốc. Thumbnail lỗi không tự mở ảnh gốc. **Đóng ảnh**/chuyển tháng/rời màn hình giải phóng ảnh đang xem; lỗi file ảnh không biến số metadata thành0. Các thao tác xem không ghi dữ liệu; tháng/ảnh/ngữ cảnh Back không giữ qua reload. Sao lưu dữ liệu và ảnh vẫn là hai file riêng như trước.

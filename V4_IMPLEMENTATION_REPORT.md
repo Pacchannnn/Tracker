@@ -1,4 +1,51 @@
-# Tracker V4 — Phase7B-2 Monthly Memories / bounded Phase7 release
+# Tracker V4 — Phase8B-1 Food Library search / exercise-history paging
+
+08/10/2026 · **Phase8B-1 IMPLEMENTED / TESTED in verified local scope.** Phase8A remains DESIGN / RESEARCH ONLY; all Phase8 is not complete. User authorized only these two polish changes. Schema8→8, photo DB1/format1, module URLs40/styles39. Code **6dea230** on main; separate docs checkpoint follows. No push. **STOP8B-1, no8B-2/E1/E2/PWA/AI or other experiment.** Older reports below are historical.
+
+## Phase8B-1 final report — 17 requested items
+
+1. **Baseline→final tests:** clean main eab9cd9; fresh388/388 before edits. Final fresh `npm test` **412/412**,0fail/cancel/skip/todo. Added11 food-search +13 history-page tests, all original388 test files/assertions unchanged. Baseline expected matched; no material difference.
+2. **JS syntax:**69 baseline→71 final recursive js/tests files; all `node --check` pass. Working/staged diff checks pass. No new runtime module/dependency.
+3. **Schema:**8→8; no migration/persisted fields/key/IDB/backup format. Same JSON vshape-tracker, tracker-photos/photos DB1, photo backup1. No user-origin storage touched.
+4. **Files changed:** behavior only js/app.js, js/nutrition.js, js/progress.js. New tests/food-search.test.js, tests/exercise-history-page.test.js. Index/all other modified JS imports only bump38→40 so shared search consumers use current code together; CSS39 unchanged. Docs: this report, V4_ROADMAP.md, README.md, FULL_STEP_BY_STEP_GUIDE.txt. QA/logs/fixtures/screenshots stay ignored in .local.
+5. **Food implementation/examples:** Food Library now calls existing searchFoods/recentFoods, name-only fields and recent-date/name ordering retained. Existing NFD/accent/case/đ mapping plus trim/collapse whitespace for both source/query. `COM   GA`→`Cơm  gà`; `dau hu`→`Đậu hũ`; `SỮA CHUA`→`Sữa Chua`. Source names not rewritten. Empty/whitespace queries restore all applicable results; explicit Xóa tìm kiếm thực phẩm clears/focuses search and disables when empty. No-result message retained. Tests find every one of73 library foods, immutable refs/IDs/macros/snapshots and no matching notes/serving. Browser3food cards/photos tested.
+6. **History contract/paging:** baseline exerciseHistory is a flattened saved **set row** list filtered by exerciseName, date-desc/setNumber order, not sessions. Reused unchanged helper with a pure exerciseHistoryPage projection; no identity/group semantics altered. Initial20, then40,60,73, status Hiển thị N/T hiệp; final13 only, no LoadMore after73. Empty original message retained. Limit lives in one DOM view closure; selector change/navigation away-return/reload or fresh root render resets20. All details/date/workout title/setNumber/weight/unit/reps/RIR strings unchanged; baseline had no per-row source links, none added. DOM data-set-id is transient evidence/focus annotation, not new saved data.
+7. **Zero writes:** disposable127.0.0.1:8792 iframe instrumentation of Storage set/remove/clear and IDB readwrite transactions:0/0 for search/Clear/view/paging/context/nav/reload/mobile/keyboard. Fixture seeding occurs in parent before baseline and outside read counters. Canonical JSON/meta/original+thumbnail bytes/actual createBackup before-after equal. Unrelated fixture-live draft unchanged.
+8. **Identity/history:** tests deep frozen input,73 rows exact fields/order/IDs/slotIDs/units, multiple same-name owners and contexts. Browser73 DOM set IDs exactly equal existing exerciseHistory sequence, no missing/duplicates; all216 fixture sessions plus templates/plans/drafts/nutrition snapshots remain byte-equal in JSON. New helper never edits/saves data or changes slotId/setId/session IDs. Existing grouping by same-name remains unchanged, not new equipment/PR analysis.
+9. **Browser verification:** actual Food search→Clear→search/blank/noresult/name-only/unchanged owned photo;73history repeated LoadMore/context1→73 reset/navigation return/reload persistent history. Runtime error/external request probes empty; standalone final warning/error logs empty. Synthetic8792 only; user8765 untouched. Domain RED preceded helper changes; browser integration RED preceded app edits: accent/space query failed, baseline20 stopped with no 20→40→60→73. GREEN same assertions passed.
+10. **Mobile320/360/390:** actual iframe widths, document client/scroll305/305,345/345,375/375 with scrollbar.73visible rows/long exercise label/food photo/search/clear tested at each width; no horizontal overflow. Physical phone not certified. Existing CSS/button sizes retained.
+11. **Keyboard/accessibility:** searchbox label connected; Tab to Clear, Enter clears/disables and returns focus input; mixed-case/đ query works. Selector Tab→LoadMore; Space/Enter expand; focus first new row21/61. Shift+Tab from focused new row returns exercise selector; last page removes button. Counter role=status and row programmatic focus use tabindex=-1, no dozens of added Tab stops. Wrapped select labeling is existing behavior; tool exact-label locator did not match, name-selector/keyboard worked. One tool pointer action transiently failed with no app error; keyboard retry verified unchanged page. No screen-reader/WCAG certification.
+12. **Regression:** complete412 suite includes Original/custom/workout/Replace ownership/history-edit/food logging/batch/copy/cookbook/journal/MyDay/Weekly/Monthly/backup/restore tests; all existing388 retained. Independent domain and final full-change spec/quality reviews PASS. This milestone did not rerun every old browser mutation workflow; no claim that412 are end-to-end UI tests.
+13. **Backup compatibility:** actual JSON8 before/after viewing equality, strict fixture createBackup/parseBackup deep roundtrip216sessions; JPEG photo1 encode/parse metadata/owners/original/thumbnail bytes roundtrip. Compatibility script does not access storage or perform restore. Existing restore/stale/quota/photo batch/legacy tests pass. No real-device restore or destructive storage testing performed.
+14. **NOT VERIFIED:** physical phone/Safari/other engines/screen reader/full WCAG/native quota/power loss/large production data/complete old browser workflows/new manual paired restore. Same-name aggregation and kg/lb display convention remain existing semantics. Food photos keep existing per-card full-record scans; not optimized or newly benchmarked. No performance claim, PWA/offline or AI integration.
+15. **Git/checkpoints:** main eab9cd9→code6dea230; separate docs commit named Record Phase8B1 search and history paging evidence. No push/fetch/reset/rebase, no worktree or branch change. Approved contracts/private MASTER_PLAN unchanged; fixtures/logs/screenshots not staged. Owned QA tabs/server cleaned; user8765 preserved.
+16. **Acceptance result:** all required bounded8B-1 gates PASS mapped below. Only8B-1 marked IMPLEMENTED / TESTED in local verified scope; full Phase8 remains incomplete. E1/E2 and excluded features not authorized/implemented by this task.
+17. **Next step:** **STOP after8B-1.** User may separately prioritize next backlog item or device-readiness work; do not auto start8B-2, E1/E2 or other experiment. No GitHub push.
+
+## Acceptance evidence map
+
+| Required gate | Result / evidence |
+| --- | --- |
+| Baseline388/69/schema8/main clean | PASS before edits, eab9cd9 |
+| Search accents/case/đ/spaces/full library/fields/order/empty/noresult | PASS11new tests + browser food GREEN |
+| Paging0/1/19/20/21/40/41/73,20increment, final states | PASS13new tests + browser73 sequence |
+| Actual set contract/order/identity/values, no reinterpretation | PASS pure deep comparisons + exact DOM IDs/raw JSON |
+| Context reset/away-return/reload | PASS browser1→73/20/navigate/reload |
+| Schema/key/IDB/backup8+1 unchanged | PASS code diff + raw/meta/bytes equality/roundtrip |
+| Search/Clear/paging/view0Storage/0IDBwrites | PASS all exercised read probes |
+| Food cards/photos/history unrelated data intact | PASS owner/photo bytes/216sessions/draft/backup equality |
+| Mobile320/360/390/keyboard/focus/labels/disabled | PASS actual browser measurements/keys |
+| Original388 + full regression/syntax/diff | PASS412/71, old tests unchanged |
+| Independent code reviews/privacy/scope exclusions | PASS domain/final review; no external requests |
+| Docs/local checkpoints/STOP/no push | PASS bounded handoff; no8B-2 |
+
+## Local evidence (ignored, synthetic)
+
+`.local/phase8b1-baseline.txt`, `phase8b1-food-red.txt`, `phase8b1-food-green.txt`, `phase8b1-history-red.txt`, `phase8b1-history-green.txt`, `phase8b1-domain-review.md`, `phase8b1-final-review.md`, `phase8b1-release-full.txt`, `phase8b1-browser-food-red.txt`, `phase8b1-browser-history-red.txt`, `phase8b1-browser-food-green.json`, `phase8b1-browser-history-green.json`, `phase8b1-mobile.json`, `phase8b1-keyboard.json`, `phase8b1-backup-check.txt`, screenshots `phase8b1-food-desktop.png`, `phase8b1-history-mobile.png`. QA artifacts contain fixtures only, not user-origin records.
+
+---
+
+# Historical Phase7B-2 Monthly Memories / bounded Phase7 release
 
 07–08/10/2026 · **Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES IMPLEMENTED / TESTED; Full bounded Phase7 IMPLEMENTED / TESTED.** All30 release gates below passed in the verified local scope. Schema8→8, photo DB1/format1. Code checkpoint **6c67590** on main; separate documentation checkpoint follows. Modules asset38, stylesheet39. No push. **NEXT: STOP before Phase8.** Older dated reports below are historical.
 

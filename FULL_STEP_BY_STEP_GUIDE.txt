@@ -1,16 +1,16 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-08 (Phase7B-2/full boundedPhase7 complete; STOP beforePhase8)
+Updated: 2026-10-08 (Phase8B-1 complete; STOP after8B-1)
 
 CURRENT PROJECT STATE
-Phase0-6 and Phase7B-1/7B-2/full boundedPhase7 IMPLEMENTED / TESTED in local scope;
-388 tests /69 recursive syntax checks; schema8 unchanged.7A CONTRACT APPROVED.
-CURRENT PHASE:7B-2. CURRENT STEP:handoff; STOP beforePhase8.
-COMPLETED: shared calendar/validation/Common, Weekly + Monthly UI, exact sources,
-chronological closed previews/full counts, explicit thumbnail/original/no fallback,
-transient Back/URL lifecycle, zero-write/browser/mobile/keyboard and final review.
+Phase1-7 and8B-1 IMPLEMENTED / TESTED in local scope;8A DESIGN / RESEARCH ONLY.
+412 tests /71 recursive syntax checks; schema8 unchanged. FullPhase8 incomplete.
+CURRENT PHASE:8B-1. CURRENT STEP:handoff; STOP after8B-1, no8B-2.
+COMPLETED: name-only Food Library search uses shared normalization, explicit Clear;
+exercise-history saved SET rows20→40→60→remaining/count/reset/focus; independent
+reviews, zero-write/browser/mobile/keyboard/backup and full regression.
 IN PROGRESS:none. BLOCKERS:none. KNOWN BUGS:no material remaining finding.
-NEXT:STOP beforePhase8; separate user specification required.
-DECISIONS NEEDED:which Phase8 proposal, if any, to authorize next.
+NEXT:STOP after8B-1; separate user specification required for next milestone.
+DECISIONS NEEDED:which next scope, if any, to approve; E1/E2 remain unapproved.
 BACKLOG:ranking/highlights/pins, associations, PWA/notifications, sync/backend/AI
 remain proposals. None is automatically approved by this release.
 Model:current coding model; reasoning high for contracts/domain tests,
@@ -22,7 +22,24 @@ photos remain. One localStorage object, schema 8; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
 Work is on main, local checkpoints only; no automatic GitHub push.
 
-PHASE7B-2 COMPLETED STEPS (dependency1→2→3→4)
+PHASE8B-1 COMPLETED STEPS (dependency1→2→3→4)
+[DONE]1. Baseline388/69/eab9cd9 clean; inspect exact name/group/order contracts.
+  RED→11food +13paging tests GREEN; reuse searchFoods/exerciseHistory, no schema.
+[DONE]2. Food Library calls shared helper/Clear. History closure starts20 and
+  resets on fresh render/context, expands20 via Xem thêm; same saved details.
+[DONE]3. Full412/71syntax, all388old tests unchanged; browser synthetic8792:
+  search/Clear/photo/noresult,73rows/context/away/reload,320/360/390/keyboard,
+  0Storage/IDBwrites/raw/meta/original/thumbnail/backup equality. JSON8/photo1
+  roundtrip; no native restore/destructive testing. Independent reviews PASS.
+[DONE]4. Docs/local code6dea230 + separate docs checkpoint; no push.
+  Model:current coding tier; reasoning high for tests/contracts, medium for docs.
+  Done:all bounded8B-1 acceptance gates passed; NOT fullPhase8 completion.
+Limitations:physicalphones/Safari/screenreader/quota/large datasets and every old
+browser mutation flow not reverified. Existing per-food photo scans retained.
+User flow:Dinh dưỡng→Thực phẩm→Tìm thực phẩm/clear; Tiến độ→Tổng quan→Lịch sử
+theo bài→Chọn bài→Xem thêm. Paging means hiệp, not buổi tập. No persistent state.
+
+HISTORICAL PHASE7B-2 COMPLETED STEPS (dependency1→2→3→4)
 [DONE]1. Pure MonthReview/Common/count/timeline/closed previews; RED→23testsGREEN.
   Model:current coding tier; reasoning high. Verify:calendar/future/domain isolation,
   snapshots/order/deep detachment; done:exact readonly derivation, review PASS.
