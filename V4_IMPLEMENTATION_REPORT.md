@@ -1,4 +1,90 @@
-# Tracker V4 — Phase7B-1 Weekly Life Review
+# Tracker V4 — Phase7B-2 Monthly Memories / bounded Phase7 release
+
+07–08/10/2026 · **Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES IMPLEMENTED / TESTED; Full bounded Phase7 IMPLEMENTED / TESTED.** All30 release gates below passed in the verified local scope. Schema8→8, photo DB1/format1. Code checkpoint **6c67590** on main; separate documentation checkpoint follows. Modules asset38, stylesheet39. No push. **NEXT: STOP before Phase8.** Older dated reports below are historical.
+
+## Phase7B-2 final report — 38 requested items
+
+1. **Baseline → final tests:** clean main15676ff,333/333 before edits; final fresh `npm test`388/388,0 fail/cancel/skip/todo.55 new tests:23 monthly domain,29 monthly UI,3 readonly photo API. All333 existing test cases pass. One old Phase7B-1 boundary assertion that the monthly function was absent was necessarily changed to assert its authorized presence; its existing calendar assertions remain. Therefore do not claim every old assertion is byte-unchanged.
+2. **Syntax checks:**65 baseline→69 final recursive js/tests files including the existing fixture module; all `node --check` pass. Working and staged diff checks pass after removing a new test's trailing blank line. No dependency change.
+3. **Schema:**8→8. No migration, persistent Monthly entity, key, route, summary, image field or backup-format change. Same vshape-tracker JSON and tracker-photos/photos DB1, photo backup1.
+4. **Files changed:** new js/month-memories-ui.js and tests/month-memories.test.js, month-memories-ui.test.js, month-photos.test.js. Substantive changes in js/life-review.js, js/app.js, css/style.css; authorized phase boundary assertion in tests/life-review.test.js. Index assets/styles and other modified JS imports only advance cache versions36→38. CSS URL39 ensures the final contrast correction loads. Docs: this report, V4_ROADMAP.md, DATA_MODEL.md, README.md, FULL_STEP_BY_STEP_GUIDE.txt; private TONG_KET_DU_AN.md updated but ignored.
+5. **RED→GREEN:** domain first22 missing-interface failures, then invalid mood-object regression,23 green. UI first24 failures; subsequent different-photo identity/URL detach/external-focus regressions,29 green. Photo API3 green. Independent domain/UI/final reviews PASS after corrections. An intermediate full run overlapping the focus RED/fix had387pass/1fail and assertion-output allocation failure; it is not passing evidence. Final fresh388 supersedes it.
+6. **Month calendar:** shared local-noon lifeReviewPeriod; exact first/last local dates, month/year navigation, leap/invalid dates, years0000–0099/9999. Full calendar month is retained; no UTC midnight/date-string normalization shortcut. Unit fixtures inject today explicitly.
+7. **Current/future eligibility:** full-month records/counts include future dates; coverage uses only dates due by local today. Current month clips at today, past month uses all days, future month has0 eligible days and displays a no-eligible-days state, never0/0. Browser I on07/10 used7 due days; resumed keyboard/screenshot on08/10 correctly used8. Future Oct31 and November records remain visible and labeled.
+8. **MonthReview/counts:** derived Common contract retained with independent coverage/errors/eligible refs and tri-state emptiness. Counts count full-month records, not distinct days; coverage counts distinct eligible dates. I: journal3,workout5,nutrition3,cardio1,checkin2,knee2,photos10;26 timeline items. No persisted aggregate or new monthly macro arithmetic.
+9. **Chronology:** full timeline dates ascend. Empty dates are omitted, notes-only dates remain, future records remain. Browser I rendered [date,kind,ID] sequence compared exactly with pure derivation; input arrays untouched.
+10. **Within-day order:** journal→workout→nutrition→cardio→checkin→knee→photo; source order for the same kind, lexical stable photo IDs. No ranking/highlights, timestamp-based reorder or inferred importance.
+11. **MemoryPreview:** closed saved-field projections only. Journal title, moodID, tags and first280 Unicode code points of note plus ellipsis only when longer. Workout savedTitle/setCount; nutrition saved name/serving/servings/meal; cardio activity/durationMinutes/distanceKm/intensity; checkin weight/waist/sleep/knee/notes; knee moment/pain/swelling/instability/stiffness/notes; photo category and present optional pose/note. No source objects, owner measurements, URLs or binary image fields leak. Invalid mood produces unavailable mood coverage and null preview moodID; journal text remains readable. Literal HTML-like notes render as text.
+12. **Nutrition snapshots:** preview uses historical entry snapshots even if the food library is changed/deleted. No current-food substitution, guessed macro, known-zero replacement for unknown, or new monthly nutrition score. Weekly subtotal/known-day behavior unchanged.
+13. **Workout/history:** saved history title and actual owned logs, including zero-log sessions, structured Replace and ambiguous legacy records. Exact history view is reused. Current catalog/templates never rewrite history; ambiguous ownership remains unknown.
+14. **Photo metadata:** default Monthly navigation/Refresh only calls the existing readonly metadata projection.10 photos initially produce10 metadata rows/0 images/0 selected binary reads. Own photo date and orphan ownership retained. Identical metadata duplicates dedupe; conflicting metadata makes only photos unavailable. Metadata scans the whole store; this is not an indexed month-range query.
+15. **Explicit thumbnail:** Mở ảnh reads only selected ID/date via getPhotoThumbnail; UI does not call listPhotos/getAll or getPhoto to open a thumbnail. Existing co-located IDB record contains Blob handles, so this is API/UI selected-thumbnail proof, not a byte-level storage retrieval guarantee.
+16. **Explicit original:** Xem ảnh đầy đủ is a separate user action; only it calls getPhoto for the selected ID. No full image decoding on entry, range change or Refresh.
+17. **No fallback:** browser J injects failed thumbnail read and invalid thumbnail bytes; original read counter remains unchanged. Explicit original failure is reported separately. Unit tests also verify missing/error thumbnail never invokes original.
+18. **Object URLs:** ownership starts at createObjectURL; candidate errors, close, different identity, month/view change and stale callbacks release URLs. Same-photo variant replacement retains active image until candidate loads, then detaches/revokes old URL. Different-photo selection removes old identity immediately. J created6/revoked6; keyboard selected photo created2/revoked2. Close focus returns to the opener.
+19. **Photo deletion/races:** J holds thumbnail and original completions while changing month; stale images cannot appear. Explicit fixture deletion of photo04 yields scoped missing-file state; count stays10 until metadata Refresh then9. Conflicting metadata is isolated; restored metadata returns9. Switching photo06→held photo07 does not show old image under new ID. All test mutations are synthetic fixture actions, separate from read-flow counters.
+20. **Isolation:** empty, future, malformed nutrition, root JSON parse error, metadata failure and selected image failures actually exercised. Independent readable domains/photos remain; unreadable is not empty/zero. Image failures retain metadata counts. No broad try/catch hides a failed read as an empty month.
+21. **Exact sources:** Monthly browser opens8 exact routes including journal/nutrition/two saved workout identities/structured logged workout/cardio/notes-only checkin/knee with cross-kind duplicate ID, plus inline photo route and nested MyDay. IDs/date/owners are resolved from latest canonical reads, not matching labels. Saved source edits use existing editors and confirmations.
+22. **No workout reopen:** all history-source views preserve the active unrelated B draft, canonical JSON and backup. No store.reopen command is used for view. Structured slots and historical sets retain exact ownership; source history is read-only until an explicit existing edit action.
+23. **Back/rederive:** returns to selected month, derives latest JSON/metadata and restores exact item focus/scroll; missing item falls back to date→timeline→period. Browser saved journal edit is visible on Back; deleted source disappears and date heading gains focus. Dirty journal input blocks Back/internal navigation. Save/Delete are explicit source mutations, not review writes.
+24. **Async safety:** generation/identity guards reject stale metadata/source/photo completions and disconnected controls. Delayed Back does not steal focus/scroll after the user chooses an external progress control; temporary document focus observer is removed at completion/invalidation. Body/main automatic show focus still permits intended Back restoration.
+25. **Zero writes:** I/J read-only segments, source routes, month controls, error/reload/mobile/keyboard each instrument Storage set/remove/clear and IDB readwrite transactions:0/0. Before/after canonical JSON, metadata, original/thumbnail bytes and backup equal. Explicit source edit/delete segments are reset and counted separately; no blanket claim that edits write0.
+26. **Absent DB:** separate localhost8788 origin starts with indexedDB.databases() empty. Empty month, prev/next/current/Refresh leave it empty: no DB creation, Storage/IDB writes, selected reads or URLs. Unit readonly photo tests independently verify absent DB behavior.
+27. **Backup immutability:** schema8 actual createBackup before/after valid I/J exactly equal; JSON/meta/original/thumbnail byte equality and IDs/owners unchanged. Invalid root/consumed malformed fixtures remain rejected by strict backup validation, never claimed to be valid backups. Photo backup format1 unchanged; existing restore tests still pass.
+28. **Browser I:** PASS exact26 item sequence/counts,280-codepoint safe excerpt, previous/next/current/Refresh/future selection,0 default images/selected reads,0 writes, raw/meta/bytes/backup unchanged; unrelated B draft retained.
+29. **Browser J:** PASS10 metadata initial rows, explicit selected thumbnail/original, no fallback for read/decode errors, delete/metadata conflict, delayed thumbnail/original/month and photo-identity races, URL cleanup. After deliberate fixture deletion count9; audit baseline reset around explicit fixture changes.
+30. **Source/error/reload:** exact routes pass at all3 widths; dirty/edit/delete/Back and nested MyDay pass. Empty/future/malformed/root/photo failures isolated. Reload resets transient month/view/photo selection to normal app entry; saved JSON/photos remain. Selected read APIs only when requested. QA used disposable8788/8790 and separate localhost; user8765 untouched.
+31. **Weekly regression:** focused Phase7B-1 tests50/50 plus full388. Browser A/B/C/D/E/F/G/M/root-error/photo-error all pass with0writes/0default binary, immutable raw/meta/bytes/backup equivalence.9 exact routes including duplicate setID distinguished by session, nested MyDay, latest Back and no reopen pass. Weekly error/reload at3 widths passes. Existing progress.weeklySummary and MyDay source semantics unchanged.
+32. **320/360/390:** actual iframe viewport widths, document client/scroll respectively305/305,345/345,375/375 (scrollbar accounted).15 Monthly state-width checks: I,J,malformed,root-error,photo-error; source views at each width; selected photos opened/closed at each width. Weekly12 error-state checks too. No horizontal overflow in exercised states; long notes/names wrap and buttons remain usable above bottom nav. No physical-phone claim.
+33. **Keyboard/accessibility:** actual Enter/Space on period buttons, disclosure, exact source, Back, thumbnail/original/close; Tab/Shift+Tab expected next/previous focus; invalid blank month retains prior month and inline alert/focus. Back/close restores exact opener. Labels, real buttons, visible focus and contextual date/ID names verified. Screenshot discovered selected-tab hover white on yellow; CSS now retains ink color, confirmed in fresh stylesheet39 desktop/mobile screenshot. No WCAG/screen-reader certification claimed.
+34. **Privacy/network:** only local app modules/assets and synthetic fixtures. Probe externalRequests[], no analytics/CDN/API/cloud/account/upload/AI/photo analysis. Safe text rendering and private fixture exclusion reviewed. Standalone final warning/error logs empty; exercised probes errors[]. Historical unrelated observer errors are not attributed to this release.
+35. **NOT VERIFIED:** physical phone/Safari/other engines/screen reader/full WCAG/native quota/power loss/large real library/new full manual photo-backup restore/all old browser workflows. Cross-store JSON+IDB reads are not atomic; metadata scans whole store. An initial cold iframe load timed out without captured app error, and one old cached asset version persisted in IAB; warm repeated QA and standalone succeeded, cache versions advanced. Full green results do not erase these observed QA limitations.
+36. **Git/checkpoints:** main baseline15676ff→code6c67590; separate docs commit named Record Phase7 release evidence and monthly navigation. No push/fetch/reset/rebase. MASTER_PLAN and approved7A contract unchanged. Private summary, fixtures, logs and screenshots are ignored, not staged. Temporary QA server/tabs cleaned after final evidence; user8765 server/tab preserved.
+37. **Release gate:** all30 section32 gates PASS as mapped below. Exact statuses:7A CONTRACT APPROVED;7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED;7B-2 MONTHLY MEMORIES IMPLEMENTED / TESTED;Full bounded Phase7 IMPLEMENTED / TESTED;schema8. This is a bounded local result with item35 limits, not general browser certification.
+38. **Next step:** **STOP before Phase8.** No experiment, provider, AI/backend/sync/schema9 work authorized or begun. Await a separate user decision/specification. No GitHub push.
+
+## Release gate index — all30 PASS
+
+| Gate | Evidence item |
+| --- | --- |
+| 7A contract unchanged | 3,36; git diff empty |
+| 7B-1 passing | 1,31 |
+| Monthly derivation exact | 8,11,28 |
+| Calendar month exact | 6 |
+| Future semantics | 7,20 |
+| Full-month counts | 8,28,29 |
+| Timeline order | 9,10,28 |
+| MemoryPreview exact | 11,12,13 |
+| No narrative/ranking | 10,37 |
+| Photo metadata path | 14,26 |
+| Explicit thumbnail | 15,29 |
+| Explicit original | 16,29 |
+| No thumbnail→original fallback | 17,29 |
+| Object URL lifecycle | 18,29,33 |
+| Photo races | 19,24,29 |
+| Exact source refs | 21,31 |
+| Workout viewing read-only | 13,22 |
+| Back latest rederivation | 23,30 |
+| Malformed-domain isolation | 20,30 |
+| Async stale blocked | 19,24 |
+| Zero Storage writes | 25,28–31 |
+| Zero IDB writes | 25,26,28–31 |
+| Absent DB not created | 26 |
+| Backup/schema unchanged | 3,27 |
+| Mobile320/360/390 | 32 |
+| Keyboard/focus | 24,33 |
+| Privacy/network | 34 |
+| Full regression | 1,2,31 |
+| No Phase8 | 38 |
+| No GitHub push | 36,38 |
+
+## Local evidence index (ignored; synthetic only)
+
+Commands: `.local/phase7b2-release-full.txt`388; `.local/phase7b2-weekly-focused-final.txt`50; domain/UI RED/GREEN and final review in `.local/phase7b2-task1-report.md`, `phase7b2-task2-report.md`, `phase7b2-release-review.md`. Browser: `phase7b2-browser-I-final.json`, `phase7b2-browser-J-final.json`, `phase7b2-absent-final.json`, `phase7b2-sources-{320,360,390}.json`, `phase7b2-edit-final.json`, `phase7b2-errors-final.json`, `phase7b2-mobile-final.json`, `phase7b2-keyboard-final.json`, `phase7b2-weekly-final.json`, `phase7b2-weekly-sources.json`, `phase7b2-weekly-reload.json`. Screenshots: `phase7b2-monthly-desktop.png`, `phase7b2-monthly-mobile.png` (synthetic data). Screenshots/evidence stay on this computer.
+
+---
+
+# Historical Phase7B-1 Weekly Life Review
 
 06/10/2026 · **Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED; Full Phase7 NOT DONE.** Schema8 remains8. Asset36. Code checkpoint **5a6b9c5**; separate documentation checkpoint named **Record Phase7B1 evidence and bounded weekly handoff**. No push. Earlier dated sections are historical reports.
 

@@ -1,16 +1,18 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-06 (Phase7B-1 complete; STOP before7B-2)
+Updated: 2026-10-08 (Phase7B-2/full boundedPhase7 complete; STOP beforePhase8)
 
 CURRENT PROJECT STATE
-Phase0-6 and Phase7B-1 IMPLEMENTED / TESTED in verified local scope;
-333 tests /65 syntax checks; schema8 unchanged. Phase7A CONTRACT APPROVED.
-Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED. Full Phase7 NOT DONE.
-CURRENT PHASE:7B-1. CURRENT STEP:handoff; STOP before7B-2.
-COMPLETED: pure calendar/validation/provenance, Weekly UI, exact sources,
-transient Back, zero-write/browser/mobile/keyboard verification and review.
+Phase0-6 and Phase7B-1/7B-2/full boundedPhase7 IMPLEMENTED / TESTED in local scope;
+388 tests /69 recursive syntax checks; schema8 unchanged.7A CONTRACT APPROVED.
+CURRENT PHASE:7B-2. CURRENT STEP:handoff; STOP beforePhase8.
+COMPLETED: shared calendar/validation/Common, Weekly + Monthly UI, exact sources,
+chronological closed previews/full counts, explicit thumbnail/original/no fallback,
+transient Back/URL lifecycle, zero-write/browser/mobile/keyboard and final review.
 IN PROGRESS:none. BLOCKERS:none. KNOWN BUGS:no material remaining finding.
-NEXT:separately authorized7B-2 using unchanged approved contract.
-DECISIONS NEEDED:when to start7B-2. BACKLOG:Monthly Memories, Phase8 proposals.
+NEXT:STOP beforePhase8; separate user specification required.
+DECISIONS NEEDED:which Phase8 proposal, if any, to authorize next.
+BACKLOG:ranking/highlights/pins, associations, PWA/notifications, sync/backend/AI
+remain proposals. None is automatically approved by this release.
 Model:current coding model; reasoning high for contracts/domain tests,
 medium for documentation. Evidence and limitations:V4_IMPLEMENTATION_REPORT.md.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
@@ -19,6 +21,28 @@ Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
 photos remain. One localStorage object, schema 8; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
 Work is on main, local checkpoints only; no automatic GitHub push.
+
+PHASE7B-2 COMPLETED STEPS (dependency1→2→3→4)
+[DONE]1. Pure MonthReview/Common/count/timeline/closed previews; RED→23testsGREEN.
+  Model:current coding tier; reasoning high. Verify:calendar/future/domain isolation,
+  snapshots/order/deep detachment; done:exact readonly derivation, review PASS.
+[DONE]2. Monthly module/UI/photo selection/URL/focus; RED→29testsGREEN.
+  Same model/high. Verify:explicit reads/no fallback/async races/focus; done:review
+  PASS, no persistence/network.3 readonly photo API tests added by integration.
+[DONE]3. Root exact-source/Back integration + synthetic browser I/J/regression.
+  Same model/high. Verify:actual320/360/390/keyboard,0Storage/IDBwrites, absentDB,
+  raw/meta/original/thumbnail/backup equality; Weekly50 + full388/syntax69 PASS.
+  Done:all30 boundedPhase7 gates PASS; final review clear. Physical phone/Safari/
+  screen reader/native quota/large dataset/cross-store atomicity not certified.
+[DONE]4. Docs/private summary/localmain checkpoints. Reasoning medium.
+  Code6c67590; docs checkpoint separately named in Git. Modules38/styles39.
+  Done:38-item evidence report and release index; no private files or push.
+
+USER FLOW:Tiến độ→Ký ức tháng→select month/Refresh→timeline→exact source→Back.
+Photos initially metadata only; Mở ảnh=selected thumbnail, Xem ảnh đầy đủ=explicit
+original. Đóng ảnh/view change frees URLs. Dirty source blocks leaving. Counts
+include full month/future; coverage counts only eligible dates. No0/0future.
+Month/selection/Back transient reset on reload. Saved history/data unchanged.
 
 MVP / CURRENT DELIVERABLE
 Open Gym → choose Original/custom plan or build one-off → review exercise

@@ -2,6 +2,24 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Phase7B-2 Monthly Memories — derived only (08/10/2026)
+
+Schema8→8; no entity/migration/key/backup field. `deriveMonthMemories` reuses
+lifeReviewPeriod and whole-domain validation/Common from Weekly. Full calendar
+counts and chronological timeline include future records; coverage includes
+eligible local dates only. Closed per-kind previews copy saved fields; journal
+excerpt is first280 code points plus ellipsis only when longer. No stored score,
+narrative, monthly macro total or inferred workout ownership.
+
+Month/date/source/focus/scroll/photo selection and object URLs are transient.
+Existing readonly metadata projection scans the store; selected thumbnail and
+original APIs run only after separate explicit actions, no automatic fallback.
+No new photo metadata/owner/DB/backup format; empty DB remains absent. JSON and
+IDB are independent reads, not an atomic cross-store snapshot. Back reads latest
+canonical data and uses exact refs; no history reopen to view.55 new tests,
+full388 and Weekly50 remain passing.7A APPROVED;7B-1/7B-2/full boundedPhase7
+IMPLEMENTED / TESTED in local scope. STOP beforePhase8. Limits/evidence in report.
+
 ## Phase7B-1 Weekly Review — derived only (06/10/2026)
 
 Schema8→8; no migration/entity/field/key/summary cache or persisted route.
@@ -15,7 +33,8 @@ Photo metadata uses the existing whole-store readonly projection, not a claimed
 date-range index; absent DB remains absent. JSON and IDB reads are independent,
 not an atomic cross-store snapshot. Back rereads/rederives; its route/focus/scroll
 context exists in memory only. Backup JSON8/photo DB1/format1 stay unchanged.
-7A APPROVED;7B-1 IMPLEMENTED / TESTED;7B-2 NOT IMPLEMENTED; Full Phase7 NOT DONE.
+Historical7B-1 boundary:7A APPROVED;7B-1 IMPLEMENTED / TESTED;7B-2 not yet
+implemented at06/10/2026. Current boundedPhase7 release is recorded above.
 
 ## Phase 6B cookbook — schema8 unchanged (06/10/2026)
 

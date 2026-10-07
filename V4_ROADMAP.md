@@ -8,6 +8,31 @@
 
 ## Trạng thái và quy ước
 
+### Phase7B-2 execution — 07–08/10/2026 (IMPLEMENTED / TESTED)
+
+Baseline15676ff clean main;333/333 tests,65 syntax checks; schema8→8.
+1. [DONE] RED monthly tests → pure deriveMonthMemories, shared calendar/validation; task review PASS.
+2. [DONE] Monthly UI, explicit selected-photo reads and URL lifecycle tests; task review PASS.
+3. [DONE] Exact month-source return, synthetic I/J/source/error/reload/Weekly regressions;
+   actual320/360/390/keyboard, zero-write/absentDB/backup evidence and final review.
+4. [DONE] Docs/local code+docs checkpoints; STOP beforePhase8, no push.
+Depends1→2→3→4. Model/current coding tier/high; no persistent entity/migration.
+Risks: month/future denominators, metadata conflict, deleted/late photos, URL
+lifetime, dirty sources/focus; no ranking/narrative/AI/highlights/schema9.
+
+Results333→388/388;55 new tests,69 recursive JS syntax checks; Weekly focused50/50.
+Code6c67590; separate docs checkpoint. Modules38/styles39. Browser I/J, exact
+source8 routes at320/360/390, dirty/edit/delete/Back, independent errors/reload,
+absentDB, immutable raw/meta/original/thumbnail/backup and0Storage/IDBwrites.
+Weekly10 flows/9source routes/error-mobile/reload remain passing. Real keyboard
+and screenshot QA completed; selected-tab hover contrast corrected. Independent
+review PASS; no material remaining finding in exercised scope. All30 gates PASS.
+7A APPROVED;7B-1/7B-2/full bounded7 IMPLEMENTED / TESTED;schema8 unchanged.
+Limitations: whole-store metadata scan/non-atomic JSON+IDB reads, cold iframe QA
+timeout/cache issue resolved for repeated runs; physical phone/Safari/screen
+reader/native quota/large dataset not certified. Evidence:V4_IMPLEMENTATION_REPORT.md.
+CURRENT STEP:handoff. IN PROGRESS:none. NEXT:STOP beforePhase8.
+
 ### Phase 7B-1 execution — 06/10/2026 (IMPLEMENTED / TESTED)
 
 Phase7A contract APPROVED by explicit7B-1 request. Baseline main4a97ada, clean,
@@ -71,9 +96,9 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**7A CONTRACT APPROVED;7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; schema8;333tests/65syntax. Full Phase7 NOT DONE.
-- **CURRENT STEP:** bàn giao7B-1; STOP. IN PROGRESS: none. NEXT:7B-2 Monthly Memories only after separate authorization. BLOCKERS/KNOWN BUGS: no remaining material finding in bounded7B-1 review.
-- **BLOCKERS:** none in bounded6 scope. KNOWN BUGS: none remaining important in exercised6B flows after independent review. Corrected detached failure form, structured-copy preservation, unknown-macro shortcut and visible step numbering. Standalone warning/error logs empty; harness observer error attribution unproven.
+- **CURRENT PHASE:**7A CONTRACT APPROVED;7B-1/7B-2/full boundedPhase7 IMPLEMENTED / TESTED;schema8;388tests/69syntax. All30 release gates PASS in verified local scope.
+- **CURRENT STEP:**handoff. IN PROGRESS:none. NEXT:STOP beforePhase8. BLOCKERS:none; no material remaining finding in exercised Monthly/Weekly flows. Detailed38-item report and limitations:V4_IMPLEMENTATION_REPORT.md.
+- **BLOCKERS:** none in bounded7 scope. KNOWN BUGS: no material remaining finding in exercised Monthly/Weekly flows. Selected-tab hover contrast corrected; final standalone warning/error logs empty. Earlier6B observer error remains historical and unattributed.
 - **DECIDE LATER:** favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition, shopping list; MyDay-as-Home, richer mood/catalog/backend/AI remain proposals. No blocking6B product decision.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
 
@@ -268,7 +293,7 @@ Tests: double-submit batch, exact itemcount, date/meal retained, deletedfood, st
 
 ## Phase 7 — weekly life review và monthly memories
 
-**Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES NOT IMPLEMENTED; Full Phase7 NOT DONE.** Approved contract: [PHASE7_LIFE_REVIEW_CONTRACT.md](PHASE7_LIFE_REVIEW_CONTRACT.md), unchanged. Weekly implementation uses derived read-only schema8 data, metadata coverage and transient exact-source return. No stored highlights/hide/pins or monthly UI. Evidence: [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md). Original broader proposal below remains a backlog, not delivered functionality.
+**Phase7A CONTRACT APPROVED; Phase7B-1 WEEKLY REVIEW IMPLEMENTED / TESTED; Phase7B-2 MONTHLY MEMORIES IMPLEMENTED / TESTED; Full bounded Phase7 IMPLEMENTED / TESTED.** Approved contract: [PHASE7_LIFE_REVIEW_CONTRACT.md](PHASE7_LIFE_REVIEW_CONTRACT.md), unchanged. Weekly/Monthly use derived readonly schema8 data, exact-source transient Back and independent metadata reads. Monthly has full chronology/closed previews/explicit selected thumbnail and original actions. No stored highlights/hide/pins/ranking/narrative. Evidence: [V4_IMPLEMENTATION_REPORT.md](V4_IMPLEMENTATION_REPORT.md). Broader proposal below remains a backlog, not delivered functionality. STOP beforePhase8.
 
 **Goal/value:** tìm lại dữ kiện có ích từ dữ liệu đã ghi. **Depends:** phase5 + agreed missing-data/mood semantics; richercatalog optional. **Data:** derived periodsummary; hiddenmemory/highlight flags nếu persist cần migration; không reinterpret legacy `drained`. **UI:** coverage/mooddistribution/activities, sources, photo highlights do user mở/chọn.
 

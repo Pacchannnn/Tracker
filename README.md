@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase7B-1 Weekly Review IMPLEMENTED / TESTED trong phạm vi local đã kiểm tra · 333 tests.** Tải lại mọi tab để nhận asset/module `v=36`. Vào **Tiến độ → Tuần đã ghi** để xem dữ kiện đã lưu theo tuần và mở đúng nguồn. Phase7A contract đã duyệt;7B-2 Monthly Memories chưa triển khai, toàn bộ Phase7 chưa hoàn tất. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
+**Hiện tại: schema8 · Weekly Review / Monthly Memories và toàn bộ Phase7 trong phạm vi đã duyệt IMPLEMENTED / TESTED · 388 tests.** Tải lại mọi tab để nhận module `v=38`, stylesheet `v=39`. Vào **Tiến độ → Tuần đã ghi / Ký ức tháng** để xem dữ kiện đã lưu và mở đúng nguồn. Phase7A contract giữ nguyên; dừng trước Phase8. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md).
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -25,6 +25,8 @@ Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện c
 5. Ghi cân, eo, ngủ hoặc ghi chú gối ở **Tiến độ**.
    **Tiến độ → Tổng quan** cho biết các trung bình theo tuần và lịch sử theo bài khi có dữ liệu. **Gym → Cardio & gối** cho phép ghi hoạt động và tình trạng gối riêng.
    **Tiến độ → Tuần đã ghi** có tuần trước/sau/hiện tại, chọn ngày và Làm mới. Xem ngày có bản ghi, tâm trạng, thẻ tự ghi, buổi tập, dinh dưỡng và metadata ảnh. Bản ghi tương lai được tách riêng; thiếu/chưa rõ/chưa đọc được không đổi thành số0. Mở nguồn rồi **Quay lại Tuần đã ghi** để đọc lại dữ liệu mới nhất; phần chưa lưu sẽ chặn rời trang. Xem tuần/nguồn không tự lưu hay mở buổi tập để sửa. Ngữ cảnh quay lại chỉ giữ trong tab, mất sau reload.
+   **Tiến độ → Ký ức tháng** có tháng trước/sau/hiện tại, chọn tháng và **Làm mới**. Số bản ghi tính cả tháng; ngày có ghi chỉ tính những ngày đã đến hạn. Timeline theo ngày tăng dần, có dữ liệu mới hiện ngày; bản ghi tương lai vẫn hiện với nhãn riêng. Mở nguồn rồi **Quay lại Ký ức tháng** để đọc lại dữ liệu mới nhất và trở về đúng vị trí. Ghi chú nguồn chưa lưu sẽ chặn rời trang.
+   Ảnh ban đầu chỉ hiện thông tin. **Mở ảnh** đọc thumbnail ảnh đó; **Xem ảnh đầy đủ** là thao tác riêng để đọc ảnh gốc. Thumbnail lỗi không tự mở ảnh gốc. **Đóng ảnh**/chuyển tháng/rời màn hình giải phóng ảnh đang xem; lỗi file ảnh không biến số metadata thành0. Các thao tác xem không ghi dữ liệu; tháng/ảnh/ngữ cảnh Back không giữ qua reload. Sao lưu dữ liệu và ảnh vẫn là hai file riêng như trước.
 6. Vào **Nhật ký & Ảnh** để đánh dấu trạng thái ngày, thẻ và ghi chú. Ảnh lưu cục bộ trong trình duyệt; ảnh tiến độ có ngày, góc chụp, cân/eo tùy chọn. Ảnh được nén, file gốc trên thiết bị không bị sửa.
 7. Vào **Cài đặt & sao lưu** để chuẩn bị và tải **hai file**: dữ liệu JSON và ảnh JSON. Giữ cả hai file riêng tư. Nếu trình duyệt không tải file dữ liệu, dùng **Sao chép JSON**. Xác nhận cả hai file thực sự tồn tại trước khi xóa dữ liệu trình duyệt.
 8. Để khôi phục, chọn file dữ liệu JSON, xem trước, giữ bản sao an toàn rồi xác nhận thay thế. Sau đó chọn file ảnh, xem trước và thêm ảnh còn thiếu. Nhập ảnh không xóa hoặc ghi đè ảnh hiện có.
