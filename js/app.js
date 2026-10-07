@@ -1241,8 +1241,9 @@ async function exportPhotos() {
   try {
     const records = await listPhotos();
     const packed = await createPhotoBackup(records);
+    const nextUrl = URL.createObjectURL(new Blob([packed], { type: 'application/json' }));
     if (photoBackupUrl) URL.revokeObjectURL(photoBackupUrl);
-    photoBackupUrl = URL.createObjectURL(new Blob([packed], { type: 'application/json' }));
+    photoBackupUrl = nextUrl;
     const link = node('a', { href: photoBackupUrl, download: `tracker-photos-${localDate()}.json`, class: 'primary', text: `Tải file ảnh (${records.length} ảnh)` });
     link.addEventListener('click', () => setBackupStatus('photos', 'Đã yêu cầu trình duyệt tải file ảnh; hãy kiểm tra file trên máy.'));
     document.querySelector('#photo-backup-link').replaceChildren(link, button('Sao chép JSON ảnh đã chuẩn bị', async () => {
@@ -1333,9 +1334,10 @@ async function copyData() {
 
 function exportData() {
   try {
-    if (backupUrl) URL.revokeObjectURL(backupUrl);
     const blob = new Blob([createBackup(loadData(localStorage))], { type: 'application/json' });
-    backupUrl = URL.createObjectURL(blob);
+    const nextUrl = URL.createObjectURL(blob);
+    if (backupUrl) URL.revokeObjectURL(backupUrl);
+    backupUrl = nextUrl;
     const link = node('a', { href: backupUrl, download: `tracker-backup-${localDate()}.json`, class: 'primary', text: 'Tải file JSON' });
     link.addEventListener('click', () => setBackupStatus('data', 'Đã yêu cầu trình duyệt tải file dữ liệu; hãy kiểm tra file trên máy.'));
     document.querySelector('#backup-link').replaceChildren(link);

@@ -48,8 +48,13 @@ function openDb() {
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB) { reject(new Error('Trình duyệt không hỗ trợ lưu ảnh cục bộ (IndexedDB).')); return; }
     const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: 'id' });
-    request.onsuccess = () => resolve(request.result);
+    let blocked = false;
+    request.onblocked = () => { blocked = true; reject(new Error('Kho ảnh đang được dùng ở tab khác.')); };
+    request.onupgradeneeded = () => {
+      if (blocked) { request.transaction.abort(); return; }
+      request.result.createObjectStore(STORE, { keyPath: 'id' });
+    };
+    request.onsuccess = () => blocked ? request.result.close() : resolve(request.result);
     request.onerror = () => reject(new Error('Không mở được kho ảnh cục bộ.'));
   });
 }
@@ -105,11 +110,11 @@ function openExistingDb() {
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB) { reject(new Error('Không đọc được kho ảnh cục bộ.')); return; }
     const request = indexedDB.open(DB_NAME, 1);
-    let absent = false;
+    let absent = false, blocked = false;
     request.onupgradeneeded = () => { absent = true; request.transaction.abort(); };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => blocked ? request.result.close() : resolve(request.result);
     request.onerror = () => absent ? resolve(null) : reject(new Error('Không đọc được kho ảnh cục bộ.'));
-    request.onblocked = () => reject(new Error('Kho ảnh đang được dùng ở tab khác.'));
+    request.onblocked = () => { blocked = true; reject(new Error('Kho ảnh đang được dùng ở tab khác.')); };
   });
 }
 
