@@ -8,6 +8,24 @@
 
 ## Trạng thái và quy ước
 
+### Phase8A — 08/10/2026 (DESIGN / RESEARCH ONLY)
+
+User chỉ duyệt product audit/experiment planning, không8B implementation.
+Baseline main1fc8add clean; code6c67590; fresh388/388tests và69syntax;schema8.
+1. [DONE] Audit6module từ source/tests/report và backlog/research hiện có; C/T/O7/H/R tách riêng.
+2. [DONE] Matrix16hướng theo value/frequency/actions/cost/risk/schema/modules/tests/rollback.
+3. [DONE] Tối đa2proposal: E1 fill từ hiệp trước cùng slot; E2 MyDay Home prototype conditional.
+4. [DONE] Backup/device/Safari/large-data checklist và decision report; docs-only main checkpoint.
+Dependencies1→2→3→4; no model/provider/dependency decision required for this audit.
+Documents: [PHASE8_PRODUCT_AUDIT.md](PHASE8_PRODUCT_AUDIT.md),
+[PHASE8_EXPERIMENT_BACKLOG.md](PHASE8_EXPERIMENT_BACKLOG.md),
+[PHASE8A_DECISION_REPORT.md](PHASE8A_DECISION_REPORT.md).
+No appcode/tests/schema/dependency/data changes, no new browser/restore/seed QA.
+Experiments PROPOSED / NOT APPROVED;8B NOT STARTED. STOP8A, no push.
+Decision backlog: repeated-set usage, Home purpose, device availability/transport,
+which experiment to approve. Backup readiness is a gate, not experiment3.
+Earlier phase handoff/STOP statements below are historical boundaries.
+
 ### Phase7B-2 execution — 07–08/10/2026 (IMPLEMENTED / TESTED)
 
 Baseline15676ff clean main;333/333 tests,65 syntax checks; schema8→8.
@@ -96,8 +114,8 @@ Risks: cached v7 rejects v8; index writers must never receive an activated struc
 - **RESEARCHED:** corpus 35 sản phẩm, primary sources và user opinions tách biệt; `GLOBAL_APP_RESEARCH.md` và `docs/research/`.
 - **PLANNED:** concept/backlog/phase dưới đây; không coi đã có chỉ vì viết roadmap.
 - **IMPLEMENTED:** chỉ sau code được thêm; **TESTED:** chỉ khi có command/browser evidence.
-- **CURRENT PHASE:**7A CONTRACT APPROVED;7B-1/7B-2/full boundedPhase7 IMPLEMENTED / TESTED;schema8;388tests/69syntax. All30 release gates PASS in verified local scope.
-- **CURRENT STEP:**handoff. IN PROGRESS:none. NEXT:STOP beforePhase8. BLOCKERS:none; no material remaining finding in exercised Monthly/Weekly flows. Detailed38-item report and limitations:V4_IMPLEMENTATION_REPORT.md.
+- **CURRENT PHASE:**8A DESIGN / RESEARCH ONLY complete;schema8;388tests/69syntax baseline. Phase1–7 remains IMPLEMENTED / TESTED in verified local scope;8B NOT STARTED.
+- **CURRENT STEP:**docs handoff. IN PROGRESS:none. NEXT:STOP8A, await explicit experiment scope approval. BLOCKERS:none for audit; user decisions needed before implementation. Current audit/decisions:PHASE8A_DECISION_REPORT.md.
 - **BLOCKERS:** none in bounded7 scope. KNOWN BUGS: no material remaining finding in exercised Monthly/Weekly flows. Selected-tab hover contrast corrected; final standalone warning/error logs empty. Earlier6B observer error remains historical and unattributed.
 - **DECIDE LATER:** favorites/pins, portion basis, pending recovery, cooked-weight/yield repartition, shopping list; MyDay-as-Home, richer mood/catalog/backend/AI remain proposals. No blocking6B product decision.
 - **KNOWN LIMITATIONS:** iframe harness observer error; chưa thử quota thật, backup ảnh lớn, Safari/điện thoại vật lý. Download link trong IAB chưa chứng minh file tải về; clipboard → file → restore đã được kiểm chứng bằng fixtures.
@@ -300,6 +318,11 @@ Tests: double-submit batch, exact itemcount, date/meal retained, deletedfood, st
 Tests: denominators journal/mood/nutrition riêng, same-date dedupe, sparse sample, emptyweek, chronological order, unknownmuscle bucket, hiddenmemory không xóaentry. Manual: fixture4journal/3mood/2fooddays phải hiển thị chính xác; không báo “tuần tốt/xấu” hoặc medical cause. Done: mọi số truy về records được và unknown không thành0.
 
 ## Phase 8 — experiments và quyết định ngoài local
+
+**08/10/2026: Phase8A DESIGN / RESEARCH ONLY, không triển khai.** E1/E2 chỉ proposal,
+chưa approved. [Audit](PHASE8_PRODUCT_AUDIT.md), [matrix/contracts](PHASE8_EXPERIMENT_BACKLOG.md),
+[decision report](PHASE8A_DECISION_REPORT.md). No schema9/AI/cloud/backend/SW/push.
+Broader ideas below are conditional backlog, not instructions to implement8B.
 
 Notifications/PWA, advancedsettypes, equipmentprofiles, grams, associations, importers theo backlog. Mỗi experiment cần một câu hỏi usability và stop condition khi không giảm effort. Associations cần present/absent/unknown và sample window trước code; không có ngưỡng nhỏ nào tự chứng minh causation.
 
