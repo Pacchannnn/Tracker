@@ -8,7 +8,7 @@ export function recentFoods(foods, entries) {
 }
 
 export function searchFoods(foods, entries, query) {
-  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi').replace(/đ/g, 'd').trim();
+  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi').replace(/đ/g, 'd').trim().replace(/\s+/g, ' ');
   const term = normalize(query);
   return recentFoods(foods, entries).filter(food => normalize(food.name).includes(term));
 }

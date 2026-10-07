@@ -1,4 +1,4 @@
-import { dailyTotals, localDate } from './data.js?v=38';
+import { dailyTotals, localDate } from './data.js?v=40';
 
 const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 
@@ -32,4 +32,10 @@ export function exerciseHistory(sessions, name) {
     .filter(set => set.exerciseName === name)
     .map(set => ({ date: session.date, workout: session.workout, workoutName: session.workoutSnapshot?.name || `Buổi ${session.workout}`, ...set })))
     .sort((a, b) => b.date.localeCompare(a.date) || a.setNumber - b.setNumber);
+}
+
+export function exerciseHistoryPage(sessions, name, limit = 20) {
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new RangeError('History limit must be a positive safe integer');
+  const history = exerciseHistory(sessions, name);
+  return { items: history.slice(0, limit), total: history.length, hasMore: history.length > limit };
 }

@@ -1,5 +1,5 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=38';
-import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=38';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor } from './custom-workout.js?v=40';
+import { filterExercises, pickerOptions, createPickerSelection, compareExercises, rankedPickerResults } from './exercise-picker.js?v=40';
 
 export function createExercisePicker({ mode, catalog, day, slot, onConfirm, onClose, helpers, renderReview = null, contextText = null, liveReplace = false }) {
   const { node, button, field, panel, div, p, h2, h3 } = helpers;

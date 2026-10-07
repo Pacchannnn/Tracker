@@ -1,5 +1,5 @@
-import { ensureUnchanged } from './data.js?v=38';
-import { normalizeRecipeText,searchRecipes,recipeTagOptions,duplicateRecipeDefinition,recipeFormValues,cookingPreview,createRecipeDuplicateWriter } from './cookbook.js?v=38';
+import { ensureUnchanged } from './data.js?v=40';
+import { normalizeRecipeText,searchRecipes,recipeTagOptions,duplicateRecipeDefinition,recipeFormValues,cookingPreview,createRecipeDuplicateWriter } from './cookbook.js?v=40';
 
 export function createCookbookUI({main,getData,getLatest,write,acceptData,render,onDuplicateStart,clearPhotoUrls,helpers}) {
   const {node,button,field,panel,div,p,h2,h3,fmt,id,message}=helpers;

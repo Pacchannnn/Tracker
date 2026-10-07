@@ -1,8 +1,8 @@
-import { deriveMonthMemories, lifeReviewPeriod } from './life-review.js?v=38';
-import { resolveLifeSource } from './life-review-source.js?v=38';
-import { localDate, validDate } from './data.js?v=38';
-import { MOODS } from './journal.js?v=38';
-import { listPhotoMetadata, getPhotoThumbnail, getPhoto, PHOTO_CATEGORIES, PHOTO_POSES } from './photo-store.js?v=38';
+import { deriveMonthMemories, lifeReviewPeriod } from './life-review.js?v=40';
+import { resolveLifeSource } from './life-review-source.js?v=40';
+import { localDate, validDate } from './data.js?v=40';
+import { MOODS } from './journal.js?v=40';
+import { listPhotoMetadata, getPhotoThumbnail, getPhoto, PHOTO_CATEGORIES, PHOTO_POSES } from './photo-store.js?v=40';
 
 const LABELS = { journal: 'Nhật ký', mood: 'Tâm trạng', workout: 'Tập luyện', nutrition: 'Dinh dưỡng', cardio: 'Cardio', checkin: 'Check-in', knee: 'Gối', photos: 'Ảnh', photo: 'Ảnh' };
 const CHANGED = 'Bản ghi đã thay đổi hoặc không còn ở ngày này.';

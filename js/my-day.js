@@ -1,5 +1,5 @@
-import { validDate, localDate, dailyTotals } from './data.js?v=38';
-import { sessionTitle } from './custom-workout.js?v=38';
+import { validDate, localDate, dailyTotals } from './data.js?v=40';
+import { sessionTitle } from './custom-workout.js?v=40';
 
 export function shiftCalendarDate(date, delta) {
   if (!validDate(date) || !Number.isInteger(delta)) throw new Error('Ngày không hợp lệ.');

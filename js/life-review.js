@@ -1,7 +1,7 @@
-import { validDate, dailyTotals } from './data.js?v=38';
-import { MOODS } from './journal.js?v=38';
-import { validateSessionIdentity } from './session-identity.js?v=38';
-import { validateWorkoutSnapshot, sessionTitle } from './custom-workout.js?v=38';
+import { validDate, dailyTotals } from './data.js?v=40';
+import { MOODS } from './journal.js?v=40';
+import { validateSessionIdentity } from './session-identity.js?v=40';
+import { validateWorkoutSnapshot, sessionTitle } from './custom-workout.js?v=40';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = value => typeof value === 'string' && value.length > 0;

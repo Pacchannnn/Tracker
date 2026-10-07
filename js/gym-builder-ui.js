@@ -1,8 +1,8 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy } from './custom-workout.js?v=38';
-import { ensureUnchanged } from './data.js?v=38';
-import { filterExercises, addPickedExercises, replacePickedExercise } from './exercise-picker.js?v=38';
-import { createExercisePicker } from './exercise-picker-ui.js?v=38';
-import { reviewedBuilderDay } from './planning-draft.js?v=38';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy } from './custom-workout.js?v=40';
+import { ensureUnchanged } from './data.js?v=40';
+import { filterExercises, addPickedExercises, replacePickedExercise } from './exercise-picker.js?v=40';
+import { createExercisePicker } from './exercise-picker-ui.js?v=40';
+import { reviewedBuilderDay } from './planning-draft.js?v=40';
 
 export function createGymBuilder(context) {
   const { main, getData, mutate, render, show, startWorkout, helpers, drafts, draftStatus, recoveryCard } = context;

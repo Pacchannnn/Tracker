@@ -1,6 +1,6 @@
-import { dailyTotals, validateEntry, localDate } from './data.js?v=38';
-import { searchFoods } from './nutrition.js?v=38';
-import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=38';
+import { dailyTotals, validateEntry, localDate } from './data.js?v=40';
+import { searchFoods } from './nutrition.js?v=40';
+import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=40';
 
 const meals = ['Breakfast','Lunch','Snack','Dinner','Custom'];
 export function createNutritionBatchUI({ main, getData, getLatest, write, acceptData, render, onSaved, helpers }) {

@@ -1,29 +1,29 @@
-import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=38';
-import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=38';
-import { createDraftStore } from './planning-draft.js?v=38';
-import { navigationGroup } from './navigation.js?v=38';
-import { restSeconds } from './workout.js?v=38';
-import { weeklySummary, exerciseHistory } from './progress.js?v=38';
-import { recentFoods, searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=38';
-import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=38';
-import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=38';
-import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=38';
-import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=38';
-import { createGymBuilder } from './gym-builder-ui.js?v=38';
-import { createPlannerUI } from './planner-ui.js?v=38';
-import { createNutritionPhotos } from './nutrition-photo-ui.js?v=38';
-import { createSessionStore } from './session-runtime.js?v=38';
-import { runtimeView } from './session-readers.js?v=38';
-import { createSessionUI } from './session-ui.js?v=38';
-import { createMyDayUI } from './my-day-ui.js?v=38';
-import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=38';
-import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=38';
-import { createCookbookUI } from './cookbook-ui.js?v=38';
-import { recipeFormValues } from './cookbook.js?v=38';
-import { createLifeReviewUI } from './life-review-ui.js?v=38';
-import { createMonthMemoriesUI } from './month-memories-ui.js?v=38';
-import { readLifeData, resolveLifeSource } from './life-review-source.js?v=38';
-import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=38';
+import { PROGRAM, programDay, nextWorkout, weekGuidance } from './program.js?v=40';
+import { emptyData, loadData, updateData, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee, dailyTotals, localDate, weekStart, validDate, diaryDate, foodSnapshotForEntry, createBackup, parseBackup, ensureUnchanged, restoreBackupData } from './data.js?v=40';
+import { createDraftStore } from './planning-draft.js?v=40';
+import { navigationGroup } from './navigation.js?v=40';
+import { restSeconds } from './workout.js?v=40';
+import { weeklySummary, exerciseHistoryPage } from './progress.js?v=40';
+import { searchFoods, scaleRecipe, copyDayEntries, savedMealFromEntries, useSavedMeal, validateRecipe, recipeTotals } from './nutrition.js?v=40';
+import { MOODS, validateJournal, monthDays, recentJournalTags, toggleJournalTag, journalTagOptions } from './journal.js?v=40';
+import { PHOTO_CATEGORIES, PHOTO_POSES, validatePhotoMeta, validatePhotoFile, compressPhoto, listPhotos, putPhoto, updatePhotoIfUnchanged, deletePhotoIfUnchanged, deleteDailyPhotos, addMissingPhotos, orphanPhotoOwners } from './photo-store.js?v=40';
+import { createPhotoBackup, parsePhotoBackup } from './photo-backup.js?v=40';
+import { snapshotWorkout, sessionTitle, nextPlanDay } from './custom-workout.js?v=40';
+import { createGymBuilder } from './gym-builder-ui.js?v=40';
+import { createPlannerUI } from './planner-ui.js?v=40';
+import { createNutritionPhotos } from './nutrition-photo-ui.js?v=40';
+import { createSessionStore } from './session-runtime.js?v=40';
+import { runtimeView } from './session-readers.js?v=40';
+import { createSessionUI } from './session-ui.js?v=40';
+import { createMyDayUI } from './my-day-ui.js?v=40';
+import { createJournalRetrievalUI } from './journal-retrieval-ui.js?v=40';
+import { createNutritionBatchUI } from './nutrition-batch-ui.js?v=40';
+import { createCookbookUI } from './cookbook-ui.js?v=40';
+import { recipeFormValues } from './cookbook.js?v=40';
+import { createLifeReviewUI } from './life-review-ui.js?v=40';
+import { createMonthMemoriesUI } from './month-memories-ui.js?v=40';
+import { readLifeData, resolveLifeSource } from './life-review-source.js?v=40';
+import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=40';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -634,18 +634,22 @@ function renderFoodLibrary() {
   });
   box.append(form);
   const search = field('Tìm thực phẩm', 'foodSearch');
+  const searchInput = search.querySelector('input');
+  searchInput.type = 'search';
+  const clear = button('Xóa tìm kiếm thực phẩm', () => { searchInput.value = ''; updateResults(); searchInput.focus(); });
   const results = div('food-results');
   const updateResults = () => {
     results.replaceChildren();
-    const query = search.querySelector('input').value.trim().toLocaleLowerCase('vi');
-    const foods = recentFoods(data.foods, data.entries).filter(food => food.name.toLocaleLowerCase('vi').includes(query));
+    const query = searchInput.value;
+    const foods = searchFoods(data.foods, data.entries, query);
+    clear.disabled = !query;
     if (!foods.length) results.append(p(query ? 'Không tìm thấy thực phẩm phù hợp.' : 'Chưa có món nào. Nhập macro từ nhãn thực phẩm để bắt đầu.', 'empty'));
     for (const food of foods) results.append(div('list-card', h3(food.name), nutritionPhoto('food', food.id, food.name), p(`${food.serving} · ${fmt(food.calories)} kcal · P ${fmt(food.protein)} · C ${fmt(food.carbs)} · F ${fmt(food.fat)}`, 'summary'), food.notes ? p(food.notes, 'hint') : document.createTextNode(''), div('actions', button('Sửa', () => { editingFood = food.id; render(); }), button('Xóa', () => {
       confirmAction(`Xóa món ${food.name} khỏi thư viện? Các bữa đã ghi giữ nguyên; ảnh còn trong Nhật ký & Ảnh để bạn tự quản lý.`, () => mutate(next => { ensureUnchanged(next.foods.find(item => item.id === food.id), food); next.foods = next.foods.filter(item => item.id !== food.id); }, 'Đã xóa món khỏi thư viện.'));
     }, 'danger'))));
   };
-  search.querySelector('input').addEventListener('input', updateResults);
-  box.append(search, results);
+  searchInput.addEventListener('input', updateResults);
+  box.append(search, div('actions', clear), results);
   updateResults();
   main.append(box);
 }
@@ -1175,8 +1179,21 @@ function progressOverview() {
     const selector = field('Chọn bài', 'exercise', selectedExercise, { tag: 'select', choices: names });
     selector.querySelector('select').addEventListener('change', event => { selectedExercise = event.target.value; render(); });
     exerciseBox.append(selector);
-    const history = exerciseHistory(data.sessions, selectedExercise);
-    for (const set of history.slice(0, 20)) exerciseBox.append(div('list-card', p(`${set.date} · ${set.workoutName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'summary')));
+    let limit = 20;
+    const status = p('', 'hint exercise-history-status'); status.setAttribute('role', 'status');
+    const rows = div('exercise-history-rows'), controls = div('actions');
+    function updateHistory(focusIndex = null) {
+      const page = exerciseHistoryPage(data.sessions, selectedExercise, limit);
+      rows.replaceChildren(); controls.replaceChildren();
+      status.textContent = `Hiển thị ${page.items.length}/${page.total} hiệp`;
+      for (const set of page.items) {
+        const row = div('list-card', p(`${set.date} · ${set.workoutName} · Hiệp ${set.setNumber}: ${fmt(set.weight)} ${set.unit || 'kg'} × ${set.reps} · RIR ${fmt(set.rir)}`, 'summary'));
+        row.dataset.setId = set.id; row.setAttribute('tabindex', '-1'); rows.append(row);
+      }
+      if (page.hasMore) controls.append(button('Xem thêm', () => { const previousCount = page.items.length; limit += 20; updateHistory(previousCount); }));
+      if (focusIndex !== null && rows.children[focusIndex]) { rows.children[focusIndex].focus({ preventScroll: true }); rows.children[focusIndex].scrollIntoView({ block: 'center' }); }
+    }
+    exerciseBox.append(status, rows, controls); updateHistory();
   }
   main.append(exerciseBox);
 }
