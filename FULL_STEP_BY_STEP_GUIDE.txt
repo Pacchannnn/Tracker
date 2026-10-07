@@ -1,20 +1,24 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-08 (Phase8B-1 complete; STOP after8B-1)
+Updated: 2026-10-08 (Phase8B-2 verified local scope complete; STOP after8B-2)
 
 CURRENT PROJECT STATE
-Phase1-7 and8B-1 IMPLEMENTED / TESTED in local scope;8A DESIGN / RESEARCH ONLY.
-412 tests /71 recursive syntax checks; schema8 unchanged. FullPhase8 incomplete.
-CURRENT PHASE:8B-1. CURRENT STEP:handoff; STOP after8B-1, no8B-2.
-COMPLETED: name-only Food Library search uses shared normalization, explicit Clear;
-exercise-history saved SET rows20→40→60→remaining/count/reset/focus; independent
-reviews, zero-write/browser/mobile/keyboard/backup and full regression.
+Phase1-7,8B-1,8B-2 IMPLEMENTED / TESTED in verified local scope;8A DESIGN / RESEARCH ONLY.
+439 tests /74 recursive syntax checks; schema8 unchanged. FullPhase8 incomplete.
+CURRENT PHASE:8B-2. CURRENT STEP:handoff; STOP after8B-2.
+COMPLETED: controlled blocked photo opens/late connection cleanup; failed backup
+preparation preserves previous links;27new tests/all412old retained;60responsive
+cases at6widths; native IAB download/filechooser paired restore/reload/exact bytes;
+workflow/zero-write/failure evidence, independent code review and three readiness docs.
 IN PROGRESS:none. BLOCKERS:none. KNOWN BUGS:no material remaining finding.
-NEXT:STOP after8B-1; separate user specification required for next milestone.
-DECISIONS NEEDED:which next scope, if any, to approve; E1/E2 remain unapproved.
+NEXT:manual device checklist, then user chooses any further scope; no new experiment.
+DECISIONS NEEDED:device availability and secure disposable transport; E1/E2 unapproved.
 BACKLOG:ranking/highlights/pins, associations, PWA/notifications, sync/backend/AI
 remain proposals. None is automatically approved by this release.
 Model:current coding model; reasoning high for contracts/domain tests,
 medium for documentation. Evidence and limitations:V4_IMPLEMENTATION_REPORT.md.
+8B-2 code checkpoint2e4dfc7; docs checkpoint separate. Real devices, Safari/Gecko,
+native quota/crash/private/OOM/virtualkeyboard/notch remain NOT VERIFIED.
+JSON8/photo1 formats, IDBv1 and non-atomic two-file restore semantics unchanged.
 Live Add/Remove/Reorder/Replace, canonical ownership and guarded history.
 Current handoff below; earlier dated CURRENT STATUS sections are historical.
 Existing Vanilla JavaScript app, HTML/CSS paper design; V2 journal/nutrition/
@@ -22,7 +26,19 @@ photos remain. One localStorage object, schema 8; IndexedDB photo store v1.
 Original MASTER_PLAN.md is private and unchanged. No remote API/backend/login.
 Work is on main, local checkpoints only; no automatic GitHub push.
 
-PHASE8B-1 COMPLETED STEPS (dependency1→2→3→4)
+PHASE8B-2 COMPLETED STEPS (dependency1→2→3→4)
+[DONE]1. Baseline412/71/c3eb5c3 clean; storage/backup/source audit.
+[DONE]2. RED→GREEN2photo-open +11download/capability +14integrity tests;
+  only two app modules changed, no schema/format/restoresemantic/dependency change.
+[DONE]3. Full439/74syntax; IAB8794/8795 workflows,216session/4photo backup,
+  completed files verified on disk; confirm preview→restore→reload/exactbytes;
+  32photos8.9MB Node transport test;60six-width cases and0writes readonly.
+[DONE]4. Code2e4dfc7/docs checkpoint, matrix/backup/manual checklist/report;
+  gates PASS for measured scope, cross-platform device certification NOT VERIFIED.
+  Model:current coding model/high for tests and review, medium for documentation.
+  No new feature, PWA/backend/cloud/auth/AI, E1/E2 or GitHub push. STOP8B-2.
+
+HISTORICAL PHASE8B-1 COMPLETED STEPS (dependency1→2→3→4)
 [DONE]1. Baseline388/69/eab9cd9 clean; inspect exact name/group/order contracts.
   RED→11food +13paging tests GREEN; reuse searchFoods/exerciseHistory, no schema.
 [DONE]2. Food Library calls shared helper/Clear. History closure starts20 and

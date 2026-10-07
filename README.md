@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase8B-1 Food Search / History Paging IMPLEMENTED / TESTED · 412 tests.** Tải lại mọi tab để nhận module `v=40`, stylesheet `v=39`. Weekly/Monthly và Phase1–7 giữ nguyên; toàn bộ Phase8 chưa hoàn tất. Xem [báo cáo hiện tại và lịch sử](V4_IMPLEMENTATION_REPORT.md). Dừng sau8B-1, chưa8B-2.
+**Hiện tại: schema8 · Phase8B-2 compatibility / backup IMPLEMENTED / TESTED trong phạm vi local đã xác minh · 439 tests.** Tải lại tab đang dùng sau khi cập nhật; module `v=40`, stylesheet `v=39` giữ nguyên. Link backup cũ được giữ nếu chuẩn bị file mới lỗi; xử lý lỗi mở kho ảnh đã bổ sung. Thiết bị thật/Safari/Firefox chưa xác minh; toàn bộ Phase8 chưa hoàn tất. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md), [matrix](PHASE8B2_COMPATIBILITY_MATRIX.md), [backup evidence](PHASE8B2_BACKUP_VERIFICATION.md), [checklist thiết bị](PHASE8B2_MANUAL_DEVICE_CHECKLIST.md). Dừng sau8B-2, không push.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 

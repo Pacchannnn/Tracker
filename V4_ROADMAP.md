@@ -8,6 +8,27 @@
 
 ## Trạng thái và quy ước
 
+### Phase8B-2 — 08/10/2026 (IMPLEMENTED / TESTED · verified local scope only)
+
+Baseline main c3eb5c3 clean; code6dea230; fresh412/412 tests,71syntax;schema8.
+1. [DONE] Baseline/source/backup/storage audit; separate automated/engine/device evidence.
+2. [DONE] Focused RED→GREEN blocked-open/late-close and failed export URL fixes;
+   27new tests, all412old tests retained:439/439;74syntax;diff/review PASS.
+3. [DONE] Disposable origins8794/8795,60 total cases (10 screens × 6 widths), native download/filechooser
+   restore/reload/exactJSON+photo bytes, repeat import, UI and zero-write evidence.
+4. [DONE] Compatibility matrix, backup evidence, manual device checklist, report/guide.
+   Code2e4dfc7; docs checkpoint separate. Main-only, local commits, no push.
+Only reproduced bounded fixes; no schema/format/restore semantics/dependency changes.
+Real devices NOT VERIFIED. STOP after8B-2; E1/E2/PWA/cloud/AI excluded; no push.
+CURRENT STEP:handoff. IN PROGRESS:none. NEXT:manual device checklist only.
+BLOCKERS:none for completed local scope; Safari/Gecko/real-device surfaces unavailable.
+KNOWN LIMITS:browser eviction, native quota/crash/private/OOM/safe-area/keyboard pending;
+two-file restore remains non-atomic, photo ID collisions skip. FullPhase8 incomplete.
+DECISIONS NEEDED:devices and secure disposable transport for manual tests, no deployment
+automatically approved. Model:current coding model/high for tests; medium for docs.
+Evidence:PHASE8B2_COMPATIBILITY_MATRIX.md,PHASE8B2_BACKUP_VERIFICATION.md,
+PHASE8B2_MANUAL_DEVICE_CHECKLIST.md. Earlier STOPs below are historical boundaries.
+
 ### Phase8B-1 — 08/10/2026 (IMPLEMENTED / TESTED)
 
 Strict user authorization: Food Library search + exercise-history paging only.

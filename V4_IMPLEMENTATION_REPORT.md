@@ -1,4 +1,70 @@
-# Tracker V4 — Phase8B-1 Food Library search / exercise-history paging
+# Tracker V4 — Phase8B-2 compatibility / backup reliability
+
+08/10/2026 · **IMPLEMENTED / TESTED only in verified local scope.**
+Real devices and target browser products **NOT VERIFIED**; fullPhase8 incomplete.
+Schema8→8; modules40/styles39; IDB1/photoformat1; code **2e4dfc7** on main,
+separate docs checkpoint. No push. **STOP8B-2**, no next experiment/architecture.
+
+## Phase8B-2 final report — 20 requested items
+
+1. **Baseline/finaltests:** clean mainc3eb5c3/code6dea230,412/412 before changes.
+   Fresh final439/439,0fail/cancel/skip/todo; all412old files/assertions unchanged.
+   Added27tests (14backup integrity,11download/capability,2photo-open lifecycle).
+2. **Syntax:**71→74recursive js/tests files,74/74`node --check`;diff check PASS.
+3. **Schema:**8unchanged. Same key, DBv1, JSON8/photo1; no migration/newstate.
+4. **Files:** code only js/app.js,js/photo-store.js;3new tests/backup-compatibility,
+   backup-download,photo-open-compatibility.test.js.3new PHASE8B2 documents;
+   updated report,roadmap,README,guide. No package/data/backupformat/sourceplan edits.
+5. **Matrix:** all14target OS/product rows NOT VERIFIED; managedIAB reported
+   Win32/Chrome155 tested separately. Node/fakeIDB, browser and physical separated.
+6. **Reproducedbugs:** controlled blocked write stayed pending; blocked read
+   leaked late success. Failed JSON/file-URL preparation revoked old backup too
+   soon; photo new-URL failure same issue. Native blocked upgrades not reproduced.
+7. **Fixes:** blocked request rejection/upgradeabort/lateclose; create replacement
+   URL before revoke. RED evidence before fixes; full/focused/browser GREEN.
+8. **JSONbackup:** actualtop-leveldownload→savedD:file440619bytes→stat/read/parse;
+   full sourceJSON216sessions/216sets and all otherdomains equal, not counts only.
+9. **Photobackup:** actualfile8297bytes;format1,4IDs/owners,5224binarybytes;
+   eightoriginal+thumbs equal realJPEGfixture.32photo Node8,912,896bytes test too.
+10. **Restoreintegrity:** nativeFileChooser downloadedfiles on fresh8795;
+    acknowledged JSON then explicitphotos; fullJSON/IDs/snapshots/metadata/exact
+    Uint8Array comparisons; reload equal; repeatedphoto0add/4skip.8765untouched.
+11. **Failure/recovery:** invalid/stale/duplicate/orphan/collision/quota/storage
+    denied/missinglocks/IDB,photoabort tests; corruptpreview/URLfailure browser;
+    oldlinks stayreadable thenreplacementrevokes. JSON+photos NOT atomic.
+12. **Storage:** writesrequireWebLocks/secure context, no unlockedfallback;
+    IDB/file/Blob/URL/clipboardcapabilities/errorhandling covered by stated tests.
+    Browsereviction/clearstorage/private/quota limits not a durability guarantee.
+13. **Browser:** IAB8794/8795 only; Gymresume/log/timer/Add/Replace/Remove/Complete/
+    Start/reload; nutritionbatch/recipe/Cooking; journalmood/tag/search/photo;
+    Weekly/MyDay/Monthlysources/history; preview/export/restore. No consoleerrors.
+    Iframe download not confirmed; top-level actualdownloads successful.
+14. **Responsive/keyboard:**60 total cases (10 screens × 6 widths):320/360/390/768/1024/1440;
+    client=scroll305/345/375/753/1009/1425, no horizontal controlclipping;
+    mobilenavinsideviewport. EnterSave/tag/More/CookingReturn; readonlyJSON/meta/
+    bytes equal,0Storage/0IDBwrites. Touch/softkeyboard/safearea/rotation pending.
+15. **Real-devicecompleted:**none. UA/width/Node results never markedphysicalPASS.
+16. **Pending:**iOS/iPadSafari/Chrome,AndroidChrome/Firefox,WindowsChrome/Edge/
+    Firefox,macSafari/Chrome/Firefox,LinuxChromium/Chrome/Firefox; manualchecklist.
+17. **Risks:**twofilepartialoutcome,collision skip,fullbase64/string memory,
+    eviction,actualprivate/quota/crash behavior; near200MB/OOM/nativependingreload
+    not verified. No unapproved persistent workaround or architecture added.
+18. **Git:** localmain code2e4dfc7,docs checkpoint separate; verify clean status
+    after docs commit. No fetch/push/remote changes; ignoredQA files stayprivate.
+19. **Gates:** existingtests/schema/identity/fixtures/bytes/failures/honestmatrix/
+    measuredresponsive/no realdestructivetest/no persistencechange/no push PASS
+    in verifiedscope. Fulltarget/device readiness NOT VERIFIED, not fullPASS.
+20. **Next:** manualdevicechecklist on separate secure fixture environments;
+    user selects devices/transport. STOP after8B-2; no8B-3/E1/E2/PWA/AI/cloud.
+
+Full evidence: [matrix](PHASE8B2_COMPATIBILITY_MATRIX.md),
+[backup verification](PHASE8B2_BACKUP_VERIFICATION.md),
+[manual checklist](PHASE8B2_MANUAL_DEVICE_CHECKLIST.md).
+Earlier dated handoffs/STOP instructions below are historical boundaries.
+
+---
+
+# Historical Phase8B-1 Food Library search / exercise-history paging
 
 08/10/2026 · **Phase8B-1 IMPLEMENTED / TESTED in verified local scope.** Phase8A remains DESIGN / RESEARCH ONLY; all Phase8 is not complete. User authorized only these two polish changes. Schema8→8, photo DB1/format1, module URLs40/styles39. Code **6dea230** on main; separate docs checkpoint follows. No push. **STOP8B-1, no8B-2/E1/E2/PWA/AI or other experiment.** Older reports below are historical.
 
