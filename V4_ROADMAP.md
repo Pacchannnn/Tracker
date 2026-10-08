@@ -8,6 +8,33 @@
 
 ## Trạng thái và quy ước
 
+### Phase9B-1 — 08/10/2026 (IMPLEMENTED / VERIFIED LOCAL ONLY; STOP)
+
+Baseline clean main541162b,439tests/74syntax; schema8/photoDB1/backup8+1 unchanged.
+Approved scope completed: native Node explicit allowlist packaging into dist,
+minimal static Vercel config, fourteen focused packaging tests and disposable QA.
+Runtime UI/source/assets and existing assertions unchanged; no dependency added.
+
+- [DONE] RED/GREEN packaging tests, junction/hardlink guards, secret redaction,
+  exact graph/inventory/byte checks, unknown output retained rather than deleted.
+- [DONE]39 files/664470bytes,453/453tests,76/76syntax; build/check/diff pass.
+- [DONE]8800/8801 synthetic browser: six views + Weekly/Monthly,24 checks at
+  320/360/390, keyboard/focus, reload/log/history, paired backup deep equality.
+- [DONE] Read-only JSON/photo state equal; old216sessions preserved after one
+  synthetic new session; restored JSON and4photos/5224binarybytes match.
+- [DONE] Readiness/inventory/local-QA docs and reproducible README commands.
+
+Acceptance PASS only for this local scope. No deployment, push, user-origin8765
+operation or cloud setup. Vercel production/HTTPS/cache and physical devices
+NOT VERIFIED; network audit is source/DOM based, not a complete browser trace.
+See PHASE9B1_DEPLOYMENT_READINESS.md, PHASE9B1_ARTIFACT_INVENTORY.md and
+PHASE9B1_LOCAL_QA.md for gates/limitations. Phase9A documents remain historical
+design proposals; their NOT STARTED wording records that earlier milestone.
+
+**NEXT:** separate approval for9B-2 Auth foundation and its provider/privacy,
+credential/OTP/SMTP/test-environment/cost gates. Static deployment also requires
+explicit approval. No9B-2 implementation authorized here. STOP AFTER9B-1.
+
 ### Phase9A — 08/10/2026 (DESIGN / RESEARCH ONLY)
 
 Baseline verified trước tài liệu: clean main `93befc1`, code `2e4dfc7`;

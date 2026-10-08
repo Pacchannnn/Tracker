@@ -1,4 +1,5 @@
 node_modules/
+dist/
 vshape-backup-*.json
 tracker-backup-*.json
 tracker-photos-*.json

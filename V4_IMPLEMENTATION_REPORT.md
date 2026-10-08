@@ -1,3 +1,47 @@
+# Tracker V4 — Phase9B-1 static deployment readiness
+
+08/10/2026 · **IMPLEMENTED / VERIFIED LOCAL ONLY. STOP AFTER9B-1.**
+
+Verified baseline: clean main541162b;439/439tests,74syntax; schema8/photoDB1,
+JSONbackup8/photoformat1. No material mismatch. Read Phase9A design documents,
+roadmap/report/data model and inspected runtime/tests/assets before packaging.
+
+**Built:** scripts/static-package.js native fs/path/crypto allowlist, dist ignore,
+npm build/check commands, minimal vercel.json with static dist output and no-cache.
+No runtime source/UI/definition/data-format change, dependency or package-lock edit.
+Source/output links, unknown files, missing/tampered assets, unsafe config/imports,
+known-secret/remote URL/source-map content fail closed. No recursive output deletion.
+Fourteen packaging tests retain every439 existing test/assertion. Initial missing
+implementation, hardlink overwrite and hyphenated-key regressions were RED before
+fixes. Full final453/453tests,76/76syntax; build/check/diff pass.
+
+**Artifact:**39 files/664470bytes, all byte-identical; HTML1/CSS1/JS35/font1/OFL1.
+No env/Git/private documents/tests/backup/node_modules. Public workout definitions
+in existing JS remain visible. Bounded heuristic scan is not general secret/AST
+certification. All39 HTTP paths200 with matching hashes; nine excluded paths404;
+versioned module/CSS paths200. No provider/GitHub/remote data operation.
+
+**Browser:** only dist at disposable8800/8801 with synthetic files. Six areas plus
+Weekly/Monthly at320/360/390:24 no-overflow checks; desktop1440, keyboard Enter/
+Tab/Shift+Tab focus; source-relative modules/font/photo display, empty console
+error/warn capture. Read-only before/after navigation+reload full exported data
+equal; one20kg×10/RIR2 set reloads/completes into history. Old216sessions remain
+equal;217 after completion. Paired real-download/restore at fresh8801 preserves
+all JSON fields, four photo records/metadata and5224decodedbinarybytes. Evidence
+is synthetic and ignored in .local;8765 untouched. No instrumented write-counter
+or complete network trace: DOM/source audit only. QA transport/selector/capability
+inspection limitations are recorded honestly in the detailed QA document.
+
+**Deliverables:** PHASE9B1_DEPLOYMENT_READINESS.md, PHASE9B1_ARTIFACT_INVENTORY.md,
+PHASE9B1_LOCAL_QA.md; roadmap and README updated. Local gates PASS; Vercel
+production/build/CDN/HTTPS headers and real-device Safari/Firefox NOT VERIFIED.
+No SW/PWA, Auth, cloud, schema migration, deployment, push or9B-2 begun.
+Next: separately approved9B-2 Auth foundation/provider/privacy/OTP/SMTP/credential
+and cost gates; static deployment itself needs explicit approval. Local checkpoint
+recorded in Git log. Historical implementation reports follow unchanged.
+
+---
+
 # Tracker V4 — Phase9A cloud / cross-device architecture
 
 08/10/2026 · **DESIGN / RESEARCH ONLY. NO CLOUD IMPLEMENTATION. STOP AFTER9A.**

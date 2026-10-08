@@ -1,6 +1,6 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase8B-2 compatibility / backup IMPLEMENTED / TESTED trong phạm vi local đã xác minh · 439 tests.** Tải lại tab đang dùng sau khi cập nhật; module `v=40`, stylesheet `v=39` giữ nguyên. Link backup cũ được giữ nếu chuẩn bị file mới lỗi; xử lý lỗi mở kho ảnh đã bổ sung. Thiết bị thật/Safari/Firefox chưa xác minh; toàn bộ Phase8 chưa hoàn tất. Xem [báo cáo](V4_IMPLEMENTATION_REPORT.md), [matrix](PHASE8B2_COMPATIBILITY_MATRIX.md), [backup evidence](PHASE8B2_BACKUP_VERIFICATION.md), [checklist thiết bị](PHASE8B2_MANUAL_DEVICE_CHECKLIST.md). Dừng sau8B-2, không push.
+**Hiện tại: schema8 · Phase9B-1 static packaging IMPLEMENTED / VERIFIED LOCAL ONLY · 453 tests /76 syntax checks.** UI/runtime, module `v=40`, stylesheet `v=39`, JSONbackup8/photo backup1 giữ nguyên. Chưa deploy Vercel, Auth/cloud/sync/PWA hay push. Production và thiết bị thật/Safari/Firefox chưa xác minh. Xem [readiness](PHASE9B1_DEPLOYMENT_READINESS.md), [artifact inventory](PHASE9B1_ARTIFACT_INVENTORY.md), [local QA](PHASE9B1_LOCAL_QA.md), [báo cáo](V4_IMPLEMENTATION_REPORT.md) và [checklist thiết bị](PHASE8B2_MANUAL_DEVICE_CHECKLIST.md). Dừng sau9B-1.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
 
@@ -15,6 +15,29 @@ python -m http.server 8765 --bind 127.0.0.1
 Mở `http://127.0.0.1:8765/` trên **cùng máy**. Dùng cùng địa chỉ, cổng và browser profile cho các lần sau vì `localStorage` gắn với origin. Để mở trên điện thoại riêng cần một phương án phục vụ và bảo vệ dữ liệu khác; bản này chưa đồng bộ thiết bị.
 
 Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện cũ, hãy **tải lại chính tab đó** bằng nút Reload của trình duyệt. Kiểm tra tiêu đề trang là **Tracker**. Đừng đổi cổng hoặc địa chỉ để tránh nhìn sang một kho `localStorage` khác.
+
+## Đóng gói static — local preview
+
+Từ thư mục Tracker, dùng Node (đã kiểm tra24.19.0) và Python:
+
+```powershell
+npm run build
+npm run check:artifact
+python -m http.server 8800 --bind 127.0.0.1 --directory dist
+```
+
+Mở `http://127.0.0.1:8800/`. Lệnh chỉ phục vụ **dist**, gồm39 file runtime
+được allowlist; không phục vụ repo/private documents/backup. Output dự kiến cho
+Vercel là **dist**; cấu hình chỉ được chuẩn bị, chưa triển khai. Không cần cài
+dependency cho packaging; test suite vẫn dùng devDependency hiện có.
+`node scripts/static-package.js --inventory` in path/bytes/SHA256. Nếu dist có
+file lạ, build dừng và giữ file đó để kiểm tra, không tự xóa.
+
+8800 là origin khác8765: dữ liệu cũ không tự xuất hiện. Giữ8765 cho dữ liệu đang
+dùng; preview nên dùng fixtures, không khôi phục phá hủy dữ liệu thật. Vercel sau
+này cũng là origin mới. Hai file backup dữ liệu/ảnh vẫn riêng tư; không đưa chúng
+vào dist/GitHub. Không mở index bằng file://; dùng server cho ES modules/storage.
+Tắt server preview bằng Ctrl+C khi xong. Phase9B-2 và deployment cần duyệt riêng.
 
 ## Dùng nhanh
 

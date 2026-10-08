@@ -2,7 +2,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "build": "node scripts/static-package.js",
+    "check:artifact": "node scripts/static-package.js --check"
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.5"
