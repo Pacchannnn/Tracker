@@ -1,4 +1,71 @@
-# Tracker V4 — Phase8B-2 compatibility / backup reliability
+# Tracker V4 — Phase9A cloud / cross-device architecture
+
+08/10/2026 · **DESIGN / RESEARCH ONLY. NO CLOUD IMPLEMENTATION. STOP AFTER9A.**
+
+## Phase9A handoff — 16 requested items
+
+1. **Architecture:** giữ Vanilla UI/domain modules; đề xuất Vercel static,
+   Supabase Auth/PostgreSQL/private Storage, future sync gateway và persistence
+   adapter. Đây là recommendation có điều kiện, chưa provider/architecture approval.
+2. **Model:** schema8 payloads trong aggregate JSONB + relational ownership,
+   revisions, receipts, version feed, photo staging. Session slots/sets/history
+   cùng aggregate; no FK cascade food/plan vào snapshots. Device-specific drafts.
+3. **Protocol:** server CAS, per-user transaction head sequence, incremental
+   complete commit groups, stable snapshotH, immutable operation IDs/dependencies,
+   durable local state+outbox transaction. Không queue riêng cạnh localStorage.
+4. **Conflicts:** matrix8cases, preserve base/local/remote, explicit review;
+   independent new keys mới có safe merge. Không LWW, auto set merge hoặc
+   resurrect history/food/photo từ stale edit. History correction vẫn phải source CAS.
+5. **Security/privacy:** numericOTP cấu hình, signup disabled single-user,
+   verified UID/RLS/private DB helpers, restricted backend role, private bucket;
+   env/account isolation, no frontend secret. Không E2EE; admin/provider có thể đọc.
+6. **Offline:** future foreground queue/retry/reauth/account epoch; current
+   local tests không chứng minh cloud durability hoặc cold launch offline.
+   Chưa SW/PWA; physical Safari/Gecko/devices NOT VERIFIED.
+7. **Photos:** giữ compressed JPEG+thumbnail bytes/metadata/owners; private
+   immutable asset paths, staged upload/hash verification/finalizeCAS, on-demand
+   downloads. JSON/object storage không atomic; no auto orphan GC hoặc overwrite.
+8. **Migration:** hai files backup thực lưu→preview→confirm→idempotent ledger→
+   fresh workspace compare full JSON/IDs/snapshots/order/exactbytes. Localhost
+   khác Vercel origin. Nonempty cloud/collisions review, original giữ cho rollback;
+   partial import không tự xóa dữ liệu máy khác. Chưa migrate/restore real origin.
+9. **Cost/risk:** official pricing verified08/10/2026; Free để synthetic prototype,
+   Pro từ$25/tháng, VercelHobby$0 nếu đủ personal/non-commercial conditions.
+   100/1,000/5,000photo assumptions/costs/DBversions/egress/API sizing documented;
+   không measured user usage. Photo backup200MB và data10MB là release gates:
+   existing formats không đủ full account backup kho lớn hoặc mọi device drafts.
+10. **Alternatives:** reject wholeJSON LWW/directclientwrites; wholeJSON CAS
+    viable manual fallback; defer fully normalized slots/sets/CRDT/self-hosted
+    Flask/Firebase khi chưa có benefit đủ rõ. Không rebuild app.
+11. **Decisions:** D1–D10 provider/region/email/SMTP/budget/plaintext consent,
+    transactional accountIDB/gatewayrole, draft/review UX, photo cache/retention,
+    independentbackup completeness, logout/device revocation, offline shell/release.
+12. **Roadmap:**9B-1 readinesslocal→auth→schema/RLS→read-only→writes→conflicts→
+    photos→migrationrehearsal→realdevices→production. Mỗi phase scope/deps/risks/
+    tests/rollback/STOP. Tất cả NOT STARTED / NOT APPROVED; riêngrealimport/deploy
+    cần explicit approval. Không E1/E2/AI/PWA implementation.
+13. **Files:** tạo5PHASE9A Markdown theo spec; update chỉ V4_ROADMAP.md và
+    report này. Không README/guide/DATA_MODEL/code/tests/package/master edits.
+14. **Git:** baseline main clean93befc1/code2e4dfc7; local-only documentation
+    changes/checkpoint được báo sau final checks. Không fetch/push/reset/newbranch.
+15. **Verified baseline/tests:** fresh439/439,0fail/cancel/skip/todo và74/74syntax;
+    ignored `.local/phase9a-baseline.txt`. Không tests mới/sửa assertions; appcode,
+    schema8/photoDB1/backup8+1/dependencies/master unchanged. Không runtime/device
+    hoặc cloud tests mới; future gates không được coi là đã chạy.
+16. **Exact next:** Phase9B-1 Deployment readiness **LOCAL ONLY**, cần duyệt
+    riêng; không Vercel deployment, Supabase project/account/keys/data upload.
+    **STOP AFTER9A.** No automatic continuation into9B.
+
+Full proposals/evidence: [architecture](PHASE9A_ARCHITECTURE_DECISION.md),
+[sync contract](PHASE9A_SYNC_CONTRACT.md), [cloud model](PHASE9A_CLOUD_DATA_MODEL.md),
+[security/privacy](PHASE9A_SECURITY_PRIVACY.md), [future roadmap](PHASE9A_IMPLEMENTATION_ROADMAP.md).
+Pricing/security citations nằm sát claims trong các deliverables; estimates ghi
+explicit assumptions. Baseline khớp, không discrepancy cần pause.
+Earlier reports/STOPs below are historical evidence, not current approval gates.
+
+---
+
+# Historical Tracker V4 — Phase8B-2 compatibility / backup reliability
 
 08/10/2026 · **IMPLEMENTED / TESTED only in verified local scope.**
 Real devices and target browser products **NOT VERIFIED**; fullPhase8 incomplete.

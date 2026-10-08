@@ -8,6 +8,41 @@
 
 ## Trạng thái và quy ước
 
+### Phase9A — 08/10/2026 (DESIGN / RESEARCH ONLY)
+
+Baseline verified trước tài liệu: clean main `93befc1`, code `2e4dfc7`;
+fresh439/439 tests,74/74 syntax; schema8, photoDB1, JSONbackup8/photoformat1.
+Không có khác biệt đáng kể với baseline user đưa.
+
+1. [DONE] Audit source/storage/snapshots/drafts/backup và tài liệu liên quan;
+   tách VERIFIED local contracts khỏi PROPOSED cloud và NOT VERIFIED devices.
+2. [DONE] Official research: Vercel/Supabase pricing, Auth/SMTP/RLS/private
+   Storage, Edge limits, PostgreSQL ordering, browser transaction/origin/eviction.
+3. [DONE] Năm design deliverables: architecture, sync contract, cloud data model,
+   security/privacy/photo/migration và implementation roadmap.
+4. [DONE] Ghi decisions/approval gates; update report/roadmap DESIGN ONLY.
+
+Recommendation có điều kiện: Vanilla UI + Vercel static + Supabase Auth/PG/private
+Storage; aggregate JSONB CAS, server-authoritative commit groups, receipts,
+account-scoped transactional IDB/outbox. Persistence boundary và trusted gateway
+là proposals cần duyệt, không phải app hiện có. Không LWW hoặc auto import.
+
+CURRENT PHASE:9A DESIGN / RESEARCH ONLY. CURRENT STEP:design handoff.
+IN PROGRESS:none after handoff. NEXT PROPOSED:9B-1 Deployment readiness,
+LOCAL ONLY; cần approval riêng. 9B-1…9B-10 NOT STARTED / NOT APPROVED.
+BLOCKERS:none for9A; future gates: provider/privacy/region/budget/SMTP,
+account storage/outbox/gateway, conflicts/drafts, retention/offline shell,
+independent backup vượt caps và devices thật. KNOWN LIMITS:photo backup200MB,
+JSONdata10MB; one selected draft/device export không chứa tất cả cloud drafts;
+browser eviction, PG/object storage không atomic, cloud không E2EE.
+
+App/tests/schema/photoDB/backup formats/dependencies/master/user data unchanged.
+Không project creation/credentials/deploy/upload/migration/SW/PWA/AI/E1/E2/push.
+Evidence/proposals: PHASE9A_ARCHITECTURE_DECISION.md, PHASE9A_SYNC_CONTRACT.md,
+PHASE9A_CLOUD_DATA_MODEL.md, PHASE9A_SECURITY_PRIVACY.md,
+PHASE9A_IMPLEMENTATION_ROADMAP.md. **STOP AFTER9A.**
+Earlier dated STOPs below remain historical boundaries.
+
 ### Phase8B-2 — 08/10/2026 (IMPLEMENTED / TESTED · verified local scope only)
 
 Baseline main c3eb5c3 clean; code6dea230; fresh412/412 tests,71syntax;schema8.
