@@ -1,8 +1,23 @@
 # Tracker
 
-**Hiện tại: schema8 · Phase9B-1 static packaging IMPLEMENTED / VERIFIED LOCAL ONLY · 453 tests /76 syntax checks.** UI/runtime, module `v=40`, stylesheet `v=39`, JSONbackup8/photo backup1 giữ nguyên. Chưa deploy Vercel, Auth/cloud/sync/PWA hay push. Production và thiết bị thật/Safari/Firefox chưa xác minh. Xem [readiness](PHASE9B1_DEPLOYMENT_READINESS.md), [artifact inventory](PHASE9B1_ARTIFACT_INVENTORY.md), [local QA](PHASE9B1_LOCAL_QA.md), [báo cáo](V4_IMPLEMENTATION_REPORT.md) và [checklist thiết bị](PHASE8B2_MANUAL_DEVICE_CHECKLIST.md). Dừng sau9B-1.
+**Hiện tại: schema8 · Cloud Batch1 IMPLEMENTED / TESTED LOCAL ONLY · 522 tests /91 syntax checks.** Auth OTP adapter/UI, SQL/RLS và gateway foundation đã có; config Supabase mặc định tắt, gateway không cho ghi cloud. Tracker tiếp tục lưu local. JSONbackup8/photo backup1, module `v=40`, stylesheet `v=39` giữ nguyên. Chưa tạo project/deploy/push/full sync/PWA. Supabase thật, production và thiết bị thật/Safari chưa xác minh. Xem [báo cáo Batch1](CLOUD_BATCH1_IMPLEMENTATION.md), [setup local/provider](CLOUD_BATCH1_SETUP_GUIDE.md), [báo cáo dự án](V4_IMPLEMENTATION_REPORT.md). Dừng sau Batch1.
 
 Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
+
+## Cloud Batch1 — kiểm tra local
+
+Backend/test dependencies nằm riêng trong `cloud`, không đưa vào web `dist`:
+
+```powershell
+npm --prefix cloud ci --ignore-scripts --no-audit --no-fund
+npm --prefix cloud run test:db
+```
+
+Lệnh thứ hai chạy SQL/RLS và gateway với PostgreSQL WASM disposable, dữ liệu giả.
+Không cần tài khoản Supabase; chưa chứng minh provider hoặc nhiều kết nối thật.
+Cài đặt & sao lưu có panel Cloud ở trạng thái local-only. Đăng nhập khi được cấu
+hình sau này cũng không tự chuyển dữ liệu local lên cloud. Hướng dẫn setup,
+migration và rollback: [CLOUD_BATCH1_SETUP_GUIDE.md](CLOUD_BATCH1_SETUP_GUIDE.md).
 
 ## Chạy
 
@@ -26,7 +41,7 @@ npm run check:artifact
 python -m http.server 8800 --bind 127.0.0.1 --directory dist
 ```
 
-Mở `http://127.0.0.1:8800/`. Lệnh chỉ phục vụ **dist**, gồm39 file runtime
+Mở `http://127.0.0.1:8800/`. Lệnh chỉ phục vụ **dist**, gồm42 file runtime
 được allowlist; không phục vụ repo/private documents/backup. Output dự kiến cho
 Vercel là **dist**; cấu hình chỉ được chuẩn bị, chưa triển khai. Không cần cài
 dependency cho packaging; test suite vẫn dùng devDependency hiện có.
@@ -37,7 +52,7 @@ file lạ, build dừng và giữ file đó để kiểm tra, không tự xóa.
 dùng; preview nên dùng fixtures, không khôi phục phá hủy dữ liệu thật. Vercel sau
 này cũng là origin mới. Hai file backup dữ liệu/ảnh vẫn riêng tư; không đưa chúng
 vào dist/GitHub. Không mở index bằng file://; dùng server cho ES modules/storage.
-Tắt server preview bằng Ctrl+C khi xong. Phase9B-2 và deployment cần duyệt riêng.
+Tắt server preview bằng Ctrl+C khi xong. Provider setup, Batch2 sync và deployment cần duyệt riêng.
 
 ## Dùng nhanh
 

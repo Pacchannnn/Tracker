@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 // Public runtime allowlist. Adding a file requires review; never copy whole folders.
 const ASSETS = [
   'index.html', 'css/style.css', 'assets/fonts/PatrickHand-Regular.ttf', 'assets/fonts/OFL.txt',
-  'js/app.js', 'js/cookbook.js', 'js/cookbook-ui.js', 'js/custom-workout.js', 'js/data.js',
+  'js/app.js', 'js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js', 'js/cookbook.js', 'js/cookbook-ui.js', 'js/custom-workout.js', 'js/data.js',
   'js/exercise-picker.js', 'js/exercise-picker-ui.js', 'js/gym-builder-ui.js', 'js/journal.js',
   'js/journal-retrieval-ui.js', 'js/life-review.js', 'js/life-review-ui.js', 'js/life-review-source.js',
   'js/live-workout-ui.js', 'js/month-memories-ui.js', 'js/my-day.js', 'js/my-day-ui.js',
@@ -68,7 +68,16 @@ function audit(assets) {
     // OFL contains attribution URLs as plain text, never loaded by the app.
     if (path === 'assets/fonts/OFL.txt') continue;
     if (/sourceMappingURL|\bFixture\b|phase8Probe|https?:\/\//.test(text)) throw new Error(`Unexpected map, fixture or remote URL in ${path}`);
-    if (/\b(?:fetch|WebSocket|EventSource)\s*\(|\.sendBeacon\s*\(/.test(text)) throw new Error(`Unexpected network API in ${path}`);
+    // One reviewed native transport in the fixed-project Auth adapter. Do not
+    // exempt other network APIs, remote assets, secret scans or other modules.
+    let networkText = text;
+    if (path === 'js/cloud-auth.js') {
+      const transport = 'globalThis.fetch(...args)';
+      if (text.split(transport).length !== 2) throw new Error('Auth transport differs from reviewed entry point.');
+      networkText = text.replace(transport, 'reviewedAuthTransport');
+    }
+    if (/\b(?:fetch|WebSocket|EventSource)\s*\(|\.sendBeacon\s*\(/.test(networkText)) throw new Error(`Unexpected network API in ${path}`);
+    if (path === 'js/cloud-config.js' && (!/enabled:\s*false/.test(text) || !/projectUrl:\s*''/.test(text) || !/publishableKey:\s*''/.test(text))) throw new Error('Provider activation requires a separately reviewed packaging configuration.');
     let references = [];
     if (path.endsWith('.html')) references = [...text.matchAll(/\b(?:src|href)\s*=\s*(['"])(.*?)\1/g)].map(x => x[2]);
     if (path.endsWith('.css')) {

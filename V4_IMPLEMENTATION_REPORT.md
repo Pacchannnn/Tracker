@@ -1,4 +1,43 @@
-# Tracker V4 — Phase9B-2A synthetic auth foundation
+# Tracker V4 — Cloud Batch1 implementation
+
+08/10/2026 · **LOCAL PASS; REAL SUPABASE NOT VERIFIED; STOP Batch1.**
+
+Verified clean main340c2fb baseline475/475tests,80/80syntax,39approved assets.
+Added real-provider REST OTP adapter/lifecycle and paper Settings panel; default
+config disabled, token memory only, no auto migration/upload/anonymous merge,
+account editor disabled. Added private tracker_sync migration/RLS, transactional
+CAS/head/receipt/tombstone/feed/bootstrap gateway, device drafts and ledger schema.
+Loopback Node server remains read-only. No real credentials/provider provisioned.
+
+Fresh522/522tests (475 originals retained),91/91 standalone syntax +inline module,
+real PostgreSQL/WASM migration/RLS integration and45 gateway assertions PASS.
+42file/684170byte public artifact, exact graph/privacy/hash validation;42 served
+asset hashes match and8 private/backend/test probes404. Nodepg8.23.1/PGlite0.5.8
+dependencies/SQL/harness excluded. No root/frontend dependency changes.
+
+Actual8830 packaged browser: six-area smoke,17kg×9/RIR3 save/complete/reload/history,
+2450cal setting persistence, JSON downloaded before/after navigation exact data
+equality,0photo package parsed. Actual8831 test-only adapter/UI fake transport:
+A→B,pending Cancel/Confirm,expiry,error/local-only/reload;1777input preserved.
+Both console captures error/warn empty; keyboard checks; true320/360/390
+Settings/Gym/Nutrition widths without overflow. No complete network trace claimed.
+
+Review found/fixed413 waiting until EOF and live workout historyEditBase leakage
+with RED→GREEN regressions. Empty planning envelope no longer causes warning.
+All existing local data/schema8/photoDB1/backup8+1/Original PROGRAM preserved;
+no8765 access, personal data upload, Supabase/Vercel setup/deploy or GitHub push.
+Nonempty photo restore, native independent connections, real OTP/refresh/logout,
+pooler/TLS/CORS,large data,Safari/iPhone remain NOT VERIFIED. Full browser account
+persistence/outbox/import/conflict UX/cloud photos remain Batch2/future scope.
+
+Five CLOUD_BATCH1 reports contain setup/migration/rollback and evidence. Roadmap
+and README updated. Local checkpoint is in Git log; STOP after Batch1. Provider
+setup needs ownership/region/project/accounts/email/secrets/cost approval; Batch2
+needs explicit approved sync/persistence/import scope.
+
+---
+
+# Historical: Phase9B-2A synthetic auth foundation
 
 08/10/2026 · **IMPLEMENTED / TESTED LOCAL SYNTHETIC ONLY; STOP9B-2A.**
 

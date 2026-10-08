@@ -8,6 +8,38 @@
 
 ## Trạng thái và quy ước
 
+### Cloud Implementation Batch1 — 08/10/2026 (IMPLEMENTED / TESTED LOCAL ONLY; STOP)
+
+Latest user-authorized batch supersedes the prior9B-2A stopping boundary only
+for Auth adapter/UI + private SQL/RLS + trusted gateway foundation. Baseline
+clean main340c2fb,475/475tests,80/80syntax verified. No local schema change.
+
+- [DONE] Supabase REST Email OTP adapter, authoritative UID, refresh/expiry,
+  logout/switch/epochs/pending warnings; actual Settings paper UI. Public config
+  disabled; tokens memory-only; anonymous workspace retained/account editor locked.
+- [DONE] Private SQL migration: six tables, forced RLS, NOLOGIN/NOBYPASSRLS helper
+  owner and EXECUTE-only gateway, scoped helpers, CAS/head locks, receipts,
+  tombstones/feed/as-of-H bootstrap, device drafts and import ledger foundation.
+- [DONE] Parameterized Node gateway + loopback read-only server, strict/domain
+  validators, exact correction source/candidate checks, durable reject receipts.
+- [DONE] Fresh522/522 Node tests (475 retained),91/91 syntax + inline harness;
+  real PostgreSQL/WASM SQL integration +45 gateway assertions;42-file artifact
+  graph/privacy/hash +42 HTTPassets/8 private404 probes; diff checks.
+- [DONE] Disposable8830 packaged UI save/reload/history/backup integrity,8831
+  fake-transport Auth A/B/error/expiry/pending/reload; actual mobile320/360/390.
+- [DONE] Five CLOUD_BATCH1 reports/setup guide, roadmap/report/README updates.
+
+**LOCAL PASS only.** Real Supabase/email/pooler/native multi-connection/iPhone/
+Safari/production NOT VERIFIED. No8765 operation, personal upload, deployment,
+GitHub push, local schema8/photoDB1/backup8+1/Original plan change. CLI writes
+disabled; browser full sync/outbox/cloud photos not implemented.
+pg8.23.1 and PGlite0.5.8 are isolated backend/test dependencies, excluded dist.
+
+**NEXT / approval needed:** synthetic provider setup and verification; Batch2
+account-scoped persistence/outbox/import/conflict contract. Do not begin Batch2
+or provider provisioning automatically. Historical phase boundaries below retain
+their original meaning; current checkpoint is in Git log.
+
 ### Phase9B-2A — 08/10/2026 (IMPLEMENTED / TESTED LOCAL SYNTHETIC ONLY; STOP)
 
 Verified clean baseline727ed2f,453/453tests,76syntax,39artifact files; schema8/

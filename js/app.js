@@ -24,6 +24,9 @@ import { createLifeReviewUI } from './life-review-ui.js?v=40';
 import { createMonthMemoriesUI } from './month-memories-ui.js?v=40';
 import { readLifeData, resolveLifeSource } from './life-review-source.js?v=40';
 import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=40';
+import { CLOUD_AUTH_CONFIG } from './cloud-config.js?v=40';
+import { createSupabaseAuthAdapter, createCloudAuth } from './cloud-auth.js?v=40';
+import { createCloudAuthUI } from './cloud-auth-ui.js?v=40';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');
@@ -125,6 +128,15 @@ function confirmAction(question, accept) {
 
 const drafts = createDraftStore({ getData: () => data, write: async change => data = await updateData(localStorage, navigator.locks, change) });
 const sessionStore = createSessionStore({ getData: () => data, write: change => updateData(localStorage, navigator.locks, change), acceptData: next => data = next, commitPlanning: (kind, change) => drafts.commit(kind, change) });
+const cloudAuth = createCloudAuth({ adapter: createSupabaseAuthAdapter({ config: CLOUD_AUTH_CONFIG }), getPendingWork: () => {
+  const forms = sourceFormValues();
+  const unsaved = JSON.stringify(forms) !== JSON.stringify(sourceFormBaseline);
+  const draftState = drafts.status().state, sessionState = sessionStore.status().state;
+  const hasPlanningDraft = Boolean(data?.planningDraft?.builder || data?.planningDraft?.planner);
+  if (!unsaved && !data?.draft && !hasPlanningDraft && !['saving', 'error'].includes(draftState) && !['saving', 'error'].includes(sessionState)) return null;
+  return JSON.stringify({ forms: unsaved ? forms : null, draft: data?.draft, planningDraft: data?.planningDraft, draftState, sessionState });
+} });
+const cloudAuthUI = createCloudAuthUI({ auth: cloudAuth, helpers: { node, button, field, panel, div, p, h2 } });
 window.addEventListener('beforeunload', event => {
   if (['saving', 'error'].includes(drafts.status().state) || ['saving', 'error'].includes(sessionStore.status().state)) { event.preventDefault(); event.returnValue = ''; }
 });
@@ -198,7 +210,7 @@ const monthMemories = createMonthMemoriesUI({ main, readData: () => readLifeData
   helpers: { node, button, panel, div, p, h2, h3, field, fmt } });
 
 function sourceFormValues() {
-  return [...main.querySelectorAll('form')].map(form => [...form.querySelectorAll('input,textarea,select')]
+  return [...main.querySelectorAll('form')].filter(form => !form.closest('[data-cloud-auth]')).map(form => [...form.querySelectorAll('input,textarea,select')]
     .map(input => [input.name, input.value, input.checked, input.validity?.badInput]).flat());
 }
 function guardLifeSource() {
@@ -1199,6 +1211,7 @@ function progressOverview() {
 }
 
 function settingsView() {
+  main.append(cloudAuthUI.mount());
   const box = panel(h2('Cài đặt'), p('Tuần chương trình được chọn thủ công. Calories và protein là mức thử ban đầu từ MASTER_PLAN.md; thay đổi tại đây không sửa plan.', 'hint'));
   const form = node('form', { class: 'form-grid' }, [
     field('Tuần chương trình (1–12)', 'week', data.settings.week, { type: 'number', min: '1', max: '12', step: '1', required: true }),

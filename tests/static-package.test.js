@@ -22,11 +22,13 @@ function files(root) { return readdirSync(root, { recursive: true, withFileTypes
 
 test('package excludes private, development and unapproved same-extension files', t => {
   const root = fixture(t);
-  for (const path of ['MASTER_PLAN.md', '.env', 'tracker-backup-private.json', '.local/personal.jpg', 'tests/test.js', 'node_modules/private.js', 'js/private.js', 'css/private.css']) {
+  for (const path of ['MASTER_PLAN.md', '.env', 'tracker-backup-private.json', '.local/personal.jpg', 'tests/test.js', 'node_modules/private.js', 'js/private.js', 'css/private.css', 'cloud/server.js', 'cloud/migrations/001_foundation.sql', 'cloud/package-lock.json']) {
     mkdirSync(join(root, path, '..'), { recursive: true }); writeFileSync(join(root, path), 'PRIVATE SYNTHETIC SENTINEL');
   }
   const result = run(root); assert.equal(result.status, 0, result.stderr);
-  const output = files(join(root, 'dist')); assert.equal(output.length, 39);
+  const output = files(join(root, 'dist')); assert.equal(output.length, 42);
+  for (const path of ['js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js']) assert.ok(output.includes(path));
+  assert.ok(!output.some(path => path.startsWith('cloud/')));
   assert.ok(output.includes('js/app.js')); assert.ok(output.includes('assets/fonts/OFL.txt'));
   assert.ok(!output.some(path => /private|MASTER|\.env|node_modules|tests|\.local/.test(path)));
   for (const path of output) assert.deepEqual(readFileSync(join(root, 'dist', path)), readFileSync(join(root, path)));
@@ -70,6 +72,16 @@ test('literal dynamic imports load allowed assets; computed dynamic imports reje
 test('remote CSS resources reject instead of introducing third-party requests', t => {
   const root = fixture(t); appendFileSync(join(root, 'css/style.css'), "\nbody{background:url('https://example.invalid/private.png')}");
   assert.notEqual(run(root).status, 0);
+});
+test('only reviewed Auth transport is allowed and disabled provider config is enforced', t => {
+  for (const path of ['js/app.js', 'js/cloud-auth.js', 'js/cloud-auth-ui.js']) {
+    const root = fixture(t); appendFileSync(join(root, path), '\nfetch("/unapproved");');
+    assert.notEqual(run(root).status, 0);
+  }
+  const root = fixture(t); appendFileSync(join(root, 'js/cloud-config.js'), '\nconst key="sb_secret_' + 'A'.repeat(40) + '";');
+  assert.notEqual(run(root).status, 0);
+  const configured = fixture(t); writeFileSync(join(configured, 'js/cloud-config.js'), "export const CLOUD_AUTH_CONFIG={enabled:true, projectUrl:'', publishableKey:''};");
+  assert.notEqual(run(configured).status, 0);
 });
 test('artifact validation rejects changed, missing and unexpected output files', t => {
   const root = fixture(t); assert.equal(run(root).status, 0);
