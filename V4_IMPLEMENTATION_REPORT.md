@@ -1,3 +1,46 @@
+# Tracker V4 — Phase9B-2A synthetic auth foundation
+
+08/10/2026 · **IMPLEMENTED / TESTED LOCAL SYNTHETIC ONLY; STOP9B-2A.**
+
+Baseline727ed2f clean main,453tests/76syntax,39approved assets verified. No material
+mismatch. Schema8/photoDB1/backup8+1 and every normal runtime file stay unchanged.
+
+Built five dev/auth files: provider-independent lifecycle context, deterministic
+mock provider/memory store, labeled local harness HTML/CSS/controller. No public
+Auth entry point, dependency, JWT, real credentials, OTP or cloud service.
+Operations: read/login/confirm/refresh/expire/logout/switch/localOnly/subscribe;
+active workspace leases enforce provenance/epoch/UID, AbortSignal and source revision.
+Scoped env/project/UID/device memory candidates remain through same-page logout/
+expiry/switch; seal clears UI and revokes registered temporary URLs. Pending draft
+or operation requires fresh explicit transition confirmation. Same email never
+becomes UID. verifiedAccountId remains null. Reload resets mock memory local-only.
+
+22 new boundary tests, initial RED before module implementation; additional RED
+reproductions for pending-operation warning, refresh-error warning bypass and older
+operation overwriting new input before fixes. Fresh full475/475,80/80syntax, build/
+artifact/diff pass. Existing453 tests/assertions unchanged. Artifact39files/664470
+bytes, all hashes equal9B-1; HTTPassets match, seven mock/privatepaths404.
+
+Actual8820 browser: A→B→A candidate isolation, Cancel/Confirm, pending operation
+then expiry/switch, stale responses after logout, error/refresh/URL cleanup,
+logout/relogin preservation, reload reset, Local-only, Tab/Enter focus and three
+actual mobile widths.8821 packaged Tracker six-area smoke plus15kg×8/RIR3 save,
+reload, complete/history and real downloaded JSON before/after mock flow equality.
+No auth metadata in backup. Both console captures error/warn empty. No native
+storage access in guarded test; harness source has no storage/network imports.
+No complete browser network trace or new photo paired-roundtrip claimed.
+
+Created PHASE9B2A_AUTH_FOUNDATION.md, PHASE9B2A_SECURITY_TEST_MATRIX.md,
+PHASE9B2A_LOCAL_QA.md; roadmap updated. Real Auth/Supabase/OTP/SMTP/server RLS,
+durable account DB/outbox, cross-tab cloud coordination and real devices remain
+NOT VERIFIED. Synthetic identities are intentionally controllable fixtures, never
+production authority. Seal is not encryption. Existing origin8765 untouched.
+No real data/provider/deploy/push/schema/MASTER_PLAN change or9B-2B implementation.
+Next requires separate9B-2B approval for SDK/project/accounts/privacy/cost/secrets/
+OTP/SMTP. Local checkpoint in Git log. Historical9B-1 report follows unchanged.
+
+---
+
 # Tracker V4 — Phase9B-1 static deployment readiness
 
 08/10/2026 · **IMPLEMENTED / VERIFIED LOCAL ONLY. STOP AFTER9B-1.**

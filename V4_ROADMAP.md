@@ -8,6 +8,33 @@
 
 ## Trạng thái và quy ước
 
+### Phase9B-2A — 08/10/2026 (IMPLEMENTED / TESTED LOCAL SYNTHETIC ONLY; STOP)
+
+Verified clean baseline727ed2f,453/453tests,76syntax,39artifact files; schema8/
+photoDB1/backup8+1 unchanged. Approved9B-2A executes only synthetic lifecycle.
+
+- [DONE] Provider-independent context and deterministic test-only mock under
+  dev/auth; local-only/signed-out/authenticating/authenticated/expired/switching/error.
+- [DONE] Scoped memory workspaces by env/project/UID/device; pending warnings,
+  explicit fresh confirmation, epoch/AbortSignal guards, stale/newer-input protection,
+  seal/URL cleanup. No real verified identity, native storage or data import.
+- [DONE]22 auth tests; full475/475;80/80syntax; unchanged39-file artifact hashes,
+ 39HTTPassets and mock/private404 exclusions. All453 original assertions retained.
+- [DONE] Disposable8820 mock A→B→A/expiry/rapid response/logout/reload/keyboard;
+  harness/mobile320/360/390;8821 Tracker save/reload/history/six views and actual
+  portable JSON before/after deep equality. No8765/user-data operation.
+- [DONE] PHASE9B2A_AUTH_FOUNDATION, SECURITY_TEST_MATRIX and LOCAL_QA; report update.
+
+PASS only in local/synthetic scope. Harness outside dist; normal runtime/public
+UI/data unchanged. Mock reload intentionally resets memory; no durable/offline
+cloud storage, outbox, account migration, Auth SDK, provider project or deployment.
+Real Supabase/Auth/RLS/physical devices NOT VERIFIED. Pending scope seal is not
+encryption. Detailed integration boundary and limitations in the three reports.
+
+**NEXT:**9B-2B requires separate approval for real-adapter scope, SDK/dependency,
+isolated project/accounts, credentials, privacy/cost and OTP/SMTP. No9B-2B/provider
+work started; no push. Historical9B-1/9A stop notes below retain their original scope.
+
 ### Phase9B-1 — 08/10/2026 (IMPLEMENTED / VERIFIED LOCAL ONLY; STOP)
 
 Baseline clean main541162b,439tests/74syntax; schema8/photoDB1/backup8+1 unchanged.
