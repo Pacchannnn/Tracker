@@ -1,4 +1,4 @@
-import { validateEntry, foodSnapshotForEntry, ensureUnchanged, validDate } from './data.js?v=40';
+import { validateEntry, foodSnapshotForEntry, ensureUnchanged, validDate } from './data.js?v=41';
 
 function checkedSnapshot(food) {
   if (!food || typeof food.name !== 'string' || !food.name.trim() || typeof food.serving !== 'string' || !food.serving.trim() ||

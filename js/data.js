@@ -1,6 +1,6 @@
-import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=40';
-import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=40';
-import { validateIdentityData, sessionGeneration } from './session-identity.js?v=40';
+import { validatePlanningData, validateWorkoutSnapshot } from './custom-workout.js?v=41';
+import { emptyPlanningDraft, validatePlanningDraft } from './planning-draft.js?v=41';
+import { validateIdentityData, sessionGeneration } from './session-identity.js?v=41';
 export const STORAGE_KEY = 'vshape-tracker';
 export const SCHEMA_VERSION = 8;
 export const emptyData = () => ({
@@ -141,8 +141,13 @@ export async function updateData(storage, locks, change) {
   });
 }
 
+// JSON/JSONB object keys are unordered; array order and every value remain significant.
+export function canonicalJSON(value) {
+  return JSON.stringify(value, (_, item) => item && typeof item === 'object' && !Array.isArray(item)
+    ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]])) : item);
+}
 export function ensureUnchanged(current, expected) {
-  if (!current || JSON.stringify(current) !== JSON.stringify(expected)) {
+  if (!current || canonicalJSON(current) !== canonicalJSON(expected)) {
     throw new Error('Mục này đã đổi ở tab khác. Hãy mở lại trước khi sửa.');
   }
 }

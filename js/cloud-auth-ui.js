@@ -8,7 +8,7 @@ const LABELS = {
   error: 'Lỗi xác thực'
 };
 
-export function createCloudAuthUI({ auth, helpers }) {
+export function createCloudAuthUI({ auth, helpers, workspaceAvailable = false }) {
   const { node, button, field, panel, div, p, h2 } = helpers;
   let host = null, email = '', otp = '', changingAccount = false, warning = null, uiNotice = '';
   async function act(action, value, confirmation) {
@@ -25,15 +25,17 @@ export function createCloudAuthUI({ auth, helpers }) {
     if (signedIn && !changingAccount) { email = ''; otp = ''; }
     const status = p(LABELS[state.status] || 'Lỗi xác thực', 'summary'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
     host.replaceChildren(h2('Tài khoản Cloud'), status,
-      p('Tracker tiếp tục dùng không gian ẩn danh cục bộ trên trình duyệt này. Dữ liệu chưa được đồng bộ hoặc tải lên; đăng nhập không chuyển, ghi đè hay gộp dữ liệu.', 'hint'));
-    const accountEditing = button('Chỉnh sửa dữ liệu tài khoản · chưa khả dụng', () => {});
-    accountEditing.disabled = true; host.append(accountEditing);
+      p(workspaceAvailable ? 'Đăng nhập xác minh tài khoản. Xem không gian đang dùng và trạng thái đồng bộ trong mục Không gian dữ liệu. Đăng nhập không tự chuyển, ghi đè hay gộp dữ liệu cục bộ.' : 'Tracker tiếp tục dùng không gian ẩn danh cục bộ trên trình duyệt này. Dữ liệu chưa được đồng bộ hoặc tải lên; đăng nhập không chuyển, ghi đè hay gộp dữ liệu.', 'hint'));
+    if (!workspaceAvailable) { const accountEditing = button('Chỉnh sửa dữ liệu tài khoản · chưa khả dụng', () => {}); accountEditing.disabled = true; host.append(accountEditing); }
+    else host.append(p('Chọn rõ Mở dữ liệu tài khoản trong mục Không gian dữ liệu để dùng kho riêng; dữ liệu cục bộ không tự chuyển sang đó.', 'hint'));
     if (!state.enabled) { host.append(p('Supabase chưa được cấu hình hoặc phê duyệt. Bạn tiếp tục dùng Tracker cục bộ.', 'hint')); return; }
     host.append(p('Phiên đăng nhập chỉ giữ trong bộ nhớ; tải lại trang sẽ đăng xuất. Chỉ tài khoản đã được chuẩn bị trong dự án được duyệt mới nhận mã.', 'hint'));
     if (state.notice || uiNotice) { const error = p(state.notice || uiNotice, 'warning'); error.setAttribute('role', 'alert'); host.append(error); }
     if (warning) {
       const current = warning;
-      host.append(p('Có phần chưa lưu hoặc đang soạn. Chuyển phiên xác thực vẫn giữ phần nhập và dữ liệu cục bộ. Tiếp tục?', 'warning'), div('actions',
+      host.append(p(workspaceAvailable
+        ? 'Có phần chưa lưu hoặc đang chờ đồng bộ. Dữ liệu đã lưu và outbox được giữ trong kho riêng; khi đổi không gian, các ô chưa lưu sẽ đóng. Hủy để lưu trước, hoặc tiếp tục?'
+        : 'Có phần chưa lưu hoặc đang soạn. Chuyển phiên xác thực vẫn giữ phần nhập và dữ liệu cục bộ. Tiếp tục?', 'warning'), div('actions',
         button('Hủy chuyển', () => { auth.cancelWarning(); warning = null; render(); }),
         button('Tiếp tục', () => act(current.action, current.value, current.confirmation))));
       return;

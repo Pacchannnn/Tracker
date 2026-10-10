@@ -1,7 +1,7 @@
-import { daySummary, readDay, shiftCalendarDate } from './my-day.js?v=40';
-import { localDate, validDate } from './data.js?v=40';
-import { MOODS } from './journal.js?v=40';
-import { PHOTO_CATEGORIES, PHOTO_POSES, listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=40';
+import { daySummary, readDay, shiftCalendarDate } from './my-day.js?v=41';
+import { localDate, validDate } from './data.js?v=41';
+import { MOODS } from './journal.js?v=41';
+import { PHOTO_CATEGORIES, PHOTO_POSES, listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=41';
 
 export function createMyDayUI({ main, getData, render, openSource, registerUrl, helpers,
   readMetadata = listPhotoMetadata, readThumbnail = getPhotoThumbnail }) {

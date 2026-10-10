@@ -2,6 +2,34 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+## Cloud Batch 2 — separate account workspace (10/10/2026)
+
+Anonymous local JSON/schema8 and tracker-photos/photoDB1/backup8+1 stay unchanged.
+`tracker-sync` IndexedDB v1 adds stores `metadata` and `workspaces`. Metadata has
+an installation device UUID. Workspace primary key is `[environment,projectId,uid]`;
+email is never an ownership key. A row contains schema8 `data`, server `shadow`,
+durable `outbox`, conflicts/archives, receipts, fixed-H bootstrap staging, cursor,
+selectedLiveId and monotonic localRevision. One transaction commits local data,
+intent and revision. This row organization is local persistence; wire writes
+remain individually identified aggregates with server CAS.
+
+Each outbox intent retains operation UUID, aggregate changes, predecessor IDs,
+state and a frozen wire request before first send. Device planning/correction
+candidates stay separate from shared completed/live workouts. Remote live records
+are unselected until explicit choice. Conflicts retain base/local/remote and
+review tokens. Tombstones, receipts and cursor are never portable schema8 fields.
+Account JSON export is a projection, not full sync-workspace recovery.
+
+Auth tokens are memory-only. Explicit offline cached access is device-local, not
+server authentication or encryption. Account lifecycle epochs guard persistence
+and UI acceptance; scope changes reset private transient editors/searches while
+saved drafts/outbox remain in their own rows. No automatic anonymous import or
+photo transfer. Migration002 changes private SQL read-helper metadata only:
+complete pull recordCount and bootstrap snapshotRecordCount, no payload migration.
+
+Details and remaining verification gates: CLOUD_BATCH2_SYNC_CONTRACT.md,
+CLOUD_BATCH2_IMPLEMENTATION.md and CLOUD_BATCH2_SETUP_AND_ROLLBACK.md.
+
 ## Phase7B-2 Monthly Memories — derived only (08/10/2026)
 
 Schema8→8; no entity/migration/key/backup field. `deriveMonthMemories` reuses

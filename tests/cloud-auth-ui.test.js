@@ -12,13 +12,13 @@ class Element {
   querySelector(selector){return all(this).find(x=>selector==='input'?x.tagName==='input':false);}
 }
 const all=root=>root.children.flatMap(x=>[x,...all(x)]);
-function setup(state={status:'signed-out',enabled:true,step:null}){
+function setup(state={status:'signed-out',enabled:true,step:null}, options={}){
   const node=(tag,options={},children=[])=>{const el=new Element(tag);for(const[key,value]of Object.entries(options)){if(key==='text')el.textContent=value;else if(key==='value')el.value=value;else if(key==='onClick')el.addEventListener('click',value);else el.setAttribute(key,value);}el.append(...children);return el;};
   const helpers={node,button:(text,fn)=>node('button',{text,onClick:fn}),p:(text,cls)=>node('p',{text,class:cls}),h2:text=>node('h2',{text}),div:(cls,...items)=>node('div',{class:cls},items),panel:(...items)=>node('section',{},items),field:(label,name,value,options)=>node('label',{},[node('span',{text:label}),node('input',{name,value,...options})])};
   const calls=[],listeners=[];let response={applied:true};
   const auth={read:()=>structuredClone(state),subscribe:fn=>{listeners.push(fn);return()=>{};},cancelWarning:()=>calls.push(['cancel']),...Object.fromEntries(['sendOtp','verifyOtp','logout','localOnly','switchAccount'].map(action=>[action,async(...args)=>{calls.push([action,...args]);return response;}]))};
   assert.equal(typeof imported.createCloudAuthUI,'function','Settings auth UI must exist');
-  const ui=imported.createCloudAuthUI({auth,helpers});const main=node('main');main.root=true;main.append(node('input',{name:'calories',value:'1777'}));main.append(ui.mount());
+  const ui=imported.createCloudAuthUI({auth,helpers,...options});const main=node('main');main.root=true;main.append(node('input',{name:'calories',value:'1777'}));main.append(ui.mount());
   return {main,ui,calls,setResponse:value=>response=value,emit:patch=>{Object.assign(state,patch);listeners.forEach(fn=>fn(auth.read()));}};
 }
 const find=(main,tag,label)=>all(main).find(el=>el.tagName===tag&&el.textContent.includes(label));
@@ -37,6 +37,14 @@ test('Settings auth updates preserve unrelated settings and in-memory OTP input'
 test('signed-in panel labels anonymous workspace and disabled account editing',()=>{
   const s=setup({status:'authenticated',enabled:true,verifiedAccountId:'fixture-uid'});assert.match(s.main.textContent,/Đã đăng nhập/);assert.match(s.main.textContent,/ẩn danh.*cục bộ/);assert.match(s.main.textContent,/chưa.*tải lên|Chưa.*tải lên/);
   assert.equal(find(s.main,'button','dữ liệu tài khoản').disabled,true);assert.ok(!s.main.textContent.includes('Synced'));assert.equal(input(s.main,'cloudEmail'),undefined);
+});
+test('workspace-enabled Auth panel describes login separately from active data or sync state',()=>{
+  const s=setup({status:'authenticated',enabled:true},{workspaceAvailable:true});
+  assert.ok(!s.main.textContent.includes('Tracker tiếp tục dùng không gian ẩn danh'));
+  assert.ok(!s.main.textContent.includes('Dữ liệu chưa được đồng bộ hoặc tải lên'));
+  assert.match(s.main.textContent,/trạng thái đồng bộ.*Không gian dữ liệu/i);
+  assert.match(s.main.textContent,/không tự.*chuyển|không chuyển.*dữ liệu/i);
+  assert.equal(find(s.main,'button','dữ liệu tài khoản'),undefined);
 });
 test('pending warning offers cancel and opaque confirmation before transition',async()=>{
   const s=setup(),confirmation={};s.setResponse({warning:true,confirmation});input(s.main,'cloudEmail').value='fixture@example.invalid';await input(s.main,'cloudEmail').dispatch('input');

@@ -1,8 +1,31 @@
 # Tracker
 
-**Hiện tại: schema8 · Cloud Batch1 IMPLEMENTED / TESTED LOCAL ONLY · 522 tests /91 syntax checks.** Auth OTP adapter/UI, SQL/RLS và gateway foundation đã có; config Supabase mặc định tắt, gateway không cho ghi cloud. Tracker tiếp tục lưu local. JSONbackup8/photo backup1, module `v=40`, stylesheet `v=39` giữ nguyên. Chưa tạo project/deploy/push/full sync/PWA. Supabase thật, production và thiết bị thật/Safari chưa xác minh. Xem [báo cáo Batch1](CLOUD_BATCH1_IMPLEMENTATION.md), [setup local/provider](CLOUD_BATCH1_SETUP_GUIDE.md), [báo cáo dự án](V4_IMPLEMENTATION_REPORT.md). Dừng sau Batch1.
+**Hiện tại: schema8 · Cloud Batch2 IMPLEMENTED LOCAL · browser QA chưa hoàn tất.**
+Account IndexedDB/outbox, sync hai chiều, offline/cache, conflict review và import
+preview đã có; Supabase mặc định tắt, server thường vẫn không cho ghi cloud.
+JSON backup8/photo backup1; module `v=41`, stylesheet `v=39`. Không tạo project,
+deploy, push, PWA hay nhập dữ liệu thật. Supabase/production/iPhone/Safari chưa xác
+minh. Counts và gates cuối: [báo cáo Batch2](CLOUD_BATCH2_IMPLEMENTATION.md),
+[setup và rollback](CLOUD_BATCH2_SETUP_AND_ROLLBACK.md),
+[trạng thái dự án](V4_IMPLEMENTATION_REPORT.md). Dừng sau Batch2.
 
-Ứng dụng cá nhân dùng HTML, CSS, JavaScript thuần và `localStorage`. Nội dung bài tập lấy từ `MASTER_PLAN.md`; ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
+Ứng dụng dùng HTML, CSS, JavaScript thuần. Kho ẩn danh dùng localStorage + IndexedDB
+ảnh; account cache dùng IndexedDB riêng. Nội dung bài tập lấy từ MASTER_PLAN.md;
+ứng dụng không tự thay bài hoặc kết luận tình trạng gối.
+
+## Cloud Batch2 — kiểm tra local
+
+```powershell
+npm test
+npm --prefix cloud run test:sync
+npm run build
+npm run check:artifact
+```
+
+SQL runner dùng PostgreSQL WASM và dữ liệu giả, không kết nối Supabase thật.
+Test dependencies đã có; sau clone cần `npm ci` và `npm --prefix cloud ci`.
+Hai browser fixtures và các bước còn thiếu nằm trong setup/QA reports. Không chạy
+restore/reset trên origin8765. Đăng nhập không tự nhập lịch sử ẩn danh hay ảnh.
 
 ## Cloud Batch1 — kiểm tra local
 
@@ -27,7 +50,9 @@ Từ thư mục này:
 python -m http.server 8765 --bind 127.0.0.1
 ```
 
-Mở `http://127.0.0.1:8765/` trên **cùng máy**. Dùng cùng địa chỉ, cổng và browser profile cho các lần sau vì `localStorage` gắn với origin. Để mở trên điện thoại riêng cần một phương án phục vụ và bảo vệ dữ liệu khác; bản này chưa đồng bộ thiết bị.
+Mở `http://127.0.0.1:8765/` trên **cùng máy**. Dùng cùng địa chỉ, cổng và browser
+profile vì dữ liệu gắn với origin. Sync đã được kiểm tra bằng thiết bị giả cục bộ;
+điện thoại thật chưa kết nối cloud và cần provider/gateway được duyệt riêng.
 
 Nếu tab đã mở trước khi cập nhật app và vẫn hiện giao diện cũ, hãy **tải lại chính tab đó** bằng nút Reload của trình duyệt. Kiểm tra tiêu đề trang là **Tracker**. Đừng đổi cổng hoặc địa chỉ để tránh nhìn sang một kho `localStorage` khác.
 
@@ -41,7 +66,7 @@ npm run check:artifact
 python -m http.server 8800 --bind 127.0.0.1 --directory dist
 ```
 
-Mở `http://127.0.0.1:8800/`. Lệnh chỉ phục vụ **dist**, gồm42 file runtime
+Mở `http://127.0.0.1:8800/`. Lệnh chỉ phục vụ **dist**, gồm48 file runtime
 được allowlist; không phục vụ repo/private documents/backup. Output dự kiến cho
 Vercel là **dist**; cấu hình chỉ được chuẩn bị, chưa triển khai. Không cần cài
 dependency cho packaging; test suite vẫn dùng devDependency hiện có.

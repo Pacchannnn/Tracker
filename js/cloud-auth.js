@@ -9,6 +9,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
   let origin = '', projectId = '';
   const environment = config?.environment;
   const publicKey = config?.publishableKey;
+  const gatewayOrigin = config?.gatewayUrl || '';
   if (enabled) {
     const match = /^https:\/\/([a-z0-9]+)\.supabase\.co$/.exec(config.projectUrl || '');
     if (!match || !['preview', 'production'].includes(environment) || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(publicKey || '')) throw safeError();
@@ -78,6 +79,20 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
       if (!credential) return;
       credentials.delete(identity);
       await request('/logout?scope=local', { token: credential.accessToken });
+    },
+    async callGateway(identity, route, body, { signal } = {}) {
+      const credential = credentials.get(identity);
+      if (!credential || identity.expiresAt <= now() || !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(gatewayOrigin) || !['push','pull','bootstrap','receipt'].includes(route) || signal?.aborted) throw safeError();
+      const deadline = new AbortController(), abort = () => deadline.abort();
+      signal?.addEventListener('abort', abort, { once:true }); const timer = setTimeout(abort,15000);
+      try {
+        const response = await fetchImpl(gatewayOrigin + '/' + route, { method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${credential.accessToken}`}, body:JSON.stringify(body), signal:deadline.signal, credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer' });
+        if (deadline.signal.aborted || response.status===401 || response.status>=500) throw safeError();
+        const result = await response.json();
+        if (deadline.signal.aborted || !result || typeof result!=='object') throw safeError();
+        return result;
+      } catch { throw safeError(); }
+      finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
     }
   });
 }
@@ -199,7 +214,14 @@ export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout
       checkExpiry(); if (status !== 'authenticated' || !identity) throw safeError();
       const lease = Object.freeze({ epoch, signal: controller.signal }); leases.add(lease); return lease;
     },
-    isCurrent(lease) { checkExpiry(); return Boolean(leases.has(lease) && lease.epoch === epoch && !lease.signal.aborted && status === 'authenticated'); }
+    isCurrent(lease) { checkExpiry(); return Boolean(leases.has(lease) && lease.epoch === epoch && !lease.signal.aborted && status === 'authenticated'); },
+    async gatewayCall(lease, route, body, { signal } = {}) {
+      if (!api.isCurrent(lease)) throw safeError();
+      const combined = new AbortController(), abort = () => combined.abort();
+      for (const item of [lease.signal,signal].filter(Boolean)) { if (item.aborted) abort(); else item.addEventListener('abort',abort,{once:true}); }
+      try { const result=await adapter.callGateway(identity,route,body,{signal:combined.signal}); if(!api.isCurrent(lease)||combined.signal.aborted)throw safeError();return result; }
+      finally {for(const item of [lease.signal,signal].filter(Boolean))item.removeEventListener('abort',abort);}
+    }
   };
   return Object.freeze(api);
 }

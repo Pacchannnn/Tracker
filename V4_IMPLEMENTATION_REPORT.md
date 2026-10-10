@@ -1,4 +1,92 @@
-# Tracker V4 — Cloud Batch1 implementation
+# Tracker V4 — Cloud Batch 2 implementation
+
+10/10/2026 · **LOCAL AUTOMATED PASS; BROWSER QA PARTIAL; REAL SUPABASE NOT VERIFIED.**
+STOP after Batch 2. No provider activation, personal migration, photo transfer,
+deployment or GitHub push. The local checkpoint is recorded in Git log on main.
+
+## Baseline and completed scope
+
+Verified clean main `1487cf3`: 522/522 tests, 91/91 standalone JS syntax checks,
+42 public assets / 684,170 bytes. Portable schema8, photoDB1, JSON8/photo1 backup
+formats and Original Plan remain unchanged. No dependency additions.
+
+Separate `tracker-sync` IndexedDB v1 stores account rows keyed by environment,
+project and UID. Projection + durable intent/outbox + localRevision commit in one
+guarded transaction. Anonymous JSON/photos remain separate. Aggregate CAS engine
+implements fixed-H staged bootstrap, complete-group pull, ordered push, immutable
+retry/lost-ACK recovery, strict receipt validation and durable reviewed conflicts.
+Migration002 adds required feed/snapshot counts without a portable data migration.
+
+Existing app editors use the selected workspace through an epoch-guarded boundary.
+Cached workspace access is explicit, local-only and Needs login until matching
+verified reauthentication and explicit opening. Logout/expiry/switch seals access
+and retains queued work. Shared live workout selection is explicit. Import is
+preview/Cancel only; account photos and restore remain unavailable.
+
+Review fixed actual SQL JSONB key-order false-stale checks, exact history Complete
+transformation validation, private UI-memory resets, deferred A-result-into-B
+caller races and stale photo transactions. Regression checks retain semantic,
+identity, array-order and revision boundaries; no normalization/wipe bypass.
+
+## Final executed verification
+
+| Check | Result |
+| --- | --- |
+| Node regression | **632/632 PASS**, zero failures/skips/cancellations; original522 retained |
+| Standalone JS syntax | **112/112 PASS** |
+| Existing SQL/RLS/gateway | **45 assertions PASS**, original RLS integration retained |
+| Batch2 actual PostgreSQL WASM + two isolated IndexedDB devices | **121 assertions PASS**, SQL/RLS after001+002 |
+| Real SessionStore/DraftStore after SQL JSONB ACK | Start, repeated set logging, Complete and repeated planning writes PASS |
+| Packaging/privacy/graph/hash | **48 files / 766,240 bytes PASS** |
+| Packaged HTTP | All48 asset hashes/bytes equal;8 private/backend/test paths404 |
+| Git whitespace | `git diff --check` / staged check before checkpoint |
+
+Full-suite log: `.local/cloud-batch2-tests-final.txt` (ignored synthetic evidence).
+Runtime module queries are v41; CSS remains v39. No SQL, fixture, backend dependency,
+private plan/report or test file enters the runtime artifact.
+
+## Observed browser evidence and incomplete gate
+
+Disposable8840/8841 actual UI + HTTP SQL gateway, with synthetic Auth: laptop→phone
+food sync; offline edit/reload, explicit cached access, matching reauth/reconnect;
+durable food conflict and explicit KeepLocal; dropped journal ACK and retry;
+import preview and Cancel. Anonymous fixture diagnostic unchanged, external fetch0,
+runtime error counter0 at the observed checkpoint. A390px desktop browser viewport
+was used; it is not a physical iPhone. User origin8765 was not used.
+
+Workout Start was observed, followed by a false-stale set failure. The fix passes
+actual domain/store/SQL tests, but the repaired UI has **not** been browser-retested.
+After continuation, browser control was unavailable; Windows Computer Use stopped
+on URL-confidence policy and no further UI input was attempted. Final six-area
+navigation, JSON/photo native downloads and read-only backup equality, A→B→A,
+keyboard/mobile320/360/390 and final screenshots remain **NOT VERIFIED**.
+
+Thus local automated sync/data-safety gates PASS; **browser release gate INCOMPLETE**.
+PGlite uses one connection: native multi-connection races, real Supabase OTP/JWT,
+TLS/CORS/pooler, iPhone/Safari/storage eviction and production remain NOT VERIFIED.
+
+## Limits, deliverables and next boundary
+
+Cache is not encrypted; account JSON exports only the schema8 projection, not
+outbox/conflicts/server versions. Preserve IndexedDB for pending recovery. Whole
+scoped-row growth, no receipt/tombstone pruning and conservative account-head
+conflicts remain. Tombstones may require an independent copy; unsupported mixed
+recovery commands fail closed with candidates retained. No cold-start offline/PWA
+guarantee, cloud photos, personal import or production provisioning is claimed.
+
+Created six CLOUD_BATCH2 reports, six runtime cloud modules, twelve focused test
+files, migration002 and three synthetic SQL/browser scripts. Updated app/Auth,
+domain guards, photo writes, runtime packaging, tests, README, roadmap, data-model
+appendix and project guide. MASTER_PLAN and current storage/backup formats preserved.
+
+Next: finish missing synthetic browser gates. Provider/project/accounts/region/
+email/secret/cost/gateway/native-concurrency tests need separate approval. Batch3
+needs a separately approved import ownership/duplicates/ledger/rollback/photo
+transfer contract. No new phase, provider action or GitHub push is automatic.
+
+---
+
+# Historical: Tracker V4 — Cloud Batch1 implementation
 
 08/10/2026 · **LOCAL PASS; REAL SUPABASE NOT VERIFIED; STOP Batch1.**
 

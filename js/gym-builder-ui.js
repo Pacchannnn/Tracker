@@ -1,8 +1,8 @@
-import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy } from './custom-workout.js?v=40';
-import { ensureUnchanged } from './data.js?v=40';
-import { filterExercises, addPickedExercises, replacePickedExercise } from './exercise-picker.js?v=40';
-import { createExercisePicker } from './exercise-picker-ui.js?v=40';
-import { reviewedBuilderDay } from './planning-draft.js?v=40';
+import { MUSCLES, PATTERNS, EQUIPMENT, labelFor, libraryExercises, validateExercise, validateSlot, moveSlot, removeCustomExercise, deletePlan, duplicatePlan, originalPlanCopy } from './custom-workout.js?v=41';
+import { ensureUnchanged, canonicalJSON } from './data.js?v=41';
+import { filterExercises, addPickedExercises, replacePickedExercise } from './exercise-picker.js?v=41';
+import { createExercisePicker } from './exercise-picker-ui.js?v=41';
+import { reviewedBuilderDay } from './planning-draft.js?v=41';
 
 export function createGymBuilder(context) {
   const { main, getData, mutate, render, show, startWorkout, helpers, drafts, draftStatus, recoveryCard } = context;
@@ -20,7 +20,7 @@ export function createGymBuilder(context) {
     if (oneOff) return false;
     return recoveryCard('builder', saved => {
       oneOff = structuredClone(saved.payload.day); oneOffSource = saved.payload.source;
-      if (oneOffSource && JSON.stringify(getData().plans.find(plan => plan.id === oneOffSource.planId)) !== JSON.stringify(oneOffSource.plan)) {
+      if (oneOffSource && canonicalJSON(getData().plans.find(plan => plan.id === oneOffSource.planId)) !== canonicalJSON(oneOffSource.plan)) {
         oneOffSource = null; recoveryWarning = 'Kế hoạch nguồn đã đổi hoặc bị xóa. Khôi phục thành buổi riêng; bạn có thể lưu thành kế hoạch mới.';
       }
       show('builder');
@@ -239,5 +239,5 @@ export function createGymBuilder(context) {
     if ((oneOff?.exercises.length && oneOff.id !== day.id) || getData().planningDraft?.builder) confirmAction('Thay buổi chưa lưu trong builder bằng bản nháp này? Lưu buổi cũ thành mẫu trước nếu muốn giữ.', apply);
     else apply();
   }
-  return { libraryView, plansView, oneOffView, setOneOff, checkChoices, reset() { oneOff = null; oneOffSource = null; editingPlanId = null; } };
+  return { libraryView, plansView, oneOffView, setOneOff, checkChoices, reset() { oneOff = null; oneOffSource = null; editingPlanId = null; editingExercise = null; selectedDayId = null; recoveryWarning = ''; } };
 }

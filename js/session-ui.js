@@ -1,8 +1,8 @@
-import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=40';
-import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=40';
-import { sessionTitle } from './custom-workout.js?v=40';
-import { restSeconds } from './workout.js?v=40';
-import { createLiveWorkoutUI } from './live-workout-ui.js?v=40';
+import { runtimeView, nextIncompleteSlot, nextSetNumber, previousOccurrences, previousValues, replacementLabel } from './session-readers.js?v=41';
+import { sessionGeneration, legacyHistoryEditBase } from './session-identity.js?v=41';
+import { sessionTitle } from './custom-workout.js?v=41';
+import { restSeconds } from './workout.js?v=41';
+import { createLiveWorkoutUI } from './live-workout-ui.js?v=41';
 
 export function createSessionUI(context) {
   const { main, getData, getLatest, store, action: persistAction, render, show, openWorkout, nextWorkoutInfo, mutate: persistMutate, restPanel, startRest, clearRest, registerUrl, helpers } = context;
@@ -258,5 +258,5 @@ export function createSessionUI(context) {
       main.append(box);
     }
   }
-  return { workoutView, historyView, guardUnsaved, clearReview: () => liveUI.reset(), reset() { editingSet = null; focusSlotId = null; liveUI.reset(); } };
+  return { workoutView, historyView, guardUnsaved, clearReview: () => liveUI.reset(), reset() { editingSet = null; editingNote = null; focusSlotId = null; liveUI.reset(); } };
 }

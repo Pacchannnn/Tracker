@@ -1,9 +1,9 @@
-import { validateSet, validDate, localDate, ensureUnchanged } from './data.js?v=40';
-import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=40';
-import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=40';
+import { validateSet, validDate, localDate, ensureUnchanged, canonicalJSON } from './data.js?v=41';
+import { createSessionStructure, materializeLegacySession, sessionGeneration, validateSessionIdentity, createHistoryEditBase, legacyHistoryEditBase } from './session-identity.js?v=41';
+import { liveStructureAllowed, applyLiveStructure } from './session-structure.js?v=41';
 
 const clone = value => structuredClone(value);
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const same = (a, b) => canonicalJSON(a) === canonicalJSON(b);
 const stale = () => { throw new Error('Buổi tập đã đổi. Phần đang nhập chưa lưu; hãy giữ phần cần dùng và mở lại để xem bản mới.'); };
 export function guardSession(current, expected) {
   if ((current?.id ?? null) !== (expected?.id ?? null) ||

@@ -8,6 +8,39 @@
 
 ## Trạng thái và quy ước
 
+### Cloud Batch 2 — 10/10/2026 (IMPLEMENTED LOCAL; AUTOMATED PASS / BROWSER PARTIAL)
+
+Baseline clean main1487cf3 /522tests /91syntax /schema8/photoDB1/backup8+1 verified.
+User authorized complete local two-way sync, superseding Batch1 stopping boundary
+for this batch only. No provider/project/production activation or personal import.
+
+- [DONE] Separate scoped IndexedDB, atomic projection+outbox, stable installation
+  identity, localRevision guards, raw legacy/snapshot-preserving aggregate mapping.
+- [DONE] Bootstrap/pull/push, exact ACK/retry/lost-ACK recovery, tombstones,
+  durable conflicts, explicit review and offline/cache/reauth lifecycle.
+- [DONE] Existing app editor integration, minimal status/conflict/cache/live-choice
+  UI, preview-only import preparation, guarded anonymous photo boundaries.
+- [DONE] Real PostgreSQL WASM/RLS + two isolated IDB devices; 121 sync assertions
+  and retained45 Batch1 SQL assertions. Actual SessionStore/planning after JSONB ACK.
+- [DONE] Public runtime allowlist48, no new dependencies, module queriesv41.
+- [DONE] Observed two-origin browser food exchange/offline reload/cache/reauth,
+  explicit conflict choice, lost-ACK retry and import Cancel. Anonymous fixture unchanged.
+- [DONE] Final regression after scope-memory and outer-await fixes: 632/632 tests,
+  112/112 syntax; artifact48/766240bytes and HTTP hashes/private404 probes PASS.
+- [DONE] Six reports, data model appendix, implementation report and recovery
+  documentation. Local implementation checkpoint recorded in Git log; no push.
+- [PENDING] Final browser retest/full six-area navigation/backup downloads and
+ 320/360/390 on final code. Computer Use stopped on URL confidence policy; no more UI input.
+
+LOCAL automated evidence and browser release gate are separate. Real Supabase,
+native multiple PostgreSQL connections, real iPhone/Safari/production NOT VERIFIED.
+Schema8/photoDB1/backup8+1/Original plan retained; no8765 restore/test/upload/push.
+Six CLOUD_BATCH2 documents record contracts, evidence, limitations and rollback.
+
+**STOP after Batch2. NEXT:** complete missing synthetic browser QA, then separate
+approval for provider setup/testing and Batch3 migration/photo contract. Do not
+begin actual personal import, photos upload, provider provisioning or deploy.
+
 ### Cloud Implementation Batch1 — 08/10/2026 (IMPLEMENTED / TESTED LOCAL ONLY; STOP)
 
 Latest user-authorized batch supersedes the prior9B-2A stopping boundary only

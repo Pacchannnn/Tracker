@@ -1,4 +1,4 @@
-import { MOODS, normalizeJournalText, journalTagOptions, retrieveJournalEntries } from './journal.js?v=40';
+import { MOODS, normalizeJournalText, journalTagOptions, retrieveJournalEntries } from './journal.js?v=41';
 
 export function createJournalRetrievalUI({ main, getEntries, openEntry, helpers }) {
   const { node, button, panel, div, p, h2, h3, field } = helpers;
@@ -68,5 +68,5 @@ export function createJournalRetrievalUI({ main, getEntries, openEntry, helpers 
     }
     updateResults();
   }
-  return { renderTimeline, focusSearch: () => { if (searchInput?.isConnected) searchInput.focus(); } };
+  return { renderTimeline, reset() { state.query = ''; state.tags = []; state.limit = 30; searchInput = null; }, focusSearch: () => { if (searchInput?.isConnected) searchInput.focus(); } };
 }

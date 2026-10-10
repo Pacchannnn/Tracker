@@ -20,7 +20,7 @@ function setup(options={}) {
     if(result instanceof Error)throw result;
     return {ok:result.status===undefined || result.status<400,status:result.status??200,json:async()=>result.body??result};
   };
-  const adapter=createSupabaseAuthAdapter({config,fetchImpl,now:()=>time});
+  const adapter=createSupabaseAuthAdapter({config:options.config??config,fetchImpl,now:()=>time});
   const ctx=createCloudAuth({adapter,now:()=>time,setTimer:(fn,ms)=>{const key=++nextTimer;timers.set(key,{fn,at:time+ms});return key;},clearTimer:key=>timers.delete(key),...options});
   return {ctx,adapter,calls,replies,timers,setTime:value=>time=value,advance:async ms=>{time+=ms;const due=[...timers].filter(([,task])=>task.at<=time).sort((a,b)=>a[1].at-b[1].at);for(const [key,task]of due){if(timers.delete(key))task.fn();}await new Promise(resolve=>setImmediate(resolve));}};
 }
@@ -146,4 +146,21 @@ test('cloud production modules do not import the synthetic provider or account p
   for(const file of ['cloud-auth.js','cloud-auth-ui.js','cloud-config.js']){
     const source=readFileSync(new URL('../js/'+file,import.meta.url),'utf8');assert.ok(!/dev\/auth|localStorage|sessionStorage|indexedDB|\/rest\/v1|\/storage\/v1/.test(source),file);
   }
+});
+test('gateway transport keeps bearer private and uses only reviewed origin and current lease',async()=>{
+  const s=setup({config:{...config,gatewayUrl:'https://gateway.example.invalid'}});await login(s);
+  assert.equal(typeof s.ctx.gatewayCall,'function');s.replies.push({status:200,body:{status:'applied',operationId:'synthetic'}});
+  const lease=s.ctx.capture();const result=await s.ctx.gatewayCall(lease,'push',{protocolVersion:1});
+  assert.equal(result.status,'applied');const call=s.calls.at(-1);
+  assert.equal(call.url,'https://gateway.example.invalid/push');assert.equal(call.init.headers.Authorization,'Bearer private-access');
+  assert.equal(call.init.headers.apikey,undefined);assert.equal(call.init.redirect,'error');
+  assert.ok(!JSON.stringify(s.ctx.read()).includes('private-access'));
+  await assert.rejects(()=>s.ctx.gatewayCall(lease,'unapproved',{}));
+  s.replies.push({status:204});await s.ctx.logout();await assert.rejects(()=>s.ctx.gatewayCall(lease,'pull',{}));
+});
+test('late gateway response after logout cannot be accepted',async()=>{
+  const s=setup({config:{...config,gatewayUrl:'https://gateway.example.invalid'}});await login(s);
+  assert.equal(typeof s.ctx.gatewayCall,'function');const d=deferred();s.replies.push(()=>d.promise,{status:204});
+  const request=s.ctx.gatewayCall(s.ctx.capture(),'pull',{});await s.ctx.logout();d.resolve({status:200,body:{headSequence:'0'}});
+  await assert.rejects(()=>request);
 });

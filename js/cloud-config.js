@@ -4,5 +4,6 @@ export const CLOUD_AUTH_CONFIG = Object.freeze({
   enabled: false,
   environment: 'preview',
   projectUrl: '',
-  publishableKey: ''
+  publishableKey: '',
+  gatewayUrl: ''
 });

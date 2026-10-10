@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { emptyData, parseBackup, validateFood, validateEntry, validateCheckin, validateCardio, validateKnee } from '../js/data.js';
 import { validateSessionIdentity } from '../js/session-identity.js';
 import { validatePlanningDraft } from '../js/planning-draft.js';
+import { restorePlanningDraft } from '../js/cloud-records.js';
 
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -46,7 +47,7 @@ export function validateOperation(value) {
     if (expected && c.action !== expected && !(value.commandType === 'delete-records' && c.kind === 'account_settings' && c.action === 'update' && c.payload?.activePlanId === null)) fail('command_action_mismatch');
     if (value.commandType === 'complete-workout' && (c.kind !== 'workout' || c.action !== 'update' || c.phase !== 'completed')) fail('command_action_mismatch');
     if (value.commandType === 'correct-history' && !((c.kind === 'workout' && c.action === 'update' && c.phase === 'completed') || (c.kind === 'history_candidate' && c.action === 'delete'))) fail('command_action_mismatch');
-    if (value.commandType === 'update-planning' && !['plan', 'exercise', 'account_settings', 'planning_draft'].includes(c.kind)) fail('command_action_mismatch');
+    if (value.commandType === 'update-planning' && !['plan', 'exercise', 'account_settings', 'planning_draft'].includes(c.kind) && !(c.kind === 'workout' && c.action === 'create' && c.phase === 'live' && value.changes.some(other => other.kind === 'planning_draft' && ['create','update','delete'].includes(other.action)))) fail('command_action_mismatch');
   }
   return structuredClone(value);
 }
@@ -63,7 +64,20 @@ export function validateProjection(state, input) {
     const candidate = records.get(JSON.stringify(['history_candidate', candidates[0].recordId]));
     if (!source || source.deleted || source.phase !== 'completed' || !candidate || candidate.deleted || candidate.deviceId !== op.deviceId || candidate.payload.sourceSessionId !== source.recordId || canonical(candidate.payload.session.historyEditBase) !== canonical(source.payload)) fail('semantic_conflict');
     const { historyEditBase, ...corrected } = candidate.payload.session;
-    if (canonical(corrected) !== canonical(accepted[0].payload)) fail('invalid_correction');
+    if (canonical(corrected) !== canonical(accepted[0].payload)) {
+      // The existing Complete command adds exactly one domain revision and a
+      // client audit timestamp. Every reviewed exercise/set/value stays exact.
+      // Preserve Batch1's exact-payload correction path above.
+      const completed = structuredClone(corrected), submitted = accepted[0].payload;
+      const timestamp = submitted.updatedAt;
+      if (!object(completed.sessionStructure) || !Number.isSafeInteger(completed.sessionStructure.revision)
+        || completed.sessionStructure.revision >= Number.MAX_SAFE_INTEGER || !completed.sets?.length
+        || typeof timestamp !== 'string' || !Number.isFinite(Date.parse(timestamp))
+        || new Date(timestamp).toISOString() !== timestamp) fail('invalid_correction');
+      completed.sessionStructure.revision++;
+      completed.updatedAt = timestamp;
+      if (canonical(completed) !== canonical(submitted)) fail('invalid_correction');
+    }
   }
   for (const c of op.changes) {
     const key = JSON.stringify([c.kind, c.recordId]), old = records.get(key);
@@ -91,7 +105,7 @@ export function validateProjection(state, input) {
     } else if (r.kind === 'exercise_note') {
       if (!keysOnly(p, ['text']) || typeof p.text !== 'string' || ['__proto__', 'constructor', 'prototype'].includes(r.recordId)) fail('invalid_note');
       data.exerciseNotes[r.recordId] = p.text;
-    } else if (r.kind === 'planning_draft') validatePlanningDraft(p);
+    } else if (r.kind === 'planning_draft') validatePlanningDraft(restorePlanningDraft(p));
     else if (r.kind === 'history_candidate') {
       if (!keysOnly(p, ['sourceSessionId', 'session']) || !id(p.sourceSessionId) || !object(p.session) || p.session.id !== p.sourceSessionId) fail('invalid_history_candidate');
       const candidate = emptyData(); candidate.draft = p.session; parseBackup(JSON.stringify(candidate));

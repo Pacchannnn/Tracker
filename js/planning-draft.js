@@ -1,5 +1,6 @@
-import { validateSlot, libraryExercises, validateWorkoutSnapshot } from './custom-workout.js?v=40';
-import { createPlannerRequest, validatePlannerOutput } from './planner.js?v=40';
+import { validateSlot, libraryExercises, validateWorkoutSnapshot } from './custom-workout.js?v=41';
+import { createPlannerRequest, validatePlannerOutput } from './planner.js?v=41';
+import { canonicalJSON } from './data.js?v=41';
 
 export const emptyPlanningDraft = () => ({ revision: 0, builder: null, planner: null });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
@@ -72,7 +73,7 @@ export function createDraftStore({ getData, write }) {
   let expected, queue = Promise.resolve(), state = { state: 'idle' }, pending = 0, epoch = 0;
   const listeners = new Set();
   const publish = value => { state = value; for (const listener of listeners) listener(state); };
-  const initialize = () => { if (expected === undefined) expected = JSON.stringify(getData().planningDraft); };
+  const initialize = () => { if (expected === undefined) expected = canonicalJSON(getData().planningDraft); };
   function run(kind, payload, change) {
     initialize(); const generation = epoch; pending++;
     publish({ state: 'saving' });
@@ -80,7 +81,8 @@ export function createDraftStore({ getData, write }) {
       if (generation !== epoch) throw new Error('Bản nháp đã được mở lại; thao tác cũ đã hủy.');
       if (payload !== null && payload !== undefined) validateDraftPayload(kind, payload);
       const next = await write(data => {
-        if (JSON.stringify(data.planningDraft) !== expected) throw new Error('Bản nháp đã đổi ở tab khác. Phần đang nhập chưa lưu; sao chép phần cần giữ rồi tải lại trang để mở bản nháp mới.');
+        if (generation !== epoch) throw new Error('Bản nháp cũ đã hủy trước khi ghi dữ liệu.');
+        if (canonicalJSON(data.planningDraft) !== expected) throw new Error('Bản nháp đã đổi ở tab khác. Phần đang nhập chưa lưu; sao chép phần cần giữ rồi tải lại trang để mở bản nháp mới.');
         const revision = Number.isSafeInteger(data.planningDraft?.revision) ? data.planningDraft.revision : 0;
         if (revision >= Number.MAX_SAFE_INTEGER) throw new Error('Revision bản nháp vượt giới hạn.');
         if (change) change(data);
@@ -89,12 +91,13 @@ export function createDraftStore({ getData, write }) {
         if (payload !== undefined) envelope[kind] = payload === null ? null : { savedAt: new Date().toISOString(), payload: structuredClone(payload) };
         data.planningDraft = envelope;
       });
-      expected = JSON.stringify(next.planningDraft);
+      if (generation !== epoch) throw new Error('Bản nháp cũ đã hủy sau khi mở lại dữ liệu.');
+      expected = canonicalJSON(next.planningDraft);
       return next;
     });
     queue = operation.catch(() => {});
-    return operation.then(next => { pending--; if (!pending) publish({ state: 'saved', savedAt: next.planningDraft[kind]?.savedAt }); return next; }, error => {
-      pending--; publish({ state: 'error', message: error.message }); throw error;
+    return operation.then(next => { if (generation === epoch) { pending--; if (!pending) publish({ state: 'saved', savedAt: next.planningDraft[kind]?.savedAt }); } return next; }, error => {
+      if (generation === epoch) { pending--; publish({ state: 'error', message: error.message }); } throw error;
     });
   }
   return {
@@ -105,7 +108,7 @@ export function createDraftStore({ getData, write }) {
     flush: () => queue,
     status: () => state,
     subscribe(listener) { listeners.add(listener); listener(state); return () => listeners.delete(listener); },
-    reset() { epoch++; expected = JSON.stringify(getData().planningDraft); publish({ state: 'idle' }); },
+    reset() { epoch++; pending = 0; queue = Promise.resolve(); expected = canonicalJSON(getData().planningDraft); publish({ state: 'idle' }); },
     recover(kind) {
       initialize();
       const envelope = getData().planningDraft;

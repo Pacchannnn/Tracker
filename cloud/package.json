@@ -1,7 +1,7 @@
 {
   "private": true,
   "type": "module",
-  "scripts": { "test:db": "node tests/run-db.js", "start": "node server.js" },
+  "scripts": { "test:db": "node tests/run-db.js", "test:sync": "node tests/run-sync-db.js", "start": "node server.js" },
   "dependencies": { "pg": "8.23.1" },
   "devDependencies": { "@electric-sql/pglite": "0.5.8" }
 }

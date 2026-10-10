@@ -1,5 +1,31 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-08 (Phase8B-2 verified local scope complete; STOP after8B-2)
+Updated: 2026-10-10 (Cloud Batch2 local implementation; automated verified, browser partial)
+
+CURRENT PROJECT STATE — CLOUD BATCH2
+CURRENT PHASE: Cloud Batch2. CURRENT STEP: handoff; final browser release gate pending.
+Baseline main1487cf3,522tests,91syntax; schema8/photoDB1/backup8+1 unchanged.
+COMPLETED: account-scoped IDB + atomic outbox + two-way engine, offline cache,
+retry/lostACK, CAS/tombstone/conflict review, lifecycle/epoch guards, importpreview,
+existing-app integration, private UI-memory resets and guarded local photo writers.
+TESTED: full632/632 tests,112/112 syntax; actualSQL121 assertions + existingSQL45.
+Artifacts: explicit48-file/766240byte runtime allowlist; modulev41; no new dependencies.
+IN PROGRESS: none in local implementation; checkpoint recorded in Git log.
+PENDING: final browser retest/mobile320/360/390/navigation/backup downloads.
+BLOCKERS: Computer Use stopped on uncertain URL; no further UI input attempted.
+REAL SUPABASE/native concurrency/iPhone/Safari/production: NOT VERIFIED.
+NEXT: finish outstanding synthetic browser gates, then separately approved provider
+setup/verification and Batch3 import/ownership/ledger/rollback/photo contract.
+DECISIONS NEEDED: provider ownership/region/credentials/email/cost/gateway approval;
+import mapping, duplicate policy, durable recovery/export and image retention.
+KNOWN LIMITATIONS: cache not encrypted; no cold-start offline guarantee; scoped-row
+growth/no garbage collection; conservative head conflict; copy_required/compound
+review; unsupported atomic recovery combinations fail closed and retain source.
+BACKLOG: actual personal import/cloud photos/deployment/AI/PWA remain unstarted.
+Model: current coding model; reasoning high for lifecycle/CAS/domain tests,
+medium for documentation. Do not start a new phase or push automatically.
+Reports: six CLOUD_BATCH2_*.md documents + V4_IMPLEMENTATION_REPORT.md.
+
+HISTORICAL STATUS — 2026-10-08 (Phase8B-2; superseded by the current status above)
 
 CURRENT PROJECT STATE
 Phase1-7,8B-1,8B-2 IMPLEMENTED / TESTED in verified local scope;8A DESIGN / RESEARCH ONLY.

@@ -1,5 +1,6 @@
-import { libraryExercises, defaultSlot, validateSlot } from './custom-workout.js?v=40';
-import { sessionGeneration, validateSessionIdentity } from './session-identity.js?v=40';
+import { libraryExercises, defaultSlot, validateSlot } from './custom-workout.js?v=41';
+import { sessionGeneration, validateSessionIdentity } from './session-identity.js?v=41';
+import { canonicalJSON } from './data.js?v=41';
 
 export function liveStructureAllowed(session, completed = []) {
   if (!session || sessionGeneration(session) !== 'structured' || session.historyEditBase != null || completed.some(item => item.id === session.id)) return false;
@@ -18,7 +19,7 @@ export function reviewReplacement(definition, data, source) {
 }
 function acceptedDefinition(pick, data, active) {
   const definition = libraryExercises(data.customExercises).find(item => item.id === pick?.definition?.id);
-  if (!definition || definition.archived || JSON.stringify(definition) !== JSON.stringify(pick.definition)) throw new Error('Bài đã đổi/bị xóa/ẩn so với preview. Mở lại để duyệt định nghĩa mới.');
+  if (!definition || definition.archived || canonicalJSON(definition) !== canonicalJSON(pick.definition)) throw new Error('Bài đã đổi/bị xóa/ẩn so với preview. Mở lại để duyệt định nghĩa mới.');
   if (active.has(definition.id)) throw new Error('Bài đã có mục đang tập; không thêm/thay bằng bài trùng active.');
   if (typeof pick.setupNote !== 'string' || pick.setupNote !== liveSetupNote(data, definition.id)) throw new Error('Ghi chú setup đã đổi; duyệt lại trước khi thêm/thay bài.');
   return definition;

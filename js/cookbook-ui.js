@@ -1,10 +1,15 @@
-import { ensureUnchanged } from './data.js?v=40';
-import { normalizeRecipeText,searchRecipes,recipeTagOptions,duplicateRecipeDefinition,recipeFormValues,cookingPreview,createRecipeDuplicateWriter } from './cookbook.js?v=40';
+import { ensureUnchanged } from './data.js?v=41';
+import { normalizeRecipeText,searchRecipes,recipeTagOptions,duplicateRecipeDefinition,recipeFormValues,cookingPreview,createRecipeDuplicateWriter } from './cookbook.js?v=41';
 
 export function createCookbookUI({main,getData,getLatest,write,acceptData,render,onDuplicateStart,clearPhotoUrls,helpers}) {
   const {node,button,field,panel,div,p,h2,h3,fmt,id,message}=helpers;
-  const filters={query:'',tags:[]};let draft=null,cooking=null,busy=false,duplicateError='';
-  const writer=createRecipeDuplicateWriter({write,createId:id});
+  const filters={query:'',tags:[]};let draft=null,cooking=null,busy=false,duplicateError='',epoch=0;
+  function newWriter(){
+    const captured=epoch;
+    return createRecipeDuplicateWriter({write:change=>write(next=>{if(captured!==epoch)throw new Error('Không gian dữ liệu đã đổi.');change(next);}),createId:id});
+  }
+  let writer=newWriter();
+  function reset(){++epoch;draft=null;cooking=null;busy=false;duplicateError='';filters.query='';filters.tags=[];writer=newWriter();}
   const focus=el=>{if(el){el.focus();el.scrollIntoView({block:'center'});}};
   const findCard=recipeId=>[...main.querySelectorAll('[data-recipe-id]')].find(el=>el.dataset.recipeId===recipeId);
   function returnToCard(recipeId,action='cook') {
@@ -20,16 +25,18 @@ export function createCookbookUI({main,getData,getLatest,write,acceptData,render
   function cancelDuplicate(){if(busy)return;const sourceId=draft?.source.id;draft=null;duplicateError='';returnToCard(sourceId,'duplicate');}
   function bindDuplicateForm(form) {
     if(!draft)return;
+    const captured=epoch,boundDraft=draft;
     const error=p(duplicateError,'notice error');error.hidden=!duplicateError;error.setAttribute('role','alert');error.setAttribute('tabindex','-1');form.prepend(error);
-    form.addEventListener('input',()=>{if(!busy)draft.raw=Object.fromEntries(new FormData(form));});
+    form.addEventListener('input',()=>{if(captured===epoch&&draft===boundDraft&&!busy)draft.raw=Object.fromEntries(new FormData(form));});
     form.append(button('Hủy bản sao',cancelDuplicate));
     form.addEventListener('submit',async event=>{
-      event.preventDefault();if(busy)return;draft.raw=Object.fromEntries(new FormData(form));const current=draft;
+      event.preventDefault();if(busy||captured!==epoch||draft!==boundDraft)return;draft.raw=Object.fromEntries(new FormData(form));const current=draft;
       busy=true;form.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=true);error.hidden=true;
       try {
-        const next=await writer.save(current);const copyId=next.recipes.at(-1).id;acceptData(next);draft=null;busy=false;render();message('Đã lưu một bản sao công thức. Lịch sử và ảnh nguồn giữ nguyên.');
+        const next=await writer.save(current);if(captured!==epoch)return;const copyId=next.recipes.at(-1).id;acceptData(next);draft=null;busy=false;render();message('Đã lưu một bản sao công thức. Lịch sử và ảnh nguồn giữ nguyên.');
         const card=findCard(copyId);if(card){card.open=true;focus(card.querySelector('[data-recipe-action=cook]'));}else focus(main.querySelector('[name=recipeSearch]'));
       }catch(problem){
+        if(captured!==epoch)return;
         busy=false;duplicateError=problem.message;
         if(main.querySelector('.recipe-editor')&&!form.isConnected){render();focus(main.querySelector('.recipe-editor [role=alert]'));}
         else if(form.isConnected){form.querySelectorAll('input,textarea,select,button').forEach(el=>el.disabled=false);error.hidden=false;error.textContent=duplicateError;focus(error);}
@@ -93,6 +100,6 @@ export function createCookbookUI({main,getData,getLatest,write,acceptData,render
     }
     input.addEventListener('input',()=>{state.target=input.value;update();});update();return true;
   }
-  return {renderLibrary,renderCooking,openDuplicate,openCooking,bindDuplicateForm,duplicateDraft:()=>draft,
+  return {renderLibrary,renderCooking,openDuplicate,openCooking,bindDuplicateForm,reset,duplicateDraft:()=>draft,
     discardDuplicate:()=>{if(busy)return false;draft=null;return true;}};
 }

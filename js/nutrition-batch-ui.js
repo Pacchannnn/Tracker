@@ -1,12 +1,20 @@
-import { dailyTotals, validateEntry, localDate } from './data.js?v=40';
-import { searchFoods } from './nutrition.js?v=40';
-import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=40';
+import { dailyTotals, validateEntry, localDate } from './data.js?v=41';
+import { searchFoods } from './nutrition.js?v=41';
+import { nutritionChoice, recentNutritionChoices, selectNutritionRow, selectCopyRow, reviewNutritionBatch, createNutritionBatchWriter } from './nutrition-batch.js?v=41';
 
 const meals = ['Breakfast','Lunch','Snack','Dinner','Custom'];
 export function createNutritionBatchUI({ main, getData, getLatest, write, acceptData, render, onSaved, helpers }) {
   const { node, button, field, panel, div, p, h2, h3, fmt, id } = helpers;
-  const writer = createNutritionBatchWriter({write,createId:id});
-  let state = null, busy = false, error = '';
+  let state = null, busy = false, error = '', epoch = 0;
+  function newWriter() {
+    const captured = epoch;
+    return createNutritionBatchWriter({ write: change => write(next => {
+      if (captured !== epoch) throw new Error('Không gian dữ liệu đã đổi.');
+      change(next);
+    }), createId: id });
+  }
+  let writer = newWriter();
+  function reset() { ++epoch; state = null; busy = false; error = ''; writer = newWriter(); }
   const focus = element => { if (element) { element.focus(); element.scrollIntoView({block:'center'}); } };
   function refresh(selector) { render(); if(selector) focus(main.querySelector(selector)); }
   function start(mode,date) {
@@ -98,7 +106,7 @@ export function createNutritionBatchUI({ main, getData, getLatest, write, accept
     updateChoices();
   }
   function renderReview(box,cancel,feedback) {
-    const review=state.review;
+    const review=state.review, captured = epoch;
     box.append(p(`Review ${review.rows.length} món → ${review.date} · ${review.meal??'Giữ bữa nguồn'}`,'summary'));
     const rowsHost=div('batch-review'); box.append(rowsHost);
     review.rows.forEach((row,index)=>{
@@ -126,17 +134,18 @@ export function createNutritionBatchUI({ main, getData, getLatest, write, accept
     });
     const back=button('Quay lại chọn món',()=>{if(!busy){state.review=null;error='';refresh('.nutrition-batch input');}});
     const save=button(`Thêm ${review.rows.length} món`,async()=>{
-      if(busy)return;
+      if(busy || captured !== epoch)return;
       busy=true;box.querySelectorAll('button,input,select').forEach(control=>control.disabled=true);save.textContent='Đang lưu…';
       try {
-        const next=await writer.commit(review);acceptData(next);const destination=review.date,count=review.rows.length;
+        const next=await writer.commit(review);if(captured !== epoch)return;acceptData(next);const destination=review.date,count=review.rows.length;
         state=null;error='';busy=false;onSaved(destination,count);
       } catch(problem) {
+        if(captured !== epoch)return;
         busy=false;error=problem.message;render();focus(main.querySelector('.nutrition-batch .notice'));
       }
     },'primary');
     box.append(div('actions',save,back,cancel));
     feedback.setAttribute('tabindex','-1');
   }
-  return {render:renderBatch};
+  return {render:renderBatch,reset};
 }

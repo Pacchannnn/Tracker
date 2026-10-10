@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 // Public runtime allowlist. Adding a file requires review; never copy whole folders.
 const ASSETS = [
   'index.html', 'css/style.css', 'assets/fonts/PatrickHand-Regular.ttf', 'assets/fonts/OFL.txt',
-  'js/app.js', 'js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js', 'js/cookbook.js', 'js/cookbook-ui.js', 'js/custom-workout.js', 'js/data.js',
+  'js/app.js', 'js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js', 'js/cloud-store.js', 'js/cloud-records.js', 'js/cloud-sync.js', 'js/cloud-workspace.js', 'js/cloud-workspace-ui.js', 'js/cloud-import-preview.js', 'js/cookbook.js', 'js/cookbook-ui.js', 'js/custom-workout.js', 'js/data.js',
   'js/exercise-picker.js', 'js/exercise-picker-ui.js', 'js/gym-builder-ui.js', 'js/journal.js',
   'js/journal-retrieval-ui.js', 'js/life-review.js', 'js/life-review-ui.js', 'js/life-review-source.js',
   'js/live-workout-ui.js', 'js/month-memories-ui.js', 'js/my-day.js', 'js/my-day-ui.js',
@@ -77,7 +77,7 @@ function audit(assets) {
       networkText = text.replace(transport, 'reviewedAuthTransport');
     }
     if (/\b(?:fetch|WebSocket|EventSource)\s*\(|\.sendBeacon\s*\(/.test(networkText)) throw new Error(`Unexpected network API in ${path}`);
-    if (path === 'js/cloud-config.js' && (!/enabled:\s*false/.test(text) || !/projectUrl:\s*''/.test(text) || !/publishableKey:\s*''/.test(text))) throw new Error('Provider activation requires a separately reviewed packaging configuration.');
+    if (path === 'js/cloud-config.js' && (!/enabled:\s*false/.test(text) || !/projectUrl:\s*''/.test(text) || !/publishableKey:\s*''/.test(text) || !/gatewayUrl:\s*''/.test(text))) throw new Error('Provider activation requires a separately reviewed packaging configuration.');
     let references = [];
     if (path.endsWith('.html')) references = [...text.matchAll(/\b(?:src|href)\s*=\s*(['"])(.*?)\1/g)].map(x => x[2]);
     if (path.endsWith('.css')) {

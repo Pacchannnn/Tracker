@@ -1,4 +1,4 @@
-import { validDate } from './data.js?v=40';
+import { validDate } from './data.js?v=41';
 
 export const PHOTO_CATEGORIES = [
   { value: 'daily', label: 'Nhật ký ngày' },
@@ -43,8 +43,13 @@ export function validatePhotoFile(file) {
 
 const DB_NAME = 'tracker-photos';
 const STORE = 'photos';
+const noGuard = () => {};
+function guardedCallback(tx, guard, action) {
+  try { guard(); action(); }
+  catch { try { tx.abort(); } catch { /* The transaction is already closed. */ } }
+}
 
-function openDb() {
+function openDb(guard = noGuard) {
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB) { reject(new Error('Trình duyệt không hỗ trợ lưu ảnh cục bộ (IndexedDB).')); return; }
     const request = indexedDB.open(DB_NAME, 1);
@@ -52,6 +57,7 @@ function openDb() {
     request.onblocked = () => { blocked = true; reject(new Error('Kho ảnh đang được dùng ở tab khác.')); };
     request.onupgradeneeded = () => {
       if (blocked) { request.transaction.abort(); return; }
+      try { guard(); } catch { request.transaction.abort(); return; }
       request.result.createObjectStore(STORE, { keyPath: 'id' });
     };
     request.onsuccess = () => blocked ? request.result.close() : resolve(request.result);
@@ -59,14 +65,17 @@ function openDb() {
   });
 }
 
-async function transaction(mode, action) {
-  const db = await openDb();
+async function transaction(mode, action, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, mode);
       let result;
       try { result = action(tx.objectStore(STORE)); }
       catch (error) { tx.abort(); reject(error); return; }
+      result?.addEventListener('success', () => guardedCallback(tx, guard, () => {}));
       tx.oncomplete = () => resolve(result);
       tx.onerror = () => reject(new Error('Kho ảnh gặp lỗi khi đọc hoặc lưu.'));
       tx.onabort = () => reject(new Error('Thao tác ảnh đã bị hủy. Có thể trình duyệt đã hết dung lượng.'));
@@ -154,8 +163,8 @@ export async function getPhotoThumbnail(id) {
   } finally { db.close(); }
 }
 
-export async function putPhoto(record) {
-  await transaction('readwrite', store => store.put(record));
+export async function putPhoto(record, guard = noGuard) {
+  await transaction('readwrite', store => store.put(record), guard);
 }
 
 export async function deletePhoto(id) {
@@ -176,53 +185,59 @@ function sameOwnedPhotos(current, expected) {
   return expected === null || signature(current) === signature(expected);
 }
 
-export async function replaceOwnedPhoto(record, expectedPhotos = null) {
+export async function replaceOwnedPhoto(record, expectedPhotos = null, guard = noGuard) {
+  guard();
   validatePhotoMeta(record);
   if (!record.ownerType) throw new Error('Ảnh thiếu chủ sở hữu.');
-  const db = await openDb();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite'), store = tx.objectStore(STORE);
       const request = store.getAll();
-      request.onsuccess = () => {
+      request.onsuccess = () => guardedCallback(tx, guard, () => {
         const current = ownedPhotos(request.result, record.ownerType, record.ownerId);
         if (!sameOwnedPhotos(current, expectedPhotos)) { tx.abort(); reject(new Error('Ảnh món đã đổi ở tab khác. Mở lại thư viện trước khi thay.')); return; }
         try { for (const previous of current) store.delete(previous.id); store.put(record); }
         catch { tx.abort(); }
-      };
+      });
       tx.oncomplete = resolve;
       tx.onerror = tx.onabort = () => reject(new Error('Không lưu được ảnh món ăn. Ảnh cũ vẫn được giữ khi giao dịch thất bại.'));
     });
   } finally { db.close(); }
 }
 
-export async function deleteOwnedPhotos(ownerType, ownerId, expectedPhotos = null) {
-  const db = await openDb();
+export async function deleteOwnedPhotos(ownerType, ownerId, expectedPhotos = null, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite'), store = tx.objectStore(STORE), request = store.getAll();
-      request.onsuccess = () => {
+      request.onsuccess = () => guardedCallback(tx, guard, () => {
         const current = ownedPhotos(request.result, ownerType, ownerId);
         if (!sameOwnedPhotos(current, expectedPhotos)) { tx.abort(); reject(new Error('Ảnh món đã đổi ở tab khác. Mở lại trước khi gỡ.')); return; }
         try { for (const item of current) store.delete(item.id); } catch { tx.abort(); }
-      };
+      });
       tx.oncomplete = resolve;
       tx.onerror = tx.onabort = () => reject(new Error('Không gỡ được ảnh khỏi kho cục bộ.'));
     });
   } finally { db.close(); }
 }
 
-export async function updatePhotoIfUnchanged(previous, meta, updatedAt) {
-  const db = await openDb();
+export async function updatePhotoIfUnchanged(previous, meta, updatedAt, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
       const store = tx.objectStore(STORE);
       const request = store.get(previous.id);
-      request.onsuccess = () => {
+      request.onsuccess = () => guardedCallback(tx, guard, () => {
         if (!request.result || request.result.updatedAt !== previous.updatedAt) { tx.abort(); return; }
         store.put({ ...request.result, ...meta, updatedAt });
-      };
+      });
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(new Error('Không lưu được thay đổi ảnh.'));
       tx.onabort = () => reject(new Error('Ảnh đã đổi ở tab khác. Hãy mở lại.'));
@@ -230,17 +245,19 @@ export async function updatePhotoIfUnchanged(previous, meta, updatedAt) {
   } finally { db.close(); }
 }
 
-export async function deletePhotoIfUnchanged(previous) {
-  const db = await openDb();
+export async function deletePhotoIfUnchanged(previous, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
       const store = tx.objectStore(STORE);
       const request = store.get(previous.id);
-      request.onsuccess = () => {
+      request.onsuccess = () => guardedCallback(tx, guard, () => {
         if (!request.result || request.result.updatedAt !== previous.updatedAt) { tx.abort(); return; }
         store.delete(previous.id);
-      };
+      });
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(new Error('Không xóa được ảnh.'));
       tx.onabort = () => reject(new Error('Ảnh đã đổi ở tab khác. Hãy mở lại.'));
@@ -248,19 +265,21 @@ export async function deletePhotoIfUnchanged(previous) {
   } finally { db.close(); }
 }
 
-export async function deleteDailyPhotos(date) {
-  const db = await openDb();
+export async function deleteDailyPhotos(date, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
       let removed = 0;
       const cursor = tx.objectStore(STORE).openCursor();
-      cursor.onsuccess = () => {
+      cursor.onsuccess = () => guardedCallback(tx, guard, () => {
         const current = cursor.result;
         if (!current) return;
         if (current.value.category === 'daily' && current.value.date === date) { current.delete(); removed++; }
         current.continue();
-      };
+      });
       tx.oncomplete = () => resolve(removed);
       tx.onerror = () => reject(new Error('Không dọn được ảnh của nhật ký.'));
       tx.onabort = () => reject(new Error('Không dọn được ảnh của nhật ký.'));
@@ -268,16 +287,18 @@ export async function deleteDailyPhotos(date) {
   } finally { db.close(); }
 }
 
-export async function addMissingPhotos(records) {
-  const db = await openDb();
+export async function addMissingPhotos(records, guard = noGuard) {
+  guard();
+  const db = await openDb(guard);
   try {
+    guard();
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
       const store = tx.objectStore(STORE);
       let added = 0;
       for (const item of records) {
         const request = store.get(item.id);
-        request.onsuccess = () => { if (!request.result) { store.add(item); added++; } };
+        request.onsuccess = () => guardedCallback(tx, guard, () => { if (!request.result) { store.add(item); added++; } });
       }
       tx.oncomplete = () => resolve({ added, skipped: records.length - added });
       tx.onerror = () => reject(new Error('Không nhập được ảnh vào kho cục bộ.'));
