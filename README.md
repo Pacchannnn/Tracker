@@ -210,3 +210,8 @@ Vào **Dinh dưỡng → Công thức**:
 - Công thức mới dùng được trong **Thêm nhiều món** như công thức thường. Xóa definition giữ snapshot đã ghi, My Day và copy có chọn. Nút **Bỏ món** ngắn nhưng tên truy cập giữ đầy đủ tên món.
 
 Đã kiểm tra synthetic browser A–L,320/360/390 và keyboard/focus. Chưa kiểm chứng điện thoại vật lý/Safari/screen reader/quota thật; search tuyến tính cho thư viện cá nhân, chưa đo thư viện lớn. Không có persistent cooking checklist. Xem báo cáo để biết giới hạn chính xác.
+# Cloud Batch3 preview setup
+
+Build-time public environment configuration is supported without editing source.
+No cloud variables keeps local-only behavior. See [beginner setup guide](CLOUD_BATCH3_SETUP_GUIDE.md) and [verification report](CLOUD_BATCH3_IMPLEMENTATION.md).
+Gateway writes remain disabled; real migrations/deployment/uploads need separate approval.

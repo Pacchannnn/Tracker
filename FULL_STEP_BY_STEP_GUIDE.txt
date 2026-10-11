@@ -1,4 +1,15 @@
 TRACKER — COMPLETE PROJECT GUIDE
+CURRENT STATUS (Cloud Batch3,2026-10-11): integrated LOCAL PREVIEW READINESS.
+COMPLETED: public env build configuration; exact HTTPS-origin CORS/hosting config,
+health endpoint, same verified Auth/restricted DB/TLS with writes fixed false;
+hosted SQL review/read-only preflight and beginner Dashboard/SMTP/hosting guide.
+CURRENT STEP: handoff;local readiness PASS639tests/112syntax/SQL45+121/48assets.
+No hosted operations approved;remote/provider acceptance NOT VERIFIED.
+NEXT/DECISIONS: approve Auth/accounts,remote preflight/migrations/role/provisioning,
+gateway hosting/deploy and separate synthetic writes. Preview Singapore selected.
+See CLOUD_BATCH3_IMPLEMENTATION.md for final evidence and limitations.
+
+Historical Batch2 status:
 Updated: 2026-10-11 (Cloud Batch2 final browser acceptance; LOCAL SYNTHETIC PASS)
 
 CURRENT PROJECT STATE — CLOUD BATCH2 FINAL BROWSER QA

@@ -1,4 +1,8 @@
-# Tracker V4 — Cloud Batch 2 final browser acceptance
+# Tracker V4 — Cloud Batch3 preview readiness
+
+11/10/2026. Integrated local implementation authorized from a9d1a78. Current details/tests in CLOUD_BATCH3_IMPLEMENTATION.md; beginner/operator instructions in CLOUD_BATCH3_SETUP_GUIDE.md. Preview public config generated at build, source remains disabled; Node gateway prepares managed HTTPS with one explicit CORS origin/PORT, read-only health and writes fixed false. No hosted execution, roles, deploy, upload, personal migration or push. Schema8/photoDB1/backup8+1 preserved. Batch2 acceptance below remains historical evidence, not provider verification.
+
+# Historical: Cloud Batch 2 final browser acceptance
 
 11/10/2026 · **LOCAL SYNTHETIC ACCEPTANCE PASS; REAL SUPABASE / PHYSICAL DEVICES NOT VERIFIED.**
 STOP after Batch2. Baseline d633f17 clean main632tests/112syntax/SQL45+121/48assets

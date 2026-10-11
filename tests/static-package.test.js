@@ -18,6 +18,34 @@ function fixture(t) {
   return root;
 }
 function run(root, ...args) { return spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' }); }
+function previewRun(root, env, ...args) { return spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8', env: { ...process.env, ...env } }); }
+const previewEnv = { TRACKER_PUBLIC_CLOUD_ENABLED:'true', TRACKER_PUBLIC_ENVIRONMENT:'preview', TRACKER_PUBLIC_SUPABASE_URL:'https://syntheticpreview.supabase.co', TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_SYNTHETIC', TRACKER_PUBLIC_GATEWAY_URL:'https://gateway.example.invalid' };
+
+test('preview public environment generates only config artifact and leaves source disabled', t => {
+  const root=fixture(t), before=readFileSync(join(root,'js/cloud-config.js'));
+  assert.equal(previewRun(root,previewEnv).status,0);
+  const config=readFileSync(join(root,'dist/js/cloud-config.js'),'utf8');
+  assert.ok(config.includes('syntheticpreview.supabase.co')); assert.ok(config.includes('"enabled":true'));
+  assert.deepEqual(readFileSync(join(root,'js/cloud-config.js')),before);
+  assert.equal(previewRun(root,previewEnv,'--check').status,0);
+  assert.notEqual(run(root,'--check').status,0);
+  assert.equal(run(root).status,0); assert.deepEqual(readFileSync(join(root,'dist/js/cloud-config.js')),before);
+});
+test('partial/secret/injection/production public config rejects without exposing values or replacing artifact', t => {
+  const root=fixture(t); assert.equal(run(root).status,0); const before=readFileSync(join(root,'dist/js/cloud-config.js'));
+  for (const patch of [{TRACKER_PUBLIC_GATEWAY_URL:''},{TRACKER_PUBLIC_ENVIRONMENT:'production'},{TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'sb_secret_'+ 'X'.repeat(40)},{TRACKER_PUBLIC_GATEWAY_URL:'https://gateway.example.invalid/path'},{TRACKER_PUBLIC_SUPABASE_URL:"https://x.supabase.co';fetch('evil')"},{TRACKER_PUBLIC_CLOUD_ENABLED:'false'}]) {
+    const result=previewRun(root,{...previewEnv,...patch}); assert.notEqual(result.status,0); assert.deepEqual(readFileSync(join(root,'dist/js/cloud-config.js')),before);
+    assert.ok(!result.stderr.includes(patch.TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'unlikely-secret-sentinel'));
+  }
+});
+test('preview artifact copies only public allowlisted environment, never database credentials', t => {
+  const root=fixture(t), marker='SYNTHETIC_SERVER_ONLY_SENTINEL';
+  const result=previewRun(root,{...previewEnv,DATABASE_URL:'postgresql://runtime:'+marker+'@localhost/postgres',SUPABASE_SECRET_KEY:'sb_secret_'+ 'Z'.repeat(40)});
+  assert.equal(result.status,0,result.stderr);
+  for(const path of files(join(root,'dist'))) assert.ok(!readFileSync(join(root,'dist',path)).includes(Buffer.from(marker)));
+  appendFileSync(join(root,'dist/js/cloud-config.js'),'\n// tamper');
+  assert.notEqual(previewRun(root,previewEnv,'--check').status,0);
+});
 function files(root) { return readdirSync(root, { recursive: true, withFileTypes: true }).filter(x => x.isFile()).map(x => relative(root, join(x.parentPath, x.name)).replaceAll('\\', '/')).sort(); }
 
 test('package excludes private, development and unapproved same-extension files', t => {

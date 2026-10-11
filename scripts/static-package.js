@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync, readdirSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, join, posix } from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -58,13 +58,23 @@ function reference(from, specifier) {
   if (url.origin !== 'https://artifact.invalid' || !allowed.has(path)) throw new Error(`Unapproved resource in ${from}`);
   return path;
 }
-function audit(assets) {
+function publicConfig() {
+  const names=['TRACKER_PUBLIC_CLOUD_ENABLED','TRACKER_PUBLIC_ENVIRONMENT','TRACKER_PUBLIC_SUPABASE_URL','TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY','TRACKER_PUBLIC_GATEWAY_URL'];
+  const values=names.map(name=>process.env[name] || '');
+  if(values.every(value=>!value)) return null;
+  const [enabled,environment,projectUrl,publishableKey,gatewayUrl]=values;
+  if(enabled!=='true' || environment!=='preview' || !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(projectUrl) || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(publishableKey) || !/^https:\/\/[a-z0-9]+(?:[.-][a-z0-9]+)*(?::\d{1,5})?$/i.test(gatewayUrl)) throw new Error('Invalid or incomplete public preview configuration; values redacted.');
+  if(new URL(gatewayUrl).origin!==gatewayUrl) throw new Error('Invalid gateway origin; value redacted.');
+  return Buffer.from('export const CLOUD_AUTH_CONFIG = Object.freeze('+JSON.stringify({enabled:true,environment,projectUrl,publishableKey,gatewayUrl})+');\n');
+}
+function audit(assets, generatedConfig = null) {
   const graph = new Map();
   const secrets = /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:sk(?:-proj)?[-_]|sb_secret_|ghp_|github_pat_)[A-Za-z0-9_-]{20,}|\beyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}/;
   for (const [path, bytes] of assets) {
     if (!/\.(?:js|html|css|txt)$/.test(path)) continue;
     const text = bytes.toString('utf8');
     if (secrets.test(text)) throw new Error(`Secret-like content in ${path}; matching value redacted.`);
+    if(path==='js/cloud-config.js' && generatedConfig && bytes.equals(generatedConfig)) { graph.set(path,[]); continue; }
     // OFL contains attribution URLs as plain text, never loaded by the app.
     if (path === 'assets/fonts/OFL.txt') continue;
     if (/sourceMappingURL|\bFixture\b|phase8Probe|https?:\/\//.test(text)) throw new Error(`Unexpected map, fixture or remote URL in ${path}`);
@@ -118,17 +128,20 @@ try {
   if (args.length > 1 || args.some(arg => !['--check', '--inventory'].includes(arg))) throw new Error('Usage: node scripts/static-package.js [--check|--inventory]');
   checkConfig();
   const source = readAssets(root); audit(source);
+  const generatedConfig=publicConfig();
+  if(generatedConfig) source.set('js/cloud-config.js',generatedConfig);
+  audit(source,generatedConfig);
   if (existsSync(output)) checkOutputNames(output);
   if (!args.length) {
     // No recursive deletion. Preflight all sources before touching generated files.
     for (const path of ASSETS) {
       noLinks(root, `dist/${path}`);
       mkdirSync(join(output, posix.dirname(path)), { recursive: true });
-      copyFileSync(join(root, path), join(output, path));
+      writeFileSync(join(output, path), source.get(path));
     }
   }
   checkOutputNames(output);
-  const artifact = readAssets(output); audit(artifact);
+  const artifact = readAssets(output); audit(artifact,generatedConfig);
   const inventory = ASSETS.map(path => {
     const bytes = artifact.get(path), sha256 = hash(bytes);
     if (sha256 !== hash(source.get(path))) throw new Error(`Artifact differs from source: ${path}`);

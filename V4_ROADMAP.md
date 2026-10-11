@@ -8,6 +8,10 @@
 
 ## Trạng thái và quy ước
 
+### Cloud Batch3 — preview readiness,11/10/2026
+
+User approved one integrated local readiness batch from a9d1a78; Singapore Free project designated preview/synthetic-only. Build-time public environment config and exact HTTPS-origin CORS/proxy-ready Node gateway prepared; local-only defaults and disabled writes preserved. See CLOUD_BATCH3_IMPLEMENTATION.md and CLOUD_BATCH3_SETUP_GUIDE.md. Hosted migrations/roles/Auth/network/deploy/upload still NOT PERFORMED; personal migration/photos/production remain unapproved. No schema or dependency change.
+
 ### Cloud Batch 2 Final Browser QA — 11/10/2026 (LOCAL SYNTHETIC ACCEPTANCE PASS; STOP)
 
 Verified clean main d633f17/632tests/112syntax/SQL45+121/48files. No baseline mismatch.

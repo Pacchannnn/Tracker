@@ -4,6 +4,23 @@ import http from 'node:http';
 import { createHttpServer, assertGatewayConnection } from '../cloud/server.js';
 import * as serverModule from '../cloud/server.js';
 
+test('hosting config accepts only exact HTTPS origin and keeps local defaults', () => {
+  assert.equal(typeof serverModule.hostingConfig,'function');
+  assert.deepEqual(serverModule.hostingConfig({}),{host:'127.0.0.1',port:8832,allowedOrigin:null});
+  assert.deepEqual(serverModule.hostingConfig({TRACKER_ALLOWED_ORIGIN:'https://tracker.example.invalid',PORT:'10000'}),{host:'0.0.0.0',port:10000,allowedOrigin:'https://tracker.example.invalid'});
+  for(const value of ['*','null','http://tracker.example.invalid','https://tracker.example.invalid/','https://user:pass@tracker.example.invalid','https://tracker.example.invalid/path']) assert.throws(()=>serverModule.hostingConfig({TRACKER_ALLOWED_ORIGIN:value}));
+  assert.throws(()=>serverModule.hostingConfig({PORT:'invalid'}));
+});
+test('hosted gateway limits CORS to one origin and answers health without database access', async t => {
+  let calls=0; const server=createHttpServer({async handle(){calls++; return {status:'error',code:'unauthorized'};}},{allowedOrigin:'https://tracker.example.invalid'});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve)); t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const url=`http://127.0.0.1:${server.address().port}`;
+  let r=await fetch(url+'/health'); assert.equal(r.status,200); assert.deepEqual(await r.json(),{status:'ok',writesEnabled:false}); assert.equal(calls,0);
+  r=await fetch(url+'/pull',{method:'OPTIONS',headers:{Origin:'https://tracker.example.invalid'}}); assert.equal(r.status,204); assert.equal(r.headers.get('access-control-allow-origin'),'https://tracker.example.invalid'); assert.equal(r.headers.get('access-control-allow-credentials'),null);
+  r=await fetch(url+'/pull',{method:'POST',headers:{Origin:'https://other.example.invalid','Content-Type':'application/json'},body:'{}'}); assert.equal(r.status,403); assert.equal(calls,0);
+  r=await fetch(url+'/pull',{method:'POST',headers:{Origin:'https://tracker.example.invalid','Content-Type':'application/json'},body:'{}'}); assert.equal(r.status,401); assert.equal(calls,1);
+});
+
 test('server requires explicit certificate-verified database TLS', () => {
   assert.equal(typeof serverModule.requireDatabaseTls, 'function');
   for (const value of ['postgres://synthetic@localhost/db', 'postgres://synthetic@localhost/db?sslmode=require', 'postgres://synthetic@localhost/db?sslmode=disable', 'postgres://synthetic@localhost/db?sslmode=verify-full&sslmode=disable', 'https://localhost/db?sslmode=verify-full']) assert.throws(() => serverModule.requireDatabaseTls(value));

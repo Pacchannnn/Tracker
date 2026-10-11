@@ -13,7 +13,16 @@ export async function assertGatewayConnection(query) {
   if (result.rows.length !== 1 || result.rows[0].permitted !== true) throw Error('unsafe_gateway_database_role');
 }
 
-// This local Node entry point is NOT a Vercel function or a deployed gateway.
+// HTTPS terminates at the approved hosting proxy; no TLS keys in this process.
+export function hostingConfig(env = process.env) {
+  const allowedOrigin=env.TRACKER_ALLOWED_ORIGIN || null;
+  if(allowedOrigin && (!/^https:\/\/[a-z0-9]+(?:[.-][a-z0-9]+)*(?::\d{1,5})?$/i.test(allowedOrigin) || new URL(allowedOrigin).origin!==allowedOrigin)) throw Error('invalid_allowed_origin');
+  const port=Number(env.PORT || 8832);
+  if(!Number.isInteger(port) || port<1 || port>65535) throw Error('invalid_listen_port');
+  return {host:allowedOrigin?'0.0.0.0':'127.0.0.1',port,allowedOrigin};
+}
+
+// This Node entry point is NOT a Vercel function or a deployed gateway.
 export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
   return http.createServer(async (request, response) => {
     const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Origin' };
@@ -21,6 +30,7 @@ export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
     const reply = (code, body) => { response.writeHead(code, headers); response.end(JSON.stringify(body)); };
     if (origin && origin !== allowedOrigin) { reply(403, { status: 'error', code: 'origin_denied' }); return; }
     if (origin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
+    if(request.method==='GET' && request.url==='/health') { reply(200,{status:'ok',writesEnabled:false}); return; }
     if (request.method === 'OPTIONS' && origin) {
       headers['Access-Control-Allow-Methods'] = 'POST'; headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type';
       reply(204, null); return;
@@ -49,6 +59,7 @@ export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
 }
 
 async function start() {
+  const hosting=hostingConfig();
   // Config comes only from the server process. Nothing injects it into frontend assets.
   const { SUPABASE_PROJECT_URL: projectUrl, SUPABASE_PUBLISHABLE_KEY: publishableKey, TRACKER_ENVIRONMENT: environment, DATABASE_URL: connectionString } = process.env;
   if (!connectionString || !projectUrl || !publishableKey || !['test', 'preview', 'production'].includes(environment)) throw Error('missing_server_config');
@@ -58,9 +69,9 @@ async function start() {
   pool.on('error', () => { /* No credentials/query/payload logging. Requests return sanitized failures. */ });
   try { await assertGatewayConnection((sql, params) => pool.query(sql, params)); } catch (error) { await pool.end(); throw error; }
   const gateway = createGateway({ verifyIdentity, store: createSqlStore((sql, params) => pool.query(sql, params)), environment, projectId: new URL(projectUrl).hostname.split('.')[0], allowWrites: false });
-  const server = createHttpServer(gateway); // No CORS origin enabled in this batch.
+  const server = createHttpServer(gateway,hosting);
   server.requestTimeout = 20000; server.headersTimeout = 10000;
-  server.listen(8832, '127.0.0.1', () => { process.stdout.write('Local read-only gateway: http://127.0.0.1:8832; writes disabled.\n'); });
+  server.listen(hosting.port, hosting.host, () => { process.stdout.write('Read-only gateway started; writes disabled. HTTPS requires the approved hosting proxy.\n'); });
   const close = () => server.close(() => { void pool.end(); });
   process.once('SIGINT', close); process.once('SIGTERM', close);
 }
