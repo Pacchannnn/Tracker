@@ -22,21 +22,40 @@ export function hostingConfig(env = process.env) {
   return {host:allowedOrigin?'0.0.0.0':'127.0.0.1',port,allowedOrigin};
 }
 
+// This prepares a capability; operators still require human approval to activate it.
+export function previewWritePolicy(env = process.env) {
+  const enabled=env.TRACKER_ENABLE_PREVIEW_WRITES || 'false';
+  if(!['true','false'].includes(enabled)) throw Error('invalid_preview_write_policy');
+  if(enabled==='false') return {enabled:false,allowedUids:[]};
+  const ref=/^https:\/\/([a-z0-9]+)\.supabase\.co$/.exec(env.SUPABASE_PROJECT_URL || '')?.[1];
+  const allowedUids=(env.TRACKER_WRITE_USER_IDS || '').split(',').map(value=>value.trim());
+  if(env.TRACKER_ENVIRONMENT!=='preview' || !ref || env.TRACKER_WRITE_PROJECT_REF!==ref || !hostingConfig(env).allowedOrigin || !allowedUids.length || allowedUids.length>10 || new Set(allowedUids).size!==allowedUids.length || allowedUids.some(uid=>!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid))) throw Error('invalid_preview_write_policy');
+  return {enabled:true,allowedUids};
+}
+
 // This Node entry point is NOT a Vercel function or a deployed gateway.
-export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
+export function createHttpServer(gateway, { allowedOrigin = null, writesEnabled = false, requestLimit = 120, now = Date.now } = {}) {
+  if(typeof writesEnabled!=='boolean' || !Number.isInteger(requestLimit) || requestLimit<1 || requestLimit>10000 || typeof now!=='function') throw Error('invalid_http_limits');
+  let windowStart=now(),requests=0;
   return http.createServer(async (request, response) => {
     const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Origin' };
     const origin = request.headers.origin;
     const reply = (code, body) => { response.writeHead(code, headers); response.end(JSON.stringify(body)); };
     if (origin && origin !== allowedOrigin) { reply(403, { status: 'error', code: 'origin_denied' }); return; }
     if (origin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
-    if(request.method==='GET' && request.url==='/health') { reply(200,{status:'ok',writesEnabled:false}); return; }
+    if(request.method==='GET' && request.url==='/health') { reply(200,{status:'ok',writesEnabled}); return; }
     if (request.method === 'OPTIONS' && origin) {
       headers['Access-Control-Allow-Methods'] = 'POST'; headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type';
       reply(204, null); return;
     }
     if (request.method !== 'POST' || !['/push', '/pull', '/bootstrap', '/receipt'].includes(request.url)) { reply(404, { status: 'error', code: 'unknown_route' }); return; }
     if (!/^application\/json(?:;|$)/i.test(request.headers['content-type'] || '')) { reply(415, { status: 'error', code: 'json_required' }); return; }
+    const timestamp=now();
+    if(timestamp-windowStart>=60000 || timestamp<windowStart){windowStart=timestamp;requests=0;}
+    if(++requests>requestLimit){headers['Retry-After']=String(Math.max(1,Math.ceil((60000-timestamp+windowStart)/1000)));reply(429,{status:'error',code:'rate_limited'});return;}
+    const lifecycle=new AbortController();
+    request.once('aborted',()=>lifecycle.abort());
+    response.once('close',()=>{if(!response.writableFinished)lifecycle.abort();});
     try {
       const chunks = await new Promise((resolve, reject) => {
         let size = 0; const received = [];
@@ -52,7 +71,9 @@ export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
         reply(413, { status: 'error', code: 'payload_too_large' }); return;
       }
       let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { reply(400, { status: 'error', code: 'invalid_json' }); return; }
-      const result = await gateway.handle({ route: request.url.slice(1), authorization: request.headers.authorization, body });
+      if(lifecycle.signal.aborted)return;
+      const result = await gateway.handle({ route: request.url.slice(1), authorization: request.headers.authorization, body, signal:lifecycle.signal });
+      if(lifecycle.signal.aborted)return;
       reply(result.code === 'unauthorized' ? 401 : result.status === 'error' || result.status === 'rejected' ? 400 : result.status === 'conflict' ? 409 : 200, result);
     } catch { if (!response.headersSent) reply(500, { status: 'error', code: 'request_failed' }); }
   });
@@ -60,6 +81,7 @@ export function createHttpServer(gateway, { allowedOrigin = null } = {}) {
 
 async function start() {
   const hosting=hostingConfig();
+  const writes=previewWritePolicy();
   // Config comes only from the server process. Nothing injects it into frontend assets.
   const { SUPABASE_PROJECT_URL: projectUrl, SUPABASE_PUBLISHABLE_KEY: publishableKey, TRACKER_ENVIRONMENT: environment, DATABASE_URL: connectionString } = process.env;
   if (!connectionString || !projectUrl || !publishableKey || !['test', 'preview', 'production'].includes(environment)) throw Error('missing_server_config');
@@ -68,10 +90,10 @@ async function start() {
   const pool = new Pool({ connectionString: requireDatabaseTls(connectionString), max: 4, connectionTimeoutMillis: 10000, statement_timeout: 15000 });
   pool.on('error', () => { /* No credentials/query/payload logging. Requests return sanitized failures. */ });
   try { await assertGatewayConnection((sql, params) => pool.query(sql, params)); } catch (error) { await pool.end(); throw error; }
-  const gateway = createGateway({ verifyIdentity, store: createSqlStore((sql, params) => pool.query(sql, params)), environment, projectId: new URL(projectUrl).hostname.split('.')[0], allowWrites: false });
-  const server = createHttpServer(gateway,hosting);
+  const gateway = createGateway({ verifyIdentity, store: createSqlStore((sql, params) => pool.query(sql, params)), environment, projectId: new URL(projectUrl).hostname.split('.')[0], allowWrites:writes.enabled,allowedWriteUids:writes.allowedUids });
+  const server = createHttpServer(gateway,{...hosting,writesEnabled:writes.enabled});
   server.requestTimeout = 20000; server.headersTimeout = 10000;
-  server.listen(hosting.port, hosting.host, () => { process.stdout.write('Read-only gateway started; writes disabled. HTTPS requires the approved hosting proxy.\n'); });
+  server.listen(hosting.port, hosting.host, () => { process.stdout.write(`Gateway started; preview writes ${writes.enabled?'enabled':'disabled'}. HTTPS requires the approved hosting proxy.\n`); });
   const close = () => server.close(() => { void pool.end(); });
   process.once('SIGINT', close); process.once('SIGTERM', close);
 }

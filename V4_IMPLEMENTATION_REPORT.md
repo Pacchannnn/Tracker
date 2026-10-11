@@ -1,4 +1,8 @@
-# Tracker V4 — Cloud Batch3 preview readiness
+# Tracker — continuous release execution, 11/10/2026
+
+Starting main549b1a1 baseline639tests/112syntax verified. Public URL/key confirmed and stored in ignored local env, without activation. Local operator wrapper/provisioning, restricted preview write policy, bounded/cancellable gateway requests,12-file backend packaging and read-only device identity UI are implemented. Hosted Auth/SQL/TLS/deploy/writes remain unapproved/unverified. New photo/recovery/import contract is review-only; schema8/photoDB1/accountDB1/backup8+1 unchanged. See TRACKER_EXECUTION_STATUS.md, TRACKER_EXECUTION_VERIFICATION.md, TRACKER_PREVIEW_EXECUTION_GUIDE.md and TRACKER_PHOTO_RECOVERY_CONTRACT.md. Existing Batch3/2 sections below are historical evidence; their fixed-false gateway description is superseded locally by an explicit default-off preview gate, never activated remotely.
+
+# Historical: Tracker V4 — Cloud Batch3 preview readiness
 
 11/10/2026. Integrated local implementation authorized from a9d1a78. Current details/tests in CLOUD_BATCH3_IMPLEMENTATION.md; beginner/operator instructions in CLOUD_BATCH3_SETUP_GUIDE.md. Preview public config generated at build, source remains disabled; Node gateway prepares managed HTTPS with one explicit CORS origin/PORT, read-only health and writes fixed false. No hosted execution, roles, deploy, upload, personal migration or push. Schema8/photoDB1/backup8+1 preserved. Batch2 acceptance below remains historical evidence, not provider verification.
 

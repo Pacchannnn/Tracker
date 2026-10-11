@@ -87,6 +87,11 @@ export function createCloudWorkspaceUI({ workspace, auth, helpers, loadAnonymous
       actions.append(control('Xem trước dữ liệu cục bộ', showPreview));
     }
     host.append(actions);
+    if (state.mode === 'account' && state.deviceId) host.append(node('details', {}, [
+      node('summary', { text: 'Thông tin thiết bị cho setup preview' }),
+      p('Chỉ dùng các ID này để đăng ký đúng tài khoản và thiết bị. Xem thông tin không tự đăng ký hoặc tải dữ liệu lên.', 'hint'),
+      node('pre', { text: JSON.stringify({ environment: state.environment, projectId: state.projectId, uid: state.uid, deviceId: state.deviceId }, null, 2), style: 'white-space:pre-wrap;overflow-wrap:anywhere' })
+    ]));
     if (state.mode !== 'account' && workspace.cachedScopes) host.append(control('Tài khoản đã lưu trên thiết bị', async () => {
       try { cached = await workspace.cachedScopes(); if (host?.isConnected) render(); } catch { notice = 'Không đọc được danh sách kho tài khoản.'; render(); }
     }));

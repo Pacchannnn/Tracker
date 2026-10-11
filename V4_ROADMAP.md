@@ -8,6 +8,10 @@
 
 ## Trạng thái và quy ước
 
+### Continuous R1–R16 execution —11/10/2026
+
+Local operator installation/provisioning, native QA harness, gateway packaging/rate bound/cancellation and default-off reviewed preview write gate implemented; device identity setup UI added/tested. Public provider values confirmed in ignored env; gateway URL/hosting/remote actions pending approval. Prioritize real Auth+Gym/Nutrition/Journal preview once required security/account/deploy approvals arrive. Photo/recovery/import additions documented in TRACKER_PHOTO_RECOVERY_CONTRACT.md for required review before changing formats/ownership. No new phase prompt needed; worklist/status/evidence in TRACKER_EXECUTION_STATUS.md and TRACKER_EXECUTION_VERIFICATION.md. Real providers/physical devices/production NOT VERIFIED.
+
 ### Cloud Batch3 — preview readiness,11/10/2026
 
 User approved one integrated local readiness batch from a9d1a78; Singapore Free project designated preview/synthetic-only. Build-time public environment config and exact HTTPS-origin CORS/proxy-ready Node gateway prepared; local-only defaults and disabled writes preserved. See CLOUD_BATCH3_IMPLEMENTATION.md and CLOUD_BATCH3_SETUP_GUIDE.md. Hosted migrations/roles/Auth/network/deploy/upload still NOT PERFORMED; personal migration/photos/production remain unapproved. No schema or dependency change.

@@ -1,4 +1,18 @@
 TRACKER — COMPLETE PROJECT GUIDE
+CURRENT STATUS (continuous R1-R16 execution,2026-10-11): LOCAL IMPLEMENTATION + REVIEW.
+COMPLETED locally: operator001/002 wrapper/provisioning, opt-in native QA harness,
+gateway12-file packaging, rate bound/cancellation/default-off preview write policy,
+read-only device IDs in Settings; public config confirmed in ignored env.
+CURRENT STEP: awaiting remote/hosting and photo-recovery contract decisions.
+NEXT: actual preview Auth + JSON sync after approvals, then R8-R12 photo/recovery/import.
+No phase re-prompt needed; roadmap/status/evidence/manual actions in
+TRACKER_EXECUTION_STATUS.md,TRACKER_EXECUTION_VERIFICATION.md,
+TRACKER_PREVIEW_EXECUTION_GUIDE.md,TRACKER_PHOTO_RECOVERY_CONTRACT.md.
+BLOCKERS: remote permission/hosting/account/secret placement, contract decisions,
+physical iPhone verification. No approval inferred from public key or elapsed time.
+Models: keep current model/thread for execution/review; no automatic model switch.
+
+Historical Cloud Batch3 snapshot:
 CURRENT STATUS (Cloud Batch3,2026-10-11): integrated LOCAL PREVIEW READINESS.
 COMPLETED: public env build configuration; exact HTTPS-origin CORS/hosting config,
 health endpoint, same verified Auth/restricted DB/TLS with writes fixed false;

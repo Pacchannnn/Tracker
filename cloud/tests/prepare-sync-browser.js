@@ -2,6 +2,7 @@
 import { readFile, writeFile, mkdir, copyFile, readdir } from 'node:fs/promises';
 import { resolve, join, extname } from 'node:path';
 import http from 'node:http';
+import { pathToFileURL } from 'node:url';
 import { representativeState } from '../../tests/fixtures/representative-state.js';
 // Windows URL paths may contain percent-encoded spaces.
 const { fileURLToPath } = await import('node:url');
@@ -16,7 +17,12 @@ async function copyRuntime(from, to) {
     else await copyFile(join(from, entry.name), join(to, entry.name));
   }
 }
-function fixture(deviceId, gatewayPort) {
+export function prepareQaEntry(html) {
+  const entries=[...html.matchAll(/src="(js\/app\.js\?v=\d+)"/g)];
+  if(entries.length!==1)throw Error('unrecognized_qa_entry');
+  return {html:html.replace(entries[0][0],'src="qa.js"'),appSpecifier:'./'+entries[0][1]};
+}
+function fixture(deviceId, gatewayPort, appSpecifier) {
   return `import { putPhoto } from './js/photo-store.js?v=41';
 const nativeFetch = globalThis.fetch.bind(globalThis);
 let offline = localStorage.getItem('qa-offline') === 'yes', lost = false, external = 0, errors = 0;
@@ -69,16 +75,20 @@ control('QA: Download synthetic workspace evidence',async()=>{
  if(!localStorage.getItem('qa-seeded')||rows.some(row=>row.scope.environment!=='preview'||row.scope.projectId!=='syntheticqa'||!Object.values(users).includes(row.scope.uid)))throw Error('Evidence refused: unexpected scope');
  const blob=new Blob([JSON.stringify({syntheticOnly:true,device:'${deviceId}',anonymous:localStorage.getItem('vshape-tracker'),rows},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='synthetic-evidence-${gatewayPort}.json';a.textContent='Download synthetic evidence';controls.append(a);
 });
-await import('./js/app.js?v=42');await diagnostics();`;
+await import(${JSON.stringify(appSpecifier)});await diagnostics();`;
 }
+async function main() {
 for (const [port, device, gateway] of [[8840,'33333333-3333-4333-8333-333333333333',8842],[8841,'44444444-4444-4444-8444-444444444444',8843],[8844,null,null],[8846,null,null]]) {
   const directory = join(repository,'.local',`batch2-${port}`); await copyRuntime(dist,directory);
   if (device) {
     await writeFile(join(directory,'js/cloud-config.js'), "export const CLOUD_AUTH_CONFIG=Object.freeze({enabled:true,environment:'preview',projectUrl:'https://syntheticqa.supabase.co',publishableKey:'sb_publishable_SYNTHETIC',gatewayUrl:'https://gateway.synthetic.invalid'});\n");
-    const html=await readFile(join(directory,'index.html'),'utf8');await writeFile(join(directory,'index.html'),html.replace('src="js/app.js?v=42"','src="qa.js"'));
-    await writeFile(join(directory,'qa.js'),fixture(device,gateway));
+    const entry=prepareQaEntry(await readFile(join(directory,'index.html'),'utf8'));
+    await writeFile(join(directory,'index.html'),entry.html);
+    await writeFile(join(directory,'qa.js'),fixture(device,gateway,entry.appSpecifier));
   }
   const server=http.createServer(async(req,res)=>{try{const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname),file=resolve(directory,'.'+(path==='/'?'/index.html':path));if(!file.startsWith(directory+'\\')&&!file.startsWith(directory+'/'))throw Error();const bytes=await readFile(file);res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'text/javascript','.css':'text/css','.ttf':'font/ttf'}[extname(file)]||'application/octet-stream'),'Cache-Control':'no-store'});res.end(bytes);}catch{res.writeHead(404);res.end('Not found');}});
   await new Promise((ok,no)=>{server.once('error',no);server.listen(port,'127.0.0.1',ok);});servers.push(server);process.stdout.write(`Synthetic/static fixture ready http://127.0.0.1:${port}\n`);
 }
 process.stdin.resume();process.stdin.on('data',()=>{for(const server of servers)server.close();process.exit(0);});
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await main();

@@ -150,33 +150,41 @@ export function createSqlStore(query) {
 }
 export function createIdentityVerifier({ projectUrl, publishableKey, fetchImpl = fetch, now = Date.now }) {
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(projectUrl) || !/^sb_publishable_[a-zA-Z0-9_-]+$/.test(publishableKey)) fail('invalid_provider_config');
-  return async authorization => {
+  return async (authorization,{signal}={}) => {
+    if(signal?.aborted)fail('unauthorized');
     if (typeof authorization !== 'string' || authorization.length > 16384 || !/^Bearer [A-Za-z0-9_.-]+$/.test(authorization)) fail('unauthorized');
     const token = authorization.slice(7);
     let claims; try { claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8')); } catch { fail('unauthorized'); }
     // Decoded JWT is ONLY an early deny filter. The fixed-project Auth server is authoritative.
     if (token.split('.').length !== 3 || claims.iss !== projectUrl + '/auth/v1' || claims.aud !== 'authenticated' || !uuid(claims.sub) || !Number.isSafeInteger(claims.exp) || claims.exp * 1000 <= now()) fail('unauthorized');
-    const response = await fetchImpl(projectUrl + '/auth/v1/user', { method: 'GET', headers: { apikey: publishableKey, Authorization: authorization }, redirect: 'error', signal: AbortSignal.timeout(10000), cache: 'no-store' });
+    const timeout=AbortSignal.timeout(10000);
+    const response = await fetchImpl(projectUrl + '/auth/v1/user', { method: 'GET', headers: { apikey: publishableKey, Authorization: authorization }, redirect: 'error', signal: signal?AbortSignal.any([signal,timeout]):timeout, cache: 'no-store' });
     if (!response.ok) fail('unauthorized');
     const user = await response.json();
     if (!uuid(user?.id) || user.id !== claims.sub || user.role !== 'authenticated' || user.aud !== 'authenticated' || !user.email_confirmed_at || user.is_anonymous === true) fail('unauthorized');
     return { uid: user.id };
   };
 }
-export function createGateway({ verifyIdentity, store, environment, projectId, allowWrites = false }) {
+export function createGateway({ verifyIdentity, store, environment, projectId, allowWrites = false, allowedWriteUids = null }) {
   if (!['test', 'preview', 'production'].includes(environment) || !id(projectId)) fail('invalid_scope');
-  return { async handle({ route, authorization, body }) {
+  if(allowedWriteUids!==null && (!Array.isArray(allowedWriteUids) || allowedWriteUids.some(uid=>!uuid(uid))))fail('invalid_write_accounts');
+  const approved=allowedWriteUids===null?null:new Set(allowedWriteUids.map(uid=>uid.toLowerCase()));
+  return { async handle({ route, authorization, body, signal }) {
     let identity;
-    try { identity = await verifyIdentity(authorization); if (!uuid(identity?.uid)) fail('unauthorized'); }
+    try { if(signal?.aborted)fail('unauthorized');identity = await verifyIdentity(authorization,{signal}); if (signal?.aborted || !uuid(identity?.uid)) fail('unauthorized'); }
     catch { return { status: 'error', code: 'unauthorized' }; }
     const scope = { uid: identity.uid, environment, projectId };
     try {
       if (route === 'push') {
         if (!allowWrites) return { status: 'error', code: 'writes_disabled' };
+        if(approved && !approved.has(identity.uid.toLowerCase()))return {status:'error',code:'write_account_not_approved'};
         const op = validateOperation(body), fingerprint = operationFingerprint(op);
         // SQL checks stored fingerprint/device even for retries; never bypass idempotency collision checks.
-        if (await store.lookupReceipt(scope, op.operationId)) return await store.push(scope, op, fingerprint);
+        const receipt=await store.lookupReceipt(scope, op.operationId);
+        if(signal?.aborted)fail('request_aborted');
+        if (receipt) return await store.push(scope, op, fingerprint);
         const state = await store.readState(scope);
+        if(signal?.aborted)fail('request_aborted');
         let validated;
         try { validated = validateProjection(state, op); }
         catch (error) {

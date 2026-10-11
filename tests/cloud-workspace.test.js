@@ -46,6 +46,16 @@ test('old write after logout is rejected and persisted data remains private',asy
  const s=setup();await s.workspace.openAccount();s.change(null);await assert.rejects(()=>s.workspace.write(data=>{data.settings.calories=1;}));assert.equal(s.workspace.read().mode,'sealed');
 });
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return{promise,resolve};};
+test('provisioning device identity is read-only, stable on reload, and sealed with its account',async()=>{
+ const s=setup();assert.equal(s.workspace.read().deviceId,null);await s.workspace.openAccount();
+ const id=s.workspace.read().deviceId;assert.match(id,/^[0-9a-f-]{36}$/i);
+ const probe=createAccountStore({indexedDB:s.indexedDB,dbName:'synthetic-workspace'}),before=await probe.read(A);
+ assert.equal(id,before.deviceId);assert.deepEqual(await probe.read(A),before);
+ s.workspace.seal();assert.equal(s.workspace.read().deviceId,null);
+ const next=setup(s.indexedDB);await next.workspace.openAccount();assert.equal(next.workspace.read().deviceId,id);
+ next.change(B);assert.equal(next.workspace.read().deviceId,null);await next.workspace.openAccount();assert.equal(next.workspace.read().uid,B.uid);assert.equal(next.workspace.read().deviceId,(await probe.read(B)).deviceId);
+ next.workspace.seal();probe.seal();
+});
 test('account activation cannot publish an old status after another account opens',async()=>{
  const wait=deferred();let first=true,entered=false;
  const s=setup(new IDBFactory(),{engineFactory:()=>({status(){if(first){first=false;entered=true;return wait.promise;}return{status:'pending'};},pause(){},resume(){}})});

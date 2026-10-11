@@ -27,8 +27,8 @@ import { listPhotoMetadata, getPhotoThumbnail } from './photo-store.js?v=41';
 import { CLOUD_AUTH_CONFIG } from './cloud-config.js?v=41';
 import { createSupabaseAuthAdapter, createCloudAuth } from './cloud-auth.js?v=41';
 import { createCloudAuthUI } from './cloud-auth-ui.js?v=41';
-import { createCloudWorkspace } from './cloud-workspace.js?v=42';
-import { createCloudWorkspaceUI } from './cloud-workspace-ui.js?v=42';
+import { createCloudWorkspace } from './cloud-workspace.js?v=43';
+import { createCloudWorkspaceUI } from './cloud-workspace-ui.js?v=43';
 
 const main = document.querySelector('#main');
 const notice = document.querySelector('#notice');

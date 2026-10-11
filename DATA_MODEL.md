@@ -2,6 +2,11 @@
 
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
+11/10/2026 release execution: no persistent format changed. Read-only workspace
+status now exposes the existing installation deviceId only while an account
+workspace is open; seal/logout clears it. Photo accountDB2/protocol2/recovery1
+are proposals in TRACKER_PHOTO_RECOVERY_CONTRACT.md, not current formats.
+
 ## Cloud Batch 2 — separate account workspace (10/10/2026)
 
 Anonymous local JSON/schema8 and tracker-photos/photoDB1/backup8+1 stay unchanged.

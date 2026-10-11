@@ -28,7 +28,7 @@ export function createCloudWorkspace({ auth, indexedDB = globalThis.indexedDB, d
     } catch(error){if(epoch===captured){engine?.pause('failed');engine=null;owned.seal();store=null;current=null;mode='sealed';syncStatus='failed';publish();}throw error;}
   }
   const api={
-    read(){return {mode,epoch,cached,uid:current?.scope.uid??null,environment:current?.scope.environment??null,projectId:current?.scope.projectId??null,syncStatus:cached?'needs-login':syncStatus,outboxCount:current?.outbox.length??(mode==='local'?0:null),conflicts:structuredClone(current?.conflicts.filter(c=>c.status==='unresolved')??[])};},
+    read(){return {mode,epoch,cached,uid:current?.scope.uid??null,deviceId:current?.deviceId??null,environment:current?.scope.environment??null,projectId:current?.scope.projectId??null,syncStatus:cached?'needs-login':syncStatus,outboxCount:current?.outbox.length??(mode==='local'?0:null),conflicts:structuredClone(current?.conflicts.filter(c=>c.status==='unresolved')??[])};},
     subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
     getData(){if(mode!=='account'||!current)throw Error('workspace_sealed');return structuredClone(current.data);},
     async openAccount(confirmation){const gate=approve('account',confirmation);if(gate)return gate;const a=auth.read().account;if(!a)throw Error('account_not_verified');return activate({uid:a.uid,environment:a.environment,projectId:a.projectId});},

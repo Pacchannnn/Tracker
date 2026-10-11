@@ -26,6 +26,11 @@ function setup(state = { mode: 'local', syncStatus: 'local', outboxCount: 0, con
   return { main, dirty, calls, workspace, reviewToken, reads: () => reads, emit: patch => { Object.assign(state, patch); listeners.forEach(fn => fn()); }, authEmit: patch => { authState = patch; authListeners.forEach(fn => fn()); }, scope };
 }
 const find = (main, text) => all(main).find(el => el.tagName === 'button' && el.textContent.includes(text));
+test('provisioning identity is displayed as safe text only for an open workspace and does not trigger sync',()=>{
+ const s=setup({mode:'account',syncStatus:'pending',outboxCount:0,conflicts:[],uid:'synthetic-user',projectId:'synthetic-project',environment:'preview',deviceId:'synthetic-device'});
+ assert.match(s.main.textContent,/Thông tin thiết bị/);assert.match(s.main.textContent,/synthetic-device/);assert.equal(s.calls.length,0);
+ s.emit({mode:'sealed',uid:null,deviceId:null});assert.ok(!s.main.textContent.includes('synthetic-device'));
+});
 test('local workspace requires verified activation and never scans anonymous data automatically', async () => {
   const s = setup(); assert.match(s.main.textContent, /Chỉ trên thiết bị/); assert.equal(s.reads(), 0);
   s.authEmit({ status: 'signed-out', account: null }); assert.equal(find(s.main, 'Mở dữ liệu tài khoản').disabled, true);
