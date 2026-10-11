@@ -22,6 +22,12 @@ test('account A to B to A retains queues without leaking data',async()=>{
  assert.equal(s.workspace.read().mode,'sealed');await s.workspace.openAccount();assert.equal(s.workspace.getData().settings.calories,2400);
  s.change(A);await s.workspace.openAccount();assert.equal(s.workspace.getData().settings.calories,2000);assert.equal(s.workspace.read().outboxCount,1);
 });
+test('sealed workspace reports unknown queue count rather than zero and retains the durable queue',async()=>{
+ const s=setup();assert.equal(s.workspace.read().outboxCount,0);await s.workspace.openAccount();
+ await s.workspace.write(data=>{data.settings.calories=2000;});assert.equal(s.workspace.read().outboxCount,1);
+ s.change(null,'expired');assert.equal(s.workspace.read().mode,'sealed');assert.equal(s.workspace.read().outboxCount,null);
+ s.change(A);await s.workspace.openAccount();assert.equal(s.workspace.read().outboxCount,1);
+});
 test('pending transition requires fresh confirmation and cancel mutates nothing',async()=>{
  const s=setup();await s.workspace.openAccount();await s.workspace.write(data=>{data.settings.calories=2000;});
  const warning=await s.workspace.localOnly();assert.equal(warning.warning,true);assert.equal(s.workspace.read().mode,'account');

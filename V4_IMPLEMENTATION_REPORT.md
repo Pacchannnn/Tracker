@@ -1,4 +1,57 @@
-# Tracker V4 — Cloud Batch 2 implementation
+# Tracker V4 — Cloud Batch 2 final browser acceptance
+
+11/10/2026 · **LOCAL SYNTHETIC ACCEPTANCE PASS; REAL SUPABASE / PHYSICAL DEVICES NOT VERIFIED.**
+STOP after Batch2. Baseline d633f17 clean main632tests/112syntax/SQL45+121/48assets
+verified before changes. Final local checkpoint is recorded in Git log; no push.
+
+Outstanding browser gates were executed on owned disposable8840/8841,unmodified
+packaged8844 and fresh anonymous restore8846. Browser URL metadata and server
+command lines were verified before interaction;8765 remained untouched.
+
+- JSONB regression PASS: Start A,set1 27.5kg×10/RIR3,ACK,set2 30kg×8/RIR2,Complete,
+  phone pull. Repeated on final390px mobile B:11kg×12/RIR4,accepted SQL shadow ACK
+  with queue0,12kg×11/RIR3 in same editor,Complete,laptop pull. Exact downloaded
+  histories/snapshots/IDs/order;two distinct set IDs per session and no lost history.
+- Conflict UI PASS:KeepLocal,UseServer,unresolved reload,stale review rejection,
+  edit/delete,delete/edit and unsupported update/set/Complete chain retained3
+  intents with compound-review alert. No timestamp winner or tombstone resurrection.
+- Isolation/recovery PASS:A→B→A,logout pending1,explicit cache/reauth,held response
+  after switch and12-second fixture expiry while a response was delayed. B empty;
+  A queue retained. No provider Auth claim is inferred from fixtures.
+- Fixed locked-workspace queue display0 despite retained pending work:read now
+  returns unknown outside local mode when row unavailable;UI explains it. Two new
+  RED→GREEN tests;corrected expiry browser walkthrough PASS. No data migration.
+-48 measured responsive cases:12 views×1280/320/360/390 with body/document widths
+  bounded;3 extra Cloud Settings mobile checks. Tab/Enter navigation,visible2.4px
+  focus outline. Console error/warn lists empty across all four contexts.
+- Actual JSON/photo downloads→paired preview/confirmed restore on8846→reload→
+  re-export exact data/photo metadata/base64 bytes.8 account read-only views keep
+  full scoped rows+anonymous source exact;48 anonymous views keep JSON/planning/
+  photo bytes exact. Account export explicitly projection-only,not full sync backup.
+
+Final **634/634 tests**,**112/112 standalone syntax** +two generated fixture modules,
+**45/121 SQL assertions**,build/artifact privacy/hash PASS. **48 files/766401bytes**;
+all48 served asset hashes equal;9 private/backend/test/fixture paths404. No new
+dependencies;schema8/photoDB1/backup8+1/MASTER_PLAN unchanged. Entry/workspace modules
+v42;other imports v41,CSS39. Minimal harness controls stay excluded from dist.
+
+Updated five acceptance reports plus roadmap/README/guide/setup/contract current
+status. Ignored synthetic evidence `.local/batch2-browser-qa/` holds downloads,
+integrity comparisons,48-width matrix,keyboard/console and screenshots. Two event
+waits timed out during extra downloads; files were verified and later completed
+through documented download API. Clipboard fallback NOT VERIFIED. No unexecuted
+check is called PASS. Initial wrong-tab viewport measurements were discarded;
+final matrix asserts measured width equals requested width on every case.
+
+Local Batch2 acceptance PASS. Real Supabase,native concurrent PostgreSQL,iPhone/
+Safari,large data/quota/eviction,cold-start offline and production NOT VERIFIED.
+Plaintext cache,projection-only exports,no garbage collection and intentional
+copy/compound limitations remain. No Batch3,provider,photo/personal migration,
+deployment or GitHub push. Further work needs separate approved scope.
+
+---
+
+# Historical: Cloud Batch 2 implementation (10/10/2026)
 
 10/10/2026 · **LOCAL AUTOMATED PASS; BROWSER QA PARTIAL; REAL SUPABASE NOT VERIFIED.**
 STOP after Batch 2. No provider activation, personal migration, photo transfer,

@@ -8,6 +8,25 @@
 
 ## Trạng thái và quy ước
 
+### Cloud Batch 2 Final Browser QA — 11/10/2026 (LOCAL SYNTHETIC ACCEPTANCE PASS; STOP)
+
+Verified clean main d633f17/632tests/112syntax/SQL45+121/48files. No baseline mismatch.
+- [DONE] Actual laptop and final390px mobile set1→ACK→set2→Complete→second-device
+  pull;exact history/snapshot/identity/order,distinct sets,no false-stale errors.
+- [DONE] All requested conflict UI cases,including reload/stale review/tombstones
+  and unsupported compound chain;A→B→A,pending logout,cache/reauth,delayed expiry/switch.
+- [DONE]48 measured responsive cases across12 views/4 widths +3 Cloud Settings
+  cases,Tab/Enter/focus,empty captured console error/warn lists.
+- [DONE] Actual JSON/photo downloads,paired restore onto new8846,reload/exact bytes;
+  full account rows/anonymous source unchanged across8 views;48-view JSON/photo integrity.
+- [DONE] Locked queue-count0 bug fixed with2 RED→GREEN tests and browser retest;
+  current634tests/112syntax/SQL45+121/48files766401bytes,HTTP48hashes/9private404.
+- [DONE] Acceptance reports/docs/local checkpoint;no push. Normal cloud config disabled.
+
+Schema8/photoDB1/backup8+1/MASTER_PLAN preserved. Real Supabase,native concurrent
+PostgreSQL,iPhone/Safari/large data/quota/production NOT VERIFIED. Further provider
+or Batch3 work needs separate approval. Older partial-browser status below is historical.
+
 ### Cloud Batch 2 — 10/10/2026 (IMPLEMENTED LOCAL; AUTOMATED PASS / BROWSER PARTIAL)
 
 Baseline clean main1487cf3 /522tests /91syntax /schema8/photoDB1/backup8+1 verified.

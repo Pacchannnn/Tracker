@@ -1,4 +1,36 @@
-# Cloud Batch 2 — Conflict QA
+# Cloud Batch 2 — Final conflict browser QA
+
+11/10/2026 · **LOCAL SYNTHETIC BROWSER PASS; provider/native concurrency NOT VERIFIED.**
+Baseline d633f17 clean main/632tests verified. Current regression634/634,syntax112,
+SQL45/121. The actual UI on owned disposable8840/8841 exercised these gates:
+
+| Browser case | Verdict | Observed result |
+| --- | --- | --- |
+| Keep local | PASS | Base QA Base Food/local QA LOCAL1/server QA SERVER1 displayed; explicit local proposal then sync,outbox0 |
+| Use server | PASS | Explicit reviewed choice adopted QA SERVER3 and retired candidate chain |
+| Unresolved reload | PASS | Conflict1/outbox1 persisted; cache opened explicitly; reauth/open restored all three versions |
+| Remote changes during review | PASS | Phone changed SERVER2→SERVER3; old local choice rejected with review-changed alert |
+| Edit vs delete | PASS | Server tombstone did not resurrect; copy-required alert retained local edit/review |
+| Delete vs edit | PASS | Base DELETE BASE/local null/server SERVER RETAIN shown; user choice adopted server |
+| Unsupported mixed chain | PASS | Live notes edit +set+Complete kept3 intents; Keep local returned compound-review-required and retained comparison |
+| History correction conflict | PASS for retention | Competing notes corrections retained versions; local proposal was rejected by semantic guard and remained reviewable,then explicit server choice |
+| Nested workout JSONB regression | PASS | Laptop A and final390px mobile B each logged two sets through ACK/Complete and crossed devices without false-stale/duplicate set |
+
+Initial and final downloaded session arrays were deep-equal across devices,
+including snapshots,slot/set IDs and order. `mobile-set1-ack.json` proves the first
+mobile set was in accepted SQL shadow with an empty queue BEFORE the second was
+logged in the same editor. Anonymous JSON diagnostics stayed unchanged.
+Screenshots and synthetic files are in ignored `.local/batch2-browser-qa/`.
+The unsupported cases remain fail-closed limits; this does not certify a generic
+merge or create-copy workflow for every domain conflict. Real Supabase and native
+independent PostgreSQL connections remain NOT VERIFIED. No8765 action/upload/push.
+
+See current acceptance/evidence in CLOUD_BATCH2_IMPLEMENTATION.md. Older partial
+browser conclusions below are historical and superseded for the executed gates.
+
+---
+
+# Historical: Conflict QA (10/10/2026)
 
 10/10/2026 · **Local automated verification PASS; browser verification PARTIAL; real Supabase NOT VERIFIED.**
 

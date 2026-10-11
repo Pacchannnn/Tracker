@@ -1,7 +1,46 @@
 # Tracker — Cloud Batch 2: setup, synthetic QA and rollback
 
-10/10/2026 · Local only. Provider setup, credentials, deployment and real-data
+11/10/2026 · Local synthetic acceptance PASS. Provider setup, credentials, deployment and real-data
 upload require separate explicit approval.
+
+Final verified results:634/634 tests,112/112 standalone syntax +two generated
+fixtures,SQL45/121,48public files/766401bytes. Full browser evidence and remaining
+provider/device limits: CLOUD_BATCH2_IMPLEMENTATION.md. Older integration counts
+below describe the prior checkpoint;commands and recovery boundaries remain active.
+
+## Repeat the final disposable browser QA
+
+1. Build,then start both existing synthetic scripts in separate terminals. Check
+   listeners belong to these exact scripts. Open ONLY8840/8841/8844/8846;verify URL.
+2. On8840/8841 with the synthetic marker,use QA Reset synthetic account cache BEFORE
+   login when starting a fresh SQL harness. It refuses unknown scopes/missing marker,
+   keeps installation metadata and anonymous data/photos. Never use it with personal data.
+3. Settings→email a@example.invalid→Gửi mã OTP→confirm transition if asked→123456→
+   Xác nhận→Mở dữ liệu tài khoản→Đồng bộ ngay. Fixture OTP does not contact a provider.
+4. Gym→Start→save set1→verify accepted shadow/outbox0→save set2→Complete. On the other
+   origin login the same account,pull,open History and compare downloaded snapshots/IDs.
+5. QA Offline ON→edit/save food on laptop;edit/sync same food on phone→Offline OFF/
+   sync laptop→review all3 versions. Exercise local/server choices,reload,stale review,
+   edit/delete and delete/edit. For compound review:shared live workout accepted first;
+   queue local notes+set+Complete offline;phone edits live;reconnect and Keep local.
+6. Offline A edit→confirmed logout→B login/open→check empty B→A login/open→candidate
+   retained. Hold next gateway response before A sync;switch B;release and verify isolation.
+7. Reload fixture to clear the previous short-session mode. Enable Short session12s,
+   login A/open,hold gateway response and sync;wait for actual expired/sealed UI,
+   release response and verify retained queue. Reauthentication needs explicit opening.
+8.8844/8846 are unmodified packaged anonymous apps. Use synthetic JSON/valid image,
+   download both backup files;fresh8846 preview/confirm JSON,then add photo,reload and
+   re-export to compare. If8846 already contains data,export/review it first;do not reset blindly.
+9. Test actual viewport widths,not only requested overrides. Mobile navigation uses
+   different labels;Home is TRACKER header. Compare readonly exports/rows before/after.
+   Pause account sync to exclude legitimate foreground network writes during comparison.
+10. Capture console/screenshots and actual files. A click/prepared link is not proof
+    of download. If an event wait fails,inspect state/files;the documented download API
+    can save the visible blob link. Stop automation if URL cannot be established.
+
+Origin8846 is an additional disposable anonymous paired-restore target. It has no
+fixture Auth/config overrides. Reset temporary viewport overrides and stop only
+owned QA processes after testing. No real provider or personal import is authorized.
 
 ## 1. Reproduce local checks
 

@@ -1,9 +1,11 @@
 # Tracker
 
-**Hiện tại: schema8 · Cloud Batch2 IMPLEMENTED LOCAL · browser QA chưa hoàn tất.**
+**Hiện tại: schema8 · Cloud Batch2 LOCAL SYNTHETIC ACCEPTANCE PASS (11/10/2026).**
 Account IndexedDB/outbox, sync hai chiều, offline/cache, conflict review và import
 preview đã có; Supabase mặc định tắt, server thường vẫn không cho ghi cloud.
-JSON backup8/photo backup1; module `v=41`, stylesheet `v=39`. Không tạo project,
+634/634 tests · 112/112 syntax · SQL45/121 · artifact48 files. Workout qua ACK,
+conflicts, account isolation, mobile và paired backup/restore đã được kiểm tra bằng browser synthetic.
+JSON backup8/photo backup1; entry/workspace `v=42`, imports khác `v=41`, CSS `v=39`. Không tạo project,
 deploy, push, PWA hay nhập dữ liệu thật. Supabase/production/iPhone/Safari chưa xác
 minh. Counts và gates cuối: [báo cáo Batch2](CLOUD_BATCH2_IMPLEMENTATION.md),
 [setup và rollback](CLOUD_BATCH2_SETUP_AND_ROLLBACK.md),

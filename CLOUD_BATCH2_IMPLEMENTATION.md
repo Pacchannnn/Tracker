@@ -1,4 +1,85 @@
-# Tracker — Cloud Batch 2 implementation and verification
+# Tracker — Cloud Batch 2 final browser acceptance
+
+11/10/2026 · **LOCAL SYNTHETIC BROWSER ACCEPTANCE PASS. REAL SUPABASE / PHYSICAL DEVICES NOT VERIFIED.**
+STOP after Batch 2. No Batch 3, personal migration, cloud photo transfer, provider
+provisioning, deployment or GitHub push. The local QA checkpoint is in Git log.
+
+## Verified acceptance baseline
+
+Clean main `d633f17`, 632/632 tests, 112/112 standalone syntax checks, SQL runners
+45/121 assertions, 48-file/766240-byte artifact verified before changes. Read all
+six Batch2 reports. Server listener ownership was checked against the exact
+`serve-sync-qa.js` / `prepare-sync-browser.js` process command lines. Browser API
+reported exact URLs before interacting; the existing user tab8765 was not bound,
+read, restored, reset or modified.
+
+## Executed browser gates
+
+| Gate | Result and actual evidence |
+| --- | --- |
+| Laptop workout after JSONB ACK | PASS: Start A,27.5kg×10/RIR3,ACK,30kg×8/RIR2,Complete; phone pulled identical history |
+| Final mobile workout,390px | PASS: B set1 11kg×12/RIR4; durable SQL shadow/outbox0 captured before set2 12kg×11/RIR3 in the same editor; Complete and laptop pull |
+| Identity/order/snapshots | PASS: actual downloaded workspace files deep-equal completed sessions; two distinct set IDs per session, preserved slot/exercise IDs, array order and snapshots; both queues0 |
+| Keep local / Use server | PASS: explicit reviewed actions; accepted local reproposal and server adoption observed |
+| Unresolved conflict reload | PASS: pending1/conflict1 retained, explicit cached opening, blocked sync until matching reauthentication; review restored base/local/remote |
+| Remote changes while review open | PASS: old decision rejected with review-changed message; new review required |
+| Edit vs delete | PASS: tombstone returned copy-required, local candidate retained and no resurrection |
+| Delete vs edit | PASS: base food,local deletion and current server edit shown; explicit server choice preserved edited record |
+| Unsupported compound | PASS: live-update/set/Complete chain of3 retained; local choice returned compound-review-required and comparison stayed available |
+| A→B→A / logout with pending | PASS: A's pending1 retained; B food/history empty; returning A restored its private pending food |
+| Delayed response after switch | PASS: hold actual gateway response for A,logout/open B,release; B stayed empty and A queue retained |
+| Expiry during held response | PASS:12-second fixture identity expired while refresh/response held; workspace sealed,queue retained,response release did not unlock |
+| Six areas + Weekly/Monthly/My Day | PASS:12 views at measured1280/320/360/390 widths,48 cases; no document/body horizontal overflow; Cloud Settings3 additional mobile cases |
+| Keyboard/focus | PASS: Tab traversed cache control,week/calories/protein,Save,backup preparation; visible2.4px solid outline; Enter opened Gym |
+| Read-only navigation | PASS: JSON/planning and photo metadata/base64 bytes exact before/after48-view navigation; full scoped IDB rows and anonymous JSON exact across8 account views with sync paused |
+| Actual paired backup/restore | PASS: downloaded JSON+one photo,preview/confirmation,restore onto fresh disposable8846,reload,re-export; complete data and photo metadata/bytes deep-equal |
+| Account export boundary | PASS: labeled projection-only,actual downloaded JSON equals selected projection and excludes outbox/token/photos; not a full sync-workspace backup |
+| Console/runtime | PASS in observed four contexts8840/8841/8844/8846: captured error/warn lists empty; fixture counters external0/errors0/anonymousUnchanged:true |
+
+Inputs above are synthetic QA values, not training recommendations. Laptop/phone
+are separate browser origins and installation device IDs, not physical devices.
+Auth responses are fixtures; HTTP gateways execute real local PostgreSQL WASM.
+
+## Bug fixed and reproducible evidence
+
+Expiry sealed access correctly but `read()` defaulted an unreadable outbox to0,
+so the panel falsely reported an empty queue. It now reports unknown when a row
+is unavailable outside local mode and explains that stored data remains. Two
+regressions were RED before the fix and GREEN after; browser expiry was repeated
+on the corrected artifact. No stored row, migration or backup format changed.
+App entry and the two changed workspace modules use v42; other module queries
+remain v41, CSSv39. Minimal test-only controls add guarded synthetic cache reset,
+held response/release, short session and workspace evidence export. Fresh8846
+serves the unmodified artifact for paired restore. These helpers stay out of dist.
+
+Final executed regression: **634/634 tests**, **112/112 standalone syntax** plus
+both generated fixture modules, **45/121 SQL assertions**, **48 public files /
+766401 bytes**. Build,graph/privacy/exact hashes and all48 packaged HTTP hashes
+PASS;9 private/backend/test/fixture paths404. No dependency additions. Git diff
+checks run before checkpoint. Schema8/photoDB1/JSON8/photo1/MasterPlan unchanged.
+
+Evidence remains ignored under `.local/batch2-browser-qa/`: workout-laptop/phone,
+mobile-set1-ack,mobile-workout-final,account-before/after-navigation,projection,
+paired JSON/photo files,responsive/keyboard/console results and screenshots.
+Native download events timed out twice during additional evidence collection;
+files were verified on disk and later evidence was downloaded through the
+documented browser download API. No PASS is inferred from a click or timeout.
+Clipboard fallback is NOT VERIFIED (tool clipboard read returned empty).
+An invalid synthetic PNG was rejected with a handled decode message; a valid
+generated PNG uploaded/compressed successfully for the photo roundtrip.
+
+## Acceptance boundary
+
+**Batch2 local synthetic acceptance: PASS. Real Supabase: NOT VERIFIED.**
+No native multiple-connection concurrency, iPhone/Safari,large-data/quota/eviction,
+cold-start offline shell, deployed TLS/CORS or production claim is made. Existing
+copy-required/compound limits, plaintext cache,projection-only export and retained
+receipt/tombstone growth remain as documented. Provider setup and any Batch3
+ownership/import/duplicate/rollback/photo contract need separate approval.
+
+---
+
+# Historical: Cloud Batch 2 implementation and verification (10/10/2026)
 
 10/10/2026 · LOCAL AUTOMATED PASS · BROWSER QA PARTIAL · REAL SUPABASE NOT VERIFIED.
 STOP after Batch 2. No production activation, personal migration, photos transfer,

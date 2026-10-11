@@ -1,5 +1,27 @@
 TRACKER — COMPLETE PROJECT GUIDE
-Updated: 2026-10-10 (Cloud Batch2 local implementation; automated verified, browser partial)
+Updated: 2026-10-11 (Cloud Batch2 final browser acceptance; LOCAL SYNTHETIC PASS)
+
+CURRENT PROJECT STATE — CLOUD BATCH2 FINAL BROWSER QA
+CURRENT PHASE: Cloud Batch2. CURRENT STEP: handoff; STOP after browser acceptance.
+Baseline: main d633f17 clean,632tests,112syntax,SQL45+121,48public assets verified.
+COMPLETED: actual JSONB workout regression both directions with exact snapshots/IDs;
+all conflict UI cases;A/B isolation,pending logout,reload/cache/reauth,delayed expiry;
+48 measured responsive cases +3 Cloud Settings cases,keyboard,console;actual paired
+JSON/photo backup/restore/reload;readonly full account rows/anonymous/photo equality.
+FIXED: sealed/unavailable queue falsely labeled0;now unknown,2 RED->GREEN tests,
+actual corrected expiry retest. No persisted schema or backup-format changes.
+TESTED:634/634 tests,112/112 syntax +2generated fixture modules,SQL45/121;artifact
+48files/766401bytes,48HTTP exact hashes,9private/fixture/backend/test404 probes.
+IN PROGRESS:none. BLOCKERS:none in executed local synthetic acceptance scope.
+KNOWN LIMITATIONS: real Supabase,native concurrent PostgreSQL,iPhone/Safari,large
+data/quota/eviction/cold-start offline/production NOT VERIFIED;plaintext cache,
+projection-only exports,no GC,copy-required/compound review remain documented.
+NEXT/DECISIONS: separately approved provider setup/testing or Batch3 ownership,
+duplicates/import-ledger/rollback/photo-transfer contract. No automatic next phase.
+CHECKPOINT: local commit on main recorded in Git log;no push/deploy/provider action.
+Evidence: CLOUD_BATCH2 reports;ignored .local/batch2-browser-qa. Origin8765 untouched.
+
+HISTORICAL STATUS — 2026-10-10 (superseded by final acceptance above)
 
 CURRENT PROJECT STATE — CLOUD BATCH2
 CURRENT PHASE: Cloud Batch2. CURRENT STEP: handoff; final browser release gate pending.

@@ -1,4 +1,46 @@
-# Cloud Batch 2 — Offline and Recovery QA
+# Cloud Batch 2 — Final offline, isolation and backup browser QA
+
+11/10/2026 · **LOCAL SYNTHETIC BROWSER PASS. Real devices/provider NOT VERIFIED.**
+Verified clean d633f17 baseline632/112/SQL45+121/48files; final634/112/45+121.
+
+| Browser gate | Verdict | Actual result |
+| --- | --- | --- |
+| Logout with pending | PASS | Offline A food edit queued1; confirmed logout sealed access and retained row |
+| A→B→A | PASS | B food/history empty,queue0; A food/pending1 reappeared only after explicit matching activation |
+| Reload/cache/reauth | PASS | Conflict and candidate retained; explicit cache opening disabled sync; matching OTP/open with confirmation restored remote access |
+| Stale response after switch | PASS | Held A gateway response released after B opened; B projection unchanged,A queue1 retained |
+| Expiry during delayed sync | PASS |12-second identity,refresh delayed beyond deadline; expired/sealed; late response did not unlock; durable A queue1 |
+| Locked queue label | PASS after fix | Unavailable queue now unknown,not0; two RED→GREEN regressions and actual repeated expiry walkthrough |
+| Anonymous readonly views | PASS |48 responsive view cases followed by actual re-export: exact JSON/planning and photo metadata/bytes |
+| Account readonly views | PASS |8 views with sync paused; full scoped IDB rows including history/outbox/conflicts/cursor/receipts and anonymous source exact before/after |
+| Paired backup restore | PASS | Source8844 JSON +one valid uploaded/compressed synthetic photo downloaded; target8846 preview/confirmation→JSON→add1photo→reload→download both; exact data/photo metadata/bytes |
+| Account projection export | PASS | Actual file matches current selected projection; UI says projection-only,no token/outbox/photos; account restore/photos remain unavailable |
+| Responsive/keyboard | PASS |12 views at measured1280/320/360/390,48 cases;3 extra Cloud Settings widths; Tab focus2.4px solid and Enter navigation |
+| Console | PASS in observed scope | Captured error/warn arrays empty in all four origins; fixture external/errors0 |
+
+The restore target8846 was freshly created for this task and contained no user
+records. The existing8765 tab was never accessed. No personal/cloud photo upload,
+provider creation, schema/backup migration or GitHub push occurred. Photo restore
+remains separate from JSON; this test does not make two-file restore atomic.
+Evidence: ignored `.local/batch2-browser-qa/`; integrity checks compare complete
+data and decoded-content-preserving photo base64/metadata arrays, excluding only
+the enclosing export timestamp. Account before/after comparison includes full rows.
+
+Two additional download-event waits timed out; actual file existence/content was
+checked, and the documented download API completed later account evidence files.
+Do not infer downloaded success from the UI status alone. Clipboard fallback was
+not verified. Invalid synthetic image rejection was handled; a valid PNG was used
+for the successful backup roundtrip. Fixture offline is transport interruption,
+not airplane mode/cold-launch/OS power-loss. PGlite is single-connection.
+
+Real Supabase,physical iPhone/Safari,native PostgreSQL concurrency,quota/eviction,
+large histories/photos and cold-start offline remain NOT VERIFIED. Existing
+plaintext-cache and projection-only backup limits remain. STOP after Batch2.
+The historical incomplete gates below were superseded by this executed run.
+
+---
+
+# Historical: Offline and Recovery QA (10/10/2026)
 
 10/10/2026 · **Local automated verification PASS; browser verification PARTIAL; real Supabase and real devices NOT VERIFIED.**
 

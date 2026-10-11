@@ -1,6 +1,10 @@
 # Cloud Batch2 — approved implementation contract
 
-10/10/2026 · IMPLEMENTED LOCAL; automated verification PASS / browser release gate partial.
+11/10/2026 · LOCAL SYNTHETIC ACCEPTANCE PASS; real provider/device gates NOT VERIFIED.
+Final browser gates and634/112/SQL45+121 evidence: CLOUD_BATCH2_IMPLEMENTATION.md.
+The implementation contract below remains active. The unavailable locked/opening
+workspace queue count is now null/unknown rather than0;local mode still reports0.
+No persistent schema, payload, backup or scope contract changed.
 User authorizes complete local implementation; no
 provider provisioning, personal migration, photos upload or production deploy.
 

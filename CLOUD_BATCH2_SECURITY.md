@@ -1,4 +1,43 @@
-# Tracker — Cloud Batch 2: security and data boundaries
+# Tracker — Cloud Batch 2: final browser security boundaries
+
+11/10/2026 · **LOCAL SYNTHETIC ACCEPTANCE PASS; real provider/production NOT VERIFIED.**
+Acceptance baseline d633f17 clean main632/112/SQL45+121/48files verified. Final
+634tests/112syntax/45+121SQL assertions;48-file/766401-byte public artifact passes
+privacy/graph/hash validation. All48 HTTPasset hashes match;9 private/backend/
+test/fixture paths404. No public secrets or added runtime dependencies.
+
+Actual browser isolation checked A→B→A,logout with pending1,reload/cache with sync
+disabled until matching reauth,expiry during held gateway response and stale A
+response after B opened. B showed no A foods/history; stored A candidate remained.
+All four disposable URLs and listener process ownership were verified. User tab
+8765 was not bound/accessed. Only synthetic inputs/files were used.
+
+The only runtime repair makes unavailable outbox counts null/unknown instead of0,
+preventing a false empty-queue claim after sealing. Two regressions were RED then
+GREEN; expiry was rerun through actual UI. Sealing still clears payload access
+while retaining its IndexedDB row. Schema8/photoDB1/backup8+1/RLS/Auth unchanged.
+
+Paired backup/restore used unmodified packaged app on8844 and fresh8846. Full
+account rows and anonymous JSON stayed exact during8 read-only account views;
+anonymous JSON/planning/photo bytes stayed exact through48 responsive view cases.
+Account export is explicitly projection-only; tokens/outbox are excluded and it
+must not be treated as a full workspace recovery archive. Photos remain local.
+
+Test-only controls reset ONLY marker-bearing caches whose complete scope list is
+preview/syntheticqa/known synthetic UIDs. Unknown scope or missing marker aborts
+the transaction. Installation metadata and anonymous data/photos are not reset.
+Held response/short-session/evidence controls and restore origin8846 are test
+instrumentation outside dist,not new production endpoints or Auth bypasses.
+
+Captured browser error/warn lists were empty;fixture external/errors0. Synthetic
+Auth and single-connection SQL do not prove real OTP/JWT/TLS/CORS/pooler,provider
+RLS deployment,native concurrent connections or iPhone/Safari. No provider,
+personal import,cloud photo transfer,Batch3,production deployment or push occurred.
+Existing cache encryption/retention/backup limits below remain active. STOP Batch2.
+
+---
+
+# Historical: security and data boundaries (10/10/2026)
 
 10/10/2026 · Local implementation evidence. Real provider/deployment gates remain closed.
 

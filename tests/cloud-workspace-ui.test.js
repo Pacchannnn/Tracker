@@ -36,6 +36,11 @@ test('durable status changes preserve unrelated input and pending never announce
   for (const status of ['offline', 'needsLogin', 'failed', 'paused', 'syncing', 'conflict']) s.emit({ syncStatus: status });
   assert.equal(s.dirty.value, '1777'); s.emit({ syncStatus: 'synced', outboxCount: 0 }); assert.match(s.main.textContent, /Đã đồng bộ/);
 });
+test('sealed queue is labeled unknown and cannot be presented as an empty queue',()=>{
+ const s=setup({mode:'sealed',syncStatus:'needs-login',outboxCount:null,conflicts:[]});
+ assert.match(s.main.textContent,/Thao tác chờ: chưa đọc được khi kho chưa mở/);
+ assert.ok(!s.main.textContent.includes('Thao tác chờ: 0'));
+});
 test('unknown pending count cannot announce synced', () => {
   const s = setup({ mode: 'account', syncStatus: 'synced', conflicts: [] }); assert.ok(!s.main.textContent.includes('Đã đồng bộ'));
 });

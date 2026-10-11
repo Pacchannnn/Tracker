@@ -62,6 +62,7 @@ export function createCloudWorkspaceUI({ workspace, auth, helpers, loadAnonymous
     host.replaceChildren(h2('Không gian dữ liệu'), statusNode);
     host.append(p(state.mode === 'local' ? 'Đang dùng dữ liệu ẩn danh cục bộ. Mở tài khoản không nhập, ghi đè hay gộp lịch sử này.' : 'Dữ liệu tài khoản được lưu riêng. Ảnh cục bộ chưa được chuyển lên cloud.', 'hint'));
     if (Number.isInteger(state.outboxCount)) host.append(p(`Thao tác chờ: ${state.outboxCount}`, 'hint'));
+    else host.append(p('Thao tác chờ: chưa đọc được khi kho chưa mở. Dữ liệu đã lưu vẫn được giữ.', 'hint'));
     if (notice) { const error = p(notice, 'warning'); error.setAttribute('role', 'alert'); host.append(error); }
     if (warning) {
       const selected = warning;
