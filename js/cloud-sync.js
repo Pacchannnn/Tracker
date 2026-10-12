@@ -15,7 +15,7 @@ function canonical(value) {
   return JSON.stringify(value);
 }
 const equal = (a, b) => canonical(a) === canonical(b);
-const kinds = new Set(['workout', 'history_candidate', 'planning_draft', 'plan', 'exercise', 'food', 'meal_entry', 'saved_meal', 'recipe', 'journal', 'checkin', 'cardio', 'knee', 'account_settings', 'exercise_note']);
+const kinds = new Set(['workout', 'history_candidate', 'planning_draft', 'plan', 'exercise', 'food', 'meal_entry', 'saved_meal', 'recipe', 'journal', 'checkin', 'cardio', 'knee', 'account_settings', 'exercise_note','photo']);
 function records(value, head) {
   if (!Array.isArray(value)) fail('invalid_response');
   const seen = new Set();
@@ -30,6 +30,7 @@ function records(value, head) {
   }
   return value;
 }
+export function validateFeedRecords(value,head){records(value,head);return value;}
 function mergeRecords(shadow, incoming) {
   const map = new Map(shadow.map(r => [key(r), r]));
   for (const r of incoming) {
@@ -126,7 +127,8 @@ function wireRequest(workspace, intent) {
 
 // All responses cross a lease guard and one durable account-store transaction.
 // Network failure leaves frozen request bytes and candidate history intact.
-export function createSyncEngine({ store, scope, transport, isCurrent = () => false, onChange = () => {}, pageLimit = 50 } = {}) {
+export function createSyncEngine({ store, scope, transport, isCurrent = () => false, onChange = () => {}, pageLimit = 50, protocolVersion = 1 } = {}) {
+  if(![1,2].includes(protocolVersion))fail('unsupported_protocol');
   if (!store || !transport?.call || !uuid(scope?.uid) || !['test', 'preview', 'production'].includes(scope?.environment) || typeof scope?.projectId !== 'string' || !scope.projectId || !Number.isInteger(pageLimit) || pageLimit < 1 || pageLimit > 100) fail('invalid_scope');
   const ownedScope = clone(scope);
   let epoch = 0, paused = null, running = null, controller = new AbortController();
@@ -169,10 +171,11 @@ export function createSyncEngine({ store, scope, transport, isCurrent = () => fa
     while (current(ticket)) {
       const w = await read(); if (w.initialized) return;
       const staged = w.bootstrap;
-      const response = await call(ticket, 'bootstrap', { headSequence: staged?.headSequence ?? null, cursor: staged?.cursor ?? null, limit: pageLimit });
+      const response = await call(ticket, protocolVersion===2?'bootstrap-v2':'bootstrap', { headSequence: staged?.headSequence ?? null, cursor: staged?.cursor ?? null, limit: pageLimit });
       const head = sequence(response?.headSequence);
       if (staged && (response.headSequence !== staged.headSequence || response.snapshotRecordCount !== staged.snapshotRecordCount) || !Number.isSafeInteger(response.snapshotRecordCount) || response.snapshotRecordCount < 0 || typeof response.hasMore !== 'boolean') fail('invalid_response');
       records(response.records, String(head));
+      if(protocolVersion===1&&response.records.some(record=>record.kind==='photo'))fail('invalid_response');
       const prev = staged?.cursor;
       // Keyset ordering is the database's collation, not JavaScript UTF-16/JSON order.
       if (response.records.length > pageLimit || prev && equal(prev, response.cursor)) fail('invalid_response');
@@ -191,11 +194,12 @@ export function createSyncEngine({ store, scope, transport, isCurrent = () => fa
   async function pull(ticket) {
     while (current(ticket)) {
       const w = await read(), after = w.cursor;
-      const response = await call(ticket, 'pull', { afterSequence: after, limit: pageLimit });
+      const response = await call(ticket, protocolVersion===2?'pull-v2':'pull', { afterSequence: after, limit: pageLimit });
       const head = sequence(response?.headSequence), cursor = sequence(response?.afterSequence);
       if (!Array.isArray(response.groups) || response.groups.length > pageLimit || typeof response.hasMore !== 'boolean' || head < cursor || cursor < sequence(after) || response.hasMore !== (cursor < head)) fail('invalid_response');
       let last = sequence(after); const operations = new Set();
       for (const group of response.groups) {
+        if(protocolVersion===1&&group.records?.some(record=>record.kind==='photo'))fail('invalid_response');
         if (!uuid(group.operationId) || operations.has(group.operationId) || sequence(group.commitSequence) !== last + 1n || !group.records?.length || group.records.length > 100 || !Number.isSafeInteger(group.recordCount) || group.recordCount !== group.records.length) fail('invalid_response');
         operations.add(group.operationId); records(group.records, group.commitSequence);
         if (group.records.some(r => r.commitSequence !== group.commitSequence)) fail('invalid_response');
@@ -242,7 +246,7 @@ export function createSyncEngine({ store, scope, transport, isCurrent = () => fa
     }
   }
   async function sync() {
-    if (running) return running;
+    if (running) { await running; return status(); }
     if (paused || !isCurrent()) return status();
     const ticket = epoch;
     running = (async () => {

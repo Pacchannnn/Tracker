@@ -145,7 +145,9 @@ export function createSqlStore(query) {
     push: (scope, op, fingerprint) => run('push', scope, [JSON.stringify(op), fingerprint], ['jsonb', 'text']),
     reject: (scope, op, fingerprint, status, code) => run('record_rejection', scope, [JSON.stringify(op), fingerprint, status, code], ['jsonb', 'text', 'text', 'text']),
     pull: (scope, after, limit) => run('pull', scope, [after, limit], ['text', 'integer']),
-    bootstrap: (scope, head, cursor, limit) => run('bootstrap', scope, [head, cursor === null ? null : JSON.stringify(cursor), limit], ['text', 'jsonb', 'integer'])
+    bootstrap: (scope, head, cursor, limit) => run('bootstrap', scope, [head, cursor === null ? null : JSON.stringify(cursor), limit], ['text', 'jsonb', 'integer']),
+    pullV2: (scope, after, limit) => run('pull_v2', scope, [after, limit], ['text', 'integer']),
+    bootstrapV2: (scope, head, cursor, limit) => run('bootstrap_v2', scope, [head, cursor === null ? null : JSON.stringify(cursor), limit], ['text', 'jsonb', 'integer'])
   };
 }
 export function createIdentityVerifier({ projectUrl, publishableKey, fetchImpl = fetch, now = Date.now }) {
@@ -193,13 +195,13 @@ export function createGateway({ verifyIdentity, store, environment, projectId, a
         }
         return await store.push(scope, validated, fingerprint);
       }
-      if (route === 'pull') {
+      if (route === 'pull' || route === 'pull-v2') {
         if (!keysOnly(body, ['afterSequence', 'limit']) || !Number.isInteger(body.limit) || body.limit < 1 || body.limit > 100) fail('invalid_cursor');
-        return await store.pull(scope, sequence(body.afterSequence), body.limit);
+        return await (route === 'pull-v2' ? store.pullV2 : store.pull)(scope, sequence(body.afterSequence), body.limit);
       }
-      if (route === 'bootstrap') {
-        if (!keysOnly(body, ['headSequence', 'cursor', 'limit']) || !Number.isInteger(body.limit) || body.limit < 1 || body.limit > 100 || !(body.cursor === null || keysOnly(body.cursor, ['kind', 'recordId']) && kinds.has(body.cursor.kind) && id(body.cursor.recordId) && body.headSequence !== null)) fail('invalid_cursor');
-        return await store.bootstrap(scope, body.headSequence === null ? null : sequence(body.headSequence), body.cursor, body.limit);
+      if (route === 'bootstrap' || route === 'bootstrap-v2') {
+        if (!keysOnly(body, ['headSequence', 'cursor', 'limit']) || !Number.isInteger(body.limit) || body.limit < 1 || body.limit > 100 || !(body.cursor === null || keysOnly(body.cursor, ['kind', 'recordId']) && (kinds.has(body.cursor.kind) || route === 'bootstrap-v2' && body.cursor.kind === 'photo') && id(body.cursor.recordId) && body.headSequence !== null)) fail('invalid_cursor');
+        return await (route === 'bootstrap-v2' ? store.bootstrapV2 : store.bootstrap)(scope, body.headSequence === null ? null : sequence(body.headSequence), body.cursor, body.limit);
       }
       if (route === 'receipt') {
         if (!keysOnly(body, ['operationId']) || !uuid(body.operationId)) fail('invalid_operation');

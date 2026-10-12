@@ -1,4 +1,20 @@
 TRACKER — COMPLETE PROJECT GUIDE
+LATEST STATUS (2026-10-12, same R1-R16 workflow):
+COMPLETED LOCAL: approved account IDB2/SQL003/private protocol2 photo pipeline;
+atomic JPEG pair+intent, verified ACK/cache, exact owner/daily CAS/compound deletion;
+full three-file recovery/detached restore and supported schema8 import ledger.
+TESTED:765/765 Node,147 syntax,SQL45+121+60,public57/backend16 artifacts.
+Actual synthetic browser photos/download bytes/restore/import ACK/device2 passed.
+PARTIAL: full legacy/old-schema/raw-draft/photo mapper and whole migration rehearsal.
+KNOWN LIMITS: photo conflict inspection/recovery only; no physical GC or SW/PWA;
+max-size Safari, exact new320/360/390 widths, native/provider/iPhone unverified.
+CURRENT STEP: local verification/handoff. NEXT: hosted read-only catalog evidence,
+then separate reviewed Auth/SQL/TLS/provision/Storage/deploy/write approvals.
+Hosting remains local preparation only. No8765/personal import/upload/deploy/push.
+Same model/thread; high reasoning for ownership/auth/SQL. Full details and actions:
+TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md, TRACKER_EXECUTION_STATUS.md.
+
+HISTORICAL CHECKPOINT BELOW:
 CURRENT STATUS (continuous R1-R16 execution,2026-10-11): LOCAL IMPLEMENTATION + REVIEW.
 COMPLETED locally: operator001/002 wrapper/provisioning, opt-in native QA harness,
 gateway12-file packaging, rate bound/cancellation/default-off preview write policy,

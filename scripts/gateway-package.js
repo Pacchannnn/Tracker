@@ -3,7 +3,7 @@ import {readFileSync,writeFileSync,lstatSync,existsSync,mkdirSync,readdirSync} f
 import {resolve,join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
 const root=resolve(process.cwd()), output=join(root,'gateway-dist');
-const paths=['cloud/server.js','cloud/gateway.js','cloud/package.json','cloud/package-lock.json','js/data.js','js/custom-workout.js','js/program.js','js/session-identity.js','js/planning-draft.js','js/planner.js','js/cloud-records.js','package.json'].sort();
+const paths=['cloud/server.js','cloud/gateway.js','cloud/photo-gateway.js','cloud/photo-storage.js','cloud/package.json','cloud/package-lock.json','js/data.js','js/custom-workout.js','js/program.js','js/session-identity.js','js/planning-draft.js','js/planner.js','js/cloud-records.js','js/cloud-photo.js','js/photo-store.js','package.json'].sort();
 const allowed=new Set(paths),folders=new Set(['cloud','js']);
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 function noLinks(base,path=''){

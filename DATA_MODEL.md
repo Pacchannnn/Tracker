@@ -1,5 +1,15 @@
 # Local data model (schemaVersion 8)
 
+## Current account additions —12/10/2026
+
+Portable JSON remains8; anonymous tracker-photos DB/photo backup remain1. Account `tracker-sync` upgrades1→2 additively: workspaces/metadata retained, photoAssets/photoJobs/recoveryWorkspaces/importLedgers added. Workspaces still have row version1/schema8. All stores use exact UID/project/environment ownership; atomic photo persistence includes metadata candidate, two JPEG Blobs and durable job with workspace. Assets use independent UUIDs/hashes, never base64 localStorage.
+
+Jobs freeze operation/device/scope, exact initial accepted base, whole-date/owner dependencies and exact JSON owner receipts; requests become immutable. Applied receipts remain; conflicts retain base/local/remote+bytes. Accepted photo records join the same version feed via explicit protocol2; JSON writes keep1 and old readers fail closed on photo commits. SQL003 is additive, private/FORCE RLS, not remotely applied.
+
+Recovery1 consists of manifest + workspace JSON + photo1 carrier, preserving schema8/photo1 read compatibility. Trusted fixed-H counts/shadow and localRevision recheck precede export. Validated restore writes a new offline detached namespace/new device; originals/old request IDs retained and never auto-send. Detached snapshots and import ledgers stay separate from the active projection. Reviewed schema8 import retains exact source text/hash/mapping/target/choices/frozen requests/ACKs. Unsupported legacy/ownership/photo content stays local; not a complete mapper. See TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md for caps, growth, upgrade/rollback and acceptance limits.
+
+## Historical local-only model notes
+
 One JSON object is stored under `vshape-tracker` in `localStorage`.
 
 11/10/2026 release execution: no persistent format changed. Read-only workspace

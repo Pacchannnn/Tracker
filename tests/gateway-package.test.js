@@ -13,7 +13,8 @@ test('gateway package explicitly includes only server and required domain module
   assert.ok(existsSync(cli),'gateway packaging script missing');const root=fixture(t);
   for(const file of ['.env','MASTER_PLAN.md','tracker-backup-private.json'])writeFileSync(join(root,file),'SYNTHETIC_PRIVATE');
   const built=run(root);assert.equal(built.status,0,built.stderr);
-  const inventory=JSON.parse(run(root,'--inventory').stdout);assert.equal(inventory.length,12);
+  const inventory=JSON.parse(run(root,'--inventory').stdout);assert.equal(inventory.length,16);
+  for(const path of ['cloud/photo-gateway.js','cloud/photo-storage.js','js/cloud-photo.js','js/photo-store.js'])assert.ok(inventory.some(x=>x.path===path));
   assert.ok(inventory.some(x=>x.path==='js/data.js'));assert.ok(inventory.some(x=>x.path==='cloud/server.js'));
   assert.ok(inventory.every(x=>!/operator|MASTER_PLAN|backup|\.env|tests|photos/.test(x.path)));
   assert.equal(run(root,'--check').status,0);

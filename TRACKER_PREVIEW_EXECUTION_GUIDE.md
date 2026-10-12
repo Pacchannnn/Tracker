@@ -74,7 +74,7 @@ node --env-file=.env.preview.local scripts/static-package.js --check
 node --env-file=.env.preview.local scripts/static-package.js --inventory
 ```
 
-Chỉ upload48-file `dist` bằng đường được duyệt. Auth/API secrets, database URL, tokens không được inject vào frontend.
+Chỉ upload57-file `dist` bằng đường được duyệt (cập nhật12/10/2026; backend16 files phải chạy Node riêng). Auth/API secrets, database URL, tokens không được inject vào frontend.
 
 ## 5. Đăng ký account/device và controlled writes
 
@@ -86,7 +86,7 @@ Chỉ upload48-file `dist` bằng đường được duyệt. Auth/API secrets, 
 
 ## 6. Acceptance thực và rollback
 
-Hai browser độc lập: A login → Start → set1 → ACK → set2 → Complete → browser2 pull → so exact IDs/order/weights/reps/RIR/snapshots. Thêm food/meal snapshot và journal; test conflicts, A→B→A, logout pending, expiry/reauth, lost ACK, offline edits/reload. Ảnh/recovery/migration có contract riêng cần duyệt trước implementation.
+Hai browser độc lập: A login → Start → set1 → ACK → set2 → Complete → browser2 pull → so exact IDs/order/weights/reps/RIR/snapshots. Thêm food/meal snapshot và journal; test conflicts, A→B→A, logout pending, expiry/reauth, lost ACK, offline edits/reload. Contract ảnh/recovery đã duyệt và code local đã kiểm thử; hosted apply/upload vẫn cần duyệt. SQL003 packet chỉ prepare-offline; xem TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md. Legacy/photo migration còn PARTIAL, không dùng để nhập dữ liệu cá nhân.
 
 Laptop+iPhone Safari vật lý: test320/360/390, actual downloads, background/airplane/reopen và account isolation. Emulation/local synthetic không thay proof này. Cold-open offline hiện chưa có Service Worker, không tuyên bố shell hoạt động offline.
 
@@ -96,8 +96,8 @@ Rollback preview: disable writes, giữ outbox/source/backups; revert artifact v
 
 - Hosting/account và delivery path chỉ runtime artifacts; URL HTTPS chính xác; deploy activation.
 - Auth template/test users/SMTP và actual Auth requests.
-- Remote read-only preflight; sau review mới install001/002, restricted LOGIN/provisioning.
+- Remote read-only preflight đã duyệt; catalog cần bạn đăng nhập Dashboard. Sau review/approval riêng mới install001/002/003, restricted LOGIN/provisioning/Storage policies.
 - Controlled writes và upload synthetic, native SQL QA.
-- Photo/account-recovery/legacy-import contract nếu đổi ownership/format.
+- Photo/account-recovery/import contract local đã duyệt; hosted Storage/upload/retention/GC/personal import vẫn cần duyệt riêng.
 
 Project/key public đã đủ chuẩn bị cấu hình; chưa phải approval cho các bước trên.

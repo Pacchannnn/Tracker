@@ -1,7 +1,8 @@
 import { listPhotos, ownedPhotos, compressPhoto, replaceOwnedPhoto, deleteOwnedPhotos, validatePhotoMeta } from './photo-store.js?v=41';
 import { localDate } from './data.js?v=41';
 
-export function createNutritionPhotos({ helpers, render, registerUrl, ownerExists, captureGuard = () => () => {} }) {
+export function createNutritionPhotos({ helpers, render, registerUrl, ownerExists, captureGuard = () => () => {}, storage = {} }) {
+  const {listPhotos:readPhotos=listPhotos,ownedPhotos:selectPhotos=ownedPhotos,compressPhoto:compress=compressPhoto,replaceOwnedPhoto:replace=replaceOwnedPhoto,deleteOwnedPhotos:remove=deleteOwnedPhotos,validatePhotoMeta:validate=validatePhotoMeta,downloadPhoto} = storage;
   const { node, button, div, p, id, message, confirmAction } = helpers;
   return function photoCard(ownerType, ownerId, name) {
     const guard = captureGuard();
@@ -16,17 +17,17 @@ export function createNutritionPhotos({ helpers, render, registerUrl, ownerExist
       upload.disabled = true;
       try {
         guard();
-        const images = await compressPhoto(file);
+        const images = await compress(file);
         guard();
         if (!ownerExists(ownerType, ownerId)) throw new Error('Món/công thức đã bị xóa. Mở lại thư viện.');
         const now = new Date().toISOString();
-        const record = { id: id(), ...validatePhotoMeta({ date: localDate(), category: 'food', ownerType, ownerId, note: name }), ...images, createdAt: now, updatedAt: now };
-        const previous = ownedPhotos(await listPhotos(), ownerType, ownerId);
+        const record = { id: id(), ...validate({ date: localDate(), category: 'food', ownerType, ownerId, note: name }), ...images, createdAt: now, updatedAt: now };
+        const previous = selectPhotos(await readPhotos(), ownerType, ownerId);
         guard();
         const save = async () => { try {
           guard();
           if (!ownerExists(ownerType, ownerId)) throw new Error('Món/công thức đã bị xóa. Mở lại thư viện.');
-          await replaceOwnedPhoto(record, previous, guard); guard(); render(); message('Đã lưu ảnh cục bộ. Macro và bữa đã ghi không thay đổi.');
+          await replace(record, previous, guard); guard(); render(); message('Đã lưu ảnh trên thiết bị. Macro và bữa đã ghi không thay đổi.');
         } catch (error) { message(error.message, true); } };
         if (previous.length) confirmAction(`Thay ảnh của ${name}? Ảnh cũ của món này sẽ được gỡ. Hãy xuất bản sao ảnh nếu muốn giữ.`, save);
         else await save();
@@ -34,16 +35,17 @@ export function createNutritionPhotos({ helpers, render, registerUrl, ownerExist
       finally { upload.disabled = false; input.value = ''; }
     });
     box.append(preview, input, upload);
-    listPhotos().then(records => {
+    readPhotos().then(records => {
       if (!box.isConnected) return;
       guard();
-      const photos = ownedPhotos(records, ownerType, ownerId);
+      const photos = selectPhotos(records, ownerType, ownerId);
       if (!photos.length) { preview.append(p('Chưa có ảnh món này.', 'hint')); return; }
       const latest = photos.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
-      const url = URL.createObjectURL(latest.thumbnail); registerUrl(url);
-      preview.append(node('img', { src: url, alt: `Ảnh ${name}`, class: 'food-thumbnail', loading: 'lazy' }));
+      if(latest.thumbnail){const url = URL.createObjectURL(latest.thumbnail); registerUrl(url);
+        preview.append(node('img', { src: url, alt: `Ảnh ${name}`, class: 'food-thumbnail', loading: 'lazy' }));}
+      else {preview.append(p('Ảnh chưa có trên thiết bị này.','hint'));if(downloadPhoto)preview.append(button('Tải ảnh về thiết bị',async()=>{try{guard();await downloadPhoto(latest.id);guard();render();}catch{message('Chưa tải được ảnh. Đăng nhập và kiểm tra kết nối.',true);}}));}
       box.append(button('Gỡ ảnh', () => confirmAction(`Gỡ ${photos.length} ảnh của ${name}? Nội dung món và nhật ký ăn giữ nguyên.`, async () => {
-        try { guard(); await deleteOwnedPhotos(ownerType, ownerId, photos, guard); guard(); render(); message('Đã gỡ ảnh món.'); } catch (error) { message(error.message, true); }
+        try { guard(); await remove(ownerType, ownerId, photos, guard); guard(); render(); message('Đã gỡ ảnh món.'); } catch (error) { message(error.message, true); }
       }), 'danger'));
     }).catch(error => { if (box.isConnected) preview.append(p(error.message, 'notice error')); });
     return box;

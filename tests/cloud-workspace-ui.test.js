@@ -26,6 +26,11 @@ function setup(state = { mode: 'local', syncStatus: 'local', outboxCount: 0, con
   return { main, dirty, calls, workspace, reviewToken, reads: () => reads, emit: patch => { Object.assign(state, patch); listeners.forEach(fn => fn()); }, authEmit: patch => { authState = patch; authListeners.forEach(fn => fn()); }, scope };
 }
 const find = (main, text) => all(main).find(el => el.tagName === 'button' && el.textContent.includes(text));
+test('retained conflicts cannot hide paused status or remove the resume control',async()=>{
+ const s=setup({mode:'account',syncStatus:'paused',outboxCount:0,photoPendingCount:1,conflicts:[],photoConflicts:[{conflict:{base:[],local:[],remote:[]}}]});
+ assert.match(s.main.textContent,/Đã tạm dừng đồng bộ/);assert.ok(find(s.main,'Tiếp tục đồng bộ'));
+ await find(s.main,'Tiếp tục đồng bộ').dispatch('click');assert.equal(s.calls.at(-1)[0],'resume');
+});
 test('provisioning identity is displayed as safe text only for an open workspace and does not trigger sync',()=>{
  const s=setup({mode:'account',syncStatus:'pending',outboxCount:0,conflicts:[],uid:'synthetic-user',projectId:'synthetic-project',environment:'preview',deviceId:'synthetic-device'});
  assert.match(s.main.textContent,/Thông tin thiết bị/);assert.match(s.main.textContent,/synthetic-device/);assert.equal(s.calls.length,0);

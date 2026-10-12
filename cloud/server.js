@@ -1,6 +1,15 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { createGateway, createIdentityVerifier, createSqlStore } from './gateway.js';
+import { createPhotoGateway, createPhotoSqlStore } from './photo-gateway.js';
+import { createPhotoStorage } from './photo-storage.js';
+
+// Both protocols share the same fixed-project identity and reviewed write policy.
+export function createRuntimeGateway({photoStore,storage,...config}) {
+  const json=createGateway(config);
+  const photos=createPhotoGateway({...config,store:photoStore,storage,allowedWriteUids:config.allowedWriteUids ?? []});
+  return {handle:request => request.route.startsWith('photo-') ? photos.handle(request) : json.handle(request)};
+}
 
 export function requireDatabaseTls(connectionString) {
   const url = new URL(connectionString);
@@ -48,7 +57,7 @@ export function createHttpServer(gateway, { allowedOrigin = null, writesEnabled 
       headers['Access-Control-Allow-Methods'] = 'POST'; headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type';
       reply(204, null); return;
     }
-    if (request.method !== 'POST' || !['/push', '/pull', '/bootstrap', '/receipt'].includes(request.url)) { reply(404, { status: 'error', code: 'unknown_route' }); return; }
+    if (request.method !== 'POST' || !['/push', '/pull', '/bootstrap', '/receipt', '/pull-v2', '/bootstrap-v2', '/photo-prepare', '/photo-finalize', '/photo-abandon', '/photo-download'].includes(request.url)) { reply(404, { status: 'error', code: 'unknown_route' }); return; }
     if (!/^application\/json(?:;|$)/i.test(request.headers['content-type'] || '')) { reply(415, { status: 'error', code: 'json_required' }); return; }
     const timestamp=now();
     if(timestamp-windowStart>=60000 || timestamp<windowStart){windowStart=timestamp;requests=0;}
@@ -90,7 +99,8 @@ async function start() {
   const pool = new Pool({ connectionString: requireDatabaseTls(connectionString), max: 4, connectionTimeoutMillis: 10000, statement_timeout: 15000 });
   pool.on('error', () => { /* No credentials/query/payload logging. Requests return sanitized failures. */ });
   try { await assertGatewayConnection((sql, params) => pool.query(sql, params)); } catch (error) { await pool.end(); throw error; }
-  const gateway = createGateway({ verifyIdentity, store: createSqlStore((sql, params) => pool.query(sql, params)), environment, projectId: new URL(projectUrl).hostname.split('.')[0], allowWrites:writes.enabled,allowedWriteUids:writes.allowedUids });
+  const query=(sql,params)=>pool.query(sql,params);
+  const gateway = createRuntimeGateway({ verifyIdentity, store: createSqlStore(query), photoStore:createPhotoSqlStore(query), storage:createPhotoStorage({projectUrl,publishableKey}), environment, projectId: new URL(projectUrl).hostname.split('.')[0], allowWrites:writes.enabled,allowedWriteUids:writes.allowedUids });
   const server = createHttpServer(gateway,{...hosting,writesEnabled:writes.enabled});
   server.requestTimeout = 20000; server.headersTimeout = 10000;
   server.listen(hosting.port, hosting.host, () => { process.stdout.write(`Gateway started; preview writes ${writes.enabled?'enabled':'disabled'}. HTTPS requires the approved hosting proxy.\n`); });

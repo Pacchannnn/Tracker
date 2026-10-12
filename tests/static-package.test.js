@@ -54,7 +54,9 @@ test('package excludes private, development and unapproved same-extension files'
     mkdirSync(join(root, path, '..'), { recursive: true }); writeFileSync(join(root, path), 'PRIVATE SYNTHETIC SENTINEL');
   }
   const result = run(root); assert.equal(result.status, 0, result.stderr);
-  const output = files(join(root, 'dist')); assert.equal(output.length, 48);
+  const output = files(join(root, 'dist')); assert.equal(output.length, 57);
+  for(const path of ['js/cloud-import-ledger.js','js/cloud-importer.js','js/cloud-import-ui.js'])assert.ok(output.includes(path));
+  for(const path of ['js/cloud-photo.js','js/cloud-photo-sync.js','js/cloud-storage-transport.js','js/cloud-recovery.js','js/cloud-recovery-source.js','js/cloud-recovery-ui.js'])assert.ok(output.includes(path));
   for (const path of ['js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js']) assert.ok(output.includes(path));
   for (const path of ['js/cloud-store.js','js/cloud-records.js','js/cloud-sync.js','js/cloud-workspace.js','js/cloud-workspace-ui.js','js/cloud-import-preview.js']) assert.ok(output.includes(path));
   assert.ok(!output.some(path => path.startsWith('cloud/')));

@@ -8,6 +8,18 @@
 
 ## Trạng thái và quy ước
 
+### Approved local photo/recovery execution —12/10/2026
+
+- [DONE LOCAL] R8 account IDB2/SQL003/photo protocol2/private manifests/operator prepare-only packet.
+- [DONE LOCAL] R9 atomic JPEG pair+intent, verification/finalize/cache, exact owner/daily CAS and compound journal deletion.
+- [DONE LOCAL] R10 three-file full recovery/new detached offline restore/saved recovery inspection.
+- [PARTIAL] R11/R12 reviewed supported schema8 import/receipts; legacy ownership/old schema/raw drafts/photo migration still local, full mapper/rehearsal required before personal import.
+- [VERIFIED LOCAL]765tests/147syntax/SQL45+121+60; frontend57/backend16 privacy/hash checks. Synthetic browser actual downloads/cross-device bytes/restore/import/delete-scope evidence.
+- [NOT VERIFIED] Hosted/native/iPhone/max-size Safari/cold-offline; exact new320/360/390 override did not match observed width.
+- [PENDING ACCESS/APPROVAL] Hosted catalog sign-in, Auth changes, install001/002/003/LOGIN/provision/Storage, hosting/deploy/synthetic writes. Hosting choice remains local preparation only.
+
+Worklist, evidence and next manual steps: TRACKER_EXECUTION_STATUS.md, TRACKER_EXECUTION_VERIFICATION.md, TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md. Older entries below are historical; no new phase prompt required.
+
 ### Continuous R1–R16 execution —11/10/2026
 
 Local operator installation/provisioning, native QA harness, gateway packaging/rate bound/cancellation and default-off reviewed preview write gate implemented; device identity setup UI added/tested. Public provider values confirmed in ignored env; gateway URL/hosting/remote actions pending approval. Prioritize real Auth+Gym/Nutrition/Journal preview once required security/account/deploy approvals arrive. Photo/recovery/import additions documented in TRACKER_PHOTO_RECOVERY_CONTRACT.md for required review before changing formats/ownership. No new phase prompt needed; worklist/status/evidence in TRACKER_EXECUTION_STATUS.md and TRACKER_EXECUTION_VERIFICATION.md. Real providers/physical devices/production NOT VERIFIED.

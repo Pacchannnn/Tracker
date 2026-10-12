@@ -17,6 +17,12 @@ test('explicit account activation creates isolated data and local mode never exp
  await s.workspace.write(data=>{data.settings.calories=2000;});assert.equal(s.workspace.getData().settings.calories,2000);
  const leave=await s.workspace.localOnly();await s.workspace.localOnly(leave.confirmation);assert.equal(s.workspace.read().mode,'local');assert.throws(()=>s.workspace.getData());
 });
+test('authentication refresh preserves an explicit user pause',async()=>{
+ let resumes=0;
+ const s=setup(new IDBFactory(),{engineFactory:()=>({status:()=>({status:'synced'}),pause(){},resume(){resumes++;}})});
+ await s.workspace.openAccount();s.workspace.pause();s.refreshAuth();s.change(A);
+ assert.equal(resumes,0);assert.equal(s.workspace.read().syncStatus,'paused');s.workspace.seal();
+});
 test('account A to B to A retains queues without leaking data',async()=>{
  const s=setup();await s.workspace.openAccount();await s.workspace.write(data=>{data.settings.calories=2000;});s.change(B);
  assert.equal(s.workspace.read().mode,'sealed');await s.workspace.openAccount();assert.equal(s.workspace.getData().settings.calories,2400);

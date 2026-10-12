@@ -1,6 +1,6 @@
 # Tracker — photo / full recovery / import contract for review
 
-11/10/2026 · **PROPOSED, NOT APPROVED OR IMPLEMENTED.** R8–R12 remain part of the same execution workflow. The user requires review when ownership, persistence formats or retention materially change. This is that concrete review packet; no database/storage migration has occurred.
+11/10/2026 · **APPROVED FOR LOCAL IMPLEMENTATION AND TESTS.** User approved this contract in the current thread. R8–R12 remain part of the same workflow. Hosted SQL/Storage apply, uploads, deployment, retention/GC and personal import remain separately gated; no remote migration occurred.
 
 ## Invariants
 
@@ -18,7 +18,7 @@ Portable schema8, anonymous `tracker-photos` v1 and photo backup1 stay readable 
 | Restore ownership | Restore into a **detached local recovery workspace**, new installation/device ID, immutable original outbox/request identities retained for inspection. No network resume before explicit same-account reconciliation | Cloning original device ID or sending restored intents as a new device would misrepresent ownership/fingerprints |
 | Legacy import | Reviewed durable ledger in account DB v2, exact source hash/scope/device, immutable operation IDs and receipts; explicit per-aggregate mapping/collision decisions | Automatic remap/normalize or dataset replace cannot preserve ambiguous history safely |
 
-No decision above is assumed approved. Schema8 payload does not imply account IDB/protocol remain v1 after a photo implementation. Code may only change those after review and migration tests.
+The decisions above are approved for local code/tests. Schema8 payload does not imply account IDB/protocol remain v1 after a photo implementation. Additive migration tests are required before integration; actual hosted apply remains unapproved.
 
 ## Photo prepare / upload / finalize
 

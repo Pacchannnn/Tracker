@@ -1,4 +1,8 @@
-# Tracker — continuous release execution, 11/10/2026
+# Tracker — continuous release execution, 12/10/2026
+
+**Latest local milestone:** approved account IDB2/photo protocol2/SQL003/private photo pipeline, full three-file recovery/detached restore and reviewed schema8 import ledger implemented. Fresh765 tests/147syntax/SQL45+121+60; public57/backend16 artifacts pass. Actual synthetic image ACK/cross-device download byte comparison/paired restore/import ACK+device2/compound journal deletion verified. Portable schema8, anonymous photoDB1, photo1, migrations001/002 and MASTER_PLAN unchanged. Full legacy/photo mapper is PARTIAL. Hosted/native/iPhone/cold-offline not verified. Latest exact320/360/390 measurements did not match override, so no new mobile PASS. No8765 access/deploy/push. See TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md, TRACKER_EXECUTION_STATUS.md and TRACKER_EXECUTION_VERIFICATION.md.
+
+## Historical local checkpoint —11/10/2026
 
 Starting main549b1a1 baseline639tests/112syntax verified. Public URL/key confirmed and stored in ignored local env, without activation. Local operator wrapper/provisioning, restricted preview write policy, bounded/cancellable gateway requests,12-file backend packaging and read-only device identity UI are implemented. Hosted Auth/SQL/TLS/deploy/writes remain unapproved/unverified. New photo/recovery/import contract is review-only; schema8/photoDB1/accountDB1/backup8+1 unchanged. See TRACKER_EXECUTION_STATUS.md, TRACKER_EXECUTION_VERIFICATION.md, TRACKER_PREVIEW_EXECUTION_GUIDE.md and TRACKER_PHOTO_RECOVERY_CONTRACT.md. Existing Batch3/2 sections below are historical evidence; their fixed-false gateway description is superseded locally by an explicit default-off preview gate, never activated remotely.
 

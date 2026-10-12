@@ -1,3 +1,4 @@
+import {callPrivateStorage} from './cloud-storage-transport.js?v=44';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailAddress = value => typeof value === 'string' && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const safeError = () => new Error('Không thể xác thực. Kiểm tra thông tin hoặc thử lại sau.');
@@ -82,7 +83,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
     },
     async callGateway(identity, route, body, { signal } = {}) {
       const credential = credentials.get(identity);
-      if (!credential || identity.expiresAt <= now() || !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(gatewayOrigin) || !['push','pull','bootstrap','receipt'].includes(route) || signal?.aborted) throw safeError();
+      if (!credential || identity.expiresAt <= now() || !/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(gatewayOrigin) || !['push','pull','bootstrap','receipt','pull-v2','bootstrap-v2','photo-prepare','photo-finalize','photo-abandon','photo-download'].includes(route) || signal?.aborted) throw safeError();
       const deadline = new AbortController(), abort = () => deadline.abort();
       signal?.addEventListener('abort', abort, { once:true }); const timer = setTimeout(abort,15000);
       try {
@@ -93,7 +94,8 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
         return result;
       } catch { throw safeError(); }
       finally {clearTimeout(timer);signal?.removeEventListener('abort',abort);}
-    }
+    },
+    callStorage(identity,request,{signal}={}) { return callPrivateStorage({identity,credential:credentials.get(identity),projectId,environment,origin,publicKey,fetchImpl,now,request,signal}); }
   });
 }
 
@@ -221,6 +223,13 @@ export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout
       for (const item of [lease.signal,signal].filter(Boolean)) { if (item.aborted) abort(); else item.addEventListener('abort',abort,{once:true}); }
       try { const result=await adapter.callGateway(identity,route,body,{signal:combined.signal}); if(!api.isCurrent(lease)||combined.signal.aborted)throw safeError();return result; }
       finally {for(const item of [lease.signal,signal].filter(Boolean))item.removeEventListener('abort',abort);}
+    },
+    async storageCall(lease,request,{signal}={}) {
+      if(!api.isCurrent(lease))throw safeError();
+      const combined=new AbortController(),abort=()=>combined.abort();
+      for(const item of [lease.signal,signal].filter(Boolean)){if(item.aborted)abort();else item.addEventListener('abort',abort,{once:true});}
+      try{const result=await adapter.callStorage(identity,request,{signal:combined.signal});if(!api.isCurrent(lease)||combined.signal.aborted)throw safeError();return result;}
+      finally{for(const item of [lease.signal,signal].filter(Boolean))item.removeEventListener('abort',abort);}
     }
   };
   return Object.freeze(api);

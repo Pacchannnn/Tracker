@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 
 // Public runtime allowlist. Adding a file requires review; never copy whole folders.
 const ASSETS = [
+  'js/cloud-import-ledger.js','js/cloud-importer.js','js/cloud-import-ui.js',
+  'js/cloud-photo.js', 'js/cloud-photo-sync.js', 'js/cloud-storage-transport.js', 'js/cloud-recovery.js', 'js/cloud-recovery-source.js', 'js/cloud-recovery-ui.js',
   'index.html', 'css/style.css', 'assets/fonts/PatrickHand-Regular.ttf', 'assets/fonts/OFL.txt',
   'js/app.js', 'js/cloud-auth.js', 'js/cloud-auth-ui.js', 'js/cloud-config.js', 'js/cloud-store.js', 'js/cloud-records.js', 'js/cloud-sync.js', 'js/cloud-workspace.js', 'js/cloud-workspace-ui.js', 'js/cloud-import-preview.js', 'js/cookbook.js', 'js/cookbook-ui.js', 'js/custom-workout.js', 'js/data.js',
   'js/exercise-picker.js', 'js/exercise-picker-ui.js', 'js/gym-builder-ui.js', 'js/journal.js',

@@ -29,6 +29,13 @@ function engine(store, call, options = {}) {
   return createSyncEngine({ store, scope, transport: { call: rawProtocol ? call : counted(call) }, isCurrent: () => true, ...settings });
 }
 const emptyPull = cursor => ({ headSequence: cursor, afterSequence: cursor, groups: [], hasMore: false });
+test('concurrent sync and resume callers all receive a status result',async()=>{
+ const store=memoryStore();let release,entered;
+ const ready=new Promise(resolve=>entered=resolve),held=new Promise(resolve=>release=resolve);
+ const sync=engine(store,async()=>{entered();await held;return emptyPull('0');});
+ sync.pause();const resumed=sync.resume();await ready;const concurrent=sync.sync();release();
+ const results=await Promise.all([resumed,concurrent]);assert.deepEqual(results.map(result=>result?.status),['synced','synced']);
+});
 function counted(call) {
   return async (...args) => {
     const response = await call(...args);

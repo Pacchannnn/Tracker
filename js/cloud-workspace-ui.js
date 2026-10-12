@@ -57,12 +57,14 @@ export function createCloudWorkspaceUI({ workspace, auth, helpers, loadAnonymous
     const state = workspace.read(), nextScope = scopeKey(state);
     if (scope && scope !== nextScope) invalidate(); scope = nextScope;
     let status = state.mode === 'local' ? 'local' : state.syncStatus;
-    if (state.conflicts?.length) status = 'conflict'; else if (status === 'synced' && state.outboxCount !== 0) status = 'pending';
+    if (!['paused','needs-login','needsLogin'].includes(status)&&(state.conflicts?.length||state.photoConflicts?.length)) status = 'conflict'; else if (status === 'synced' && (state.outboxCount !== 0||state.photoPendingCount>0)) status = 'pending';
     const statusNode = p(LABELS[status] || 'Cần đăng nhập lại', 'summary'); statusNode.setAttribute('role', 'status'); statusNode.setAttribute('aria-live', 'polite');
     host.replaceChildren(h2('Không gian dữ liệu'), statusNode);
     host.append(p(state.mode === 'local' ? 'Đang dùng dữ liệu ẩn danh cục bộ. Mở tài khoản không nhập, ghi đè hay gộp lịch sử này.' : 'Dữ liệu tài khoản được lưu riêng. Ảnh cục bộ chưa được chuyển lên cloud.', 'hint'));
     if (Number.isInteger(state.outboxCount)) host.append(p(`Thao tác chờ: ${state.outboxCount}`, 'hint'));
     else host.append(p('Thao tác chờ: chưa đọc được khi kho chưa mở. Dữ liệu đã lưu vẫn được giữ.', 'hint'));
+    if(state.mode==='account'&&Number.isInteger(state.photoPendingCount))host.append(p(`Thao tác ảnh chờ: ${state.photoPendingCount}. Ảnh tài khoản và ảnh cục bộ ở kho riêng.`, 'hint'));
+    for(const job of state.photoConflicts??[])host.append(node('details',{},[node('summary',{text:'Xung đột ảnh: xem các bản được giữ'}),p('Không tự ghi đè. Các bản base/local/remote và bytes được giữ để review và export recovery.','hint'),node('pre',{class:'contract-preview',text:JSON.stringify(job.conflict,null,2)})]));
     if (notice) { const error = p(notice, 'warning'); error.setAttribute('role', 'alert'); host.append(error); }
     if (warning) {
       const selected = warning;

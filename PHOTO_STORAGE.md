@@ -1,5 +1,15 @@
 # Ảnh cục bộ và sao lưu
 
+## Account photos —12/10/2026 (implemented local, provider unverified)
+
+Anonymous `tracker-photos` v1 remains unchanged. Account `tracker-sync` DB2 holds scoped original/thumbnail JPEG Blobs and atomic metadata+photo intents. Login never imports anonymous assets. SQL003/photo protocol2 prepares immutable private bucket paths, verifies actual raw bytes on the trusted gateway, then CAS-finalizes into the common feed. Browser upsert/UPDATE/DELETE of Storage bytes denied; logical tombstones retain bytes. Hosted install/policy/Storage uploads not authorized or executed.
+
+Gallery and food/recipe cards reuse the current UI. Missing account bytes show a placeholder and explicit verified download action; account switch seals access/revokes URLs. Photo conflicts preserve inspectable base/local/remote and bytes rather than auto-merge. Full account backup is three-file recovery, not projection JSON. Restore is atomic into a detached offline namespace; active data unchanged. No auto GC/retention change.
+
+Actual synthetic browser photo ACK/cross-device identical bytes/three image-bearing recovery packs (nine downloaded files), plus one empty pack/paired detached restore/food-photo and daily deletion scope verified. Maximum-size exports/Safari/provider/physical iPhone remain unverified. Full legacy photo import not implemented; raw photo1 source is kept local with explicit review. Details/caps/actions: TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md.
+
+## Historical anonymous photo notes
+
 ## V4 Phase 4B-3 — schema8 structural compatibility
 
 Data JSON remains schema8, preserving mixed legacy/structured sessions and editing baselines; raw/wrapped1–7 migrate additively. Identity/session snapshots/historyEditBase are preserved losslessly and malformed structure fails validation. Photo IndexedDB version1 and photo backup format1 are unchanged; no image migration or new photo feature. Full backup still requires two files. Existing photo bytes/owners/rollback tests pass; this milestone's browser roundtrip checks data JSON only.

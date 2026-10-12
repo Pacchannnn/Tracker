@@ -55,10 +55,15 @@ globalThis.fetch=async(url,options={})=>{
   if(delayed){const held=delayed;await new Promise(resolve=>{held.release=resolve;report.textContent='Gateway response held; use release control.';});}
   if(lost&&value.endsWith('/push')){lost=false;await response.text();throw Error('synthetic lost ACK');}return response;
  }
+ if(value.startsWith('https://syntheticqa.supabase.co/storage/v1/object/')){
+  if(offline)throw Error('synthetic offline');
+  const path=value.split('/tracker-preview-photos/')[1];if(!path)throw Error('unknown synthetic storage');
+  return nativeFetch('http://127.0.0.1:${gatewayPort}/qa-storage/'+path,options);
+ }
  if(!value.startsWith(location.origin)){external++;throw Error('unapproved network fixture');}return nativeFetch(url,options);
 };
 function requestResult(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
-const opening=indexedDB.open('tracker-sync',1);opening.onupgradeneeded=()=>{opening.result.createObjectStore('workspaces');opening.result.createObjectStore('metadata');};
+const opening=indexedDB.open('tracker-sync',2);opening.onupgradeneeded=()=>{for(const name of ['workspaces','metadata','photoAssets','photoJobs','recoveryWorkspaces','importLedgers'])if(!opening.result.objectStoreNames.contains(name))opening.result.createObjectStore(name);};
 const db=await requestResult(opening);await new Promise((ok,no)=>{const tx=db.transaction('metadata','readwrite');const store=tx.objectStore('metadata'),r=store.get('installation');r.onsuccess=()=>{if(!r.result)store.put({deviceId:'${deviceId}'},'installation');};tx.oncomplete=ok;tx.onabort=no;});
 control('QA: Reset synthetic account cache',async()=>{
  const tx=db.transaction('workspaces','readwrite'),store=tx.objectStore('workspaces'),r=store.getAll();

@@ -1,8 +1,30 @@
 # Tracker — execution status
 
-11/10/2026 · One continuous R1–R16 workflow, starting from main549b1a1.
+## Current status —12/10/2026
 
-The user approved local technical implementation and asked to prioritize actual preview Auth + Gym/Nutrition/Journal sync before photos. Two original audit files are preserved. No origin8765 access, real Supabase requests, deployment, writes or uploads are currently approved.
+Continues main a546334 (669tests/120syntax), same R1–R16 workflow. Contract approved and implemented locally. Fresh **765/765 tests,147 syntax,SQL45+121+60,public57/backend16 artifacts** pass. No hosted apply/deploy/upload/push or8765 access.
+
+| Work | Current state / evidence scope |
+|---|---|
+| R1 | PARTIAL: approved read-only public settings email enabled/signup not disabled; REST without JWT401; Dashboard sign-in blocks private catalog. OTP/users/SMTP not verified |
+| R2–R4 | PARTIAL: local offline001/002/003 packets, restricted/provisioning checks; hosted permissions/LOGIN/TLS/registration need approval |
+| R5–R6 | LOCAL DONE:16-file gateway, common verified identity, CORS/rate/cancellation/default-off preview writes. Hosting remains local preparation only |
+| R7 | PARTIAL: native harness prepared, no actual native/provider run. Historical Batch2 synthetic acceptance retained |
+| R8–R9 | LOCAL DONE: account IDB2/private SQL003/photo protocol2, atomic bytes+intent/CAS/exact receipts/verified download; synthetic browser daily+food image ACK/cross-device bytes/compound delete |
+| R10 | LOCAL DONE: full three-file recovery, trusted completeness, validated detached restore/new device and inspection after reload. Actual downloads/byte comparison/paired restore passed; maximum-size Safari unverified |
+| R11–R12 | PARTIAL: durable reviewed schema8 supported-record import/queue/receipt resume; actual food import ACK+device2. Old schemas/ambiguous ownership/raw drafts/collisions/photo-linked/raw photo1 remain local. Whole legacy/photo migration acceptance absent |
+| R13 | PARTIAL:57-file local-only frontend prepared; hosting/deploy declined for now |
+| R14 | PARTIAL: six areas load, errors0/external0/anonymous unchanged on synthetic browser. Latest requested320/360/390 override reported611px, so exact-width gates NOT VERIFIED. Physical iPhone/provider absent |
+| R15 | NOT VERIFIED: no SW/PWA; durable queues do not prove offline cold-load |
+| R16 | PARTIAL: scoped independent reviews closed findings, fresh regression/privacy/hash evidence. Production/personal data/retention/budget/device gates pending |
+
+Details: TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md and TRACKER_EXECUTION_VERIFICATION.md. Personal import remains unapproved. Next dependencies: Dashboard catalog access under existing read-only approval; separate Auth/SQL/LOGIN/Storage/provision/hosting/deploy/synthetic-write approvals. No new phase prompt needed. Existing two original audit files preserved untracked.
+
+## Historical status —11/10/2026
+
+One continuous R1–R16 workflow, starting from main549b1a1. The entries below record that earlier checkpoint; the current table above takes precedence.
+
+The user approved local technical implementation and asked to prioritize actual preview Auth + Gym/Nutrition/Journal sync before photos. Two original audit files are preserved. Read-only Supabase preflight and the photo/recovery local contract are now approved. Hosting remains local preparation only. No origin8765 access, real Auth login requests, migration, deployment, writes or uploads are approved.
 
 ## Current work (updated after implementation/review)
 
@@ -12,7 +34,7 @@ The user approved local technical implementation and asked to prioritize actual 
 - R5 LOCAL DONE / HOSTED NOT VERIFIED:12-file gateway allowlist, imports/privacy/hash checks, exact CORS,120 POST/min/process, disconnect cancellation, redacted errors. Hosting/deployment approval pending.
 - R6 LOCAL DONE / ACTIVATION NOT APPROVED: preview-only project/account allowlist, default false and kill switch; no actual writes/upload enabled.
 - R7 PARTIAL: native two-session/PID/observed-lock acceptance runner prepared and locally tested; default run reports approval_required and makes no connection. Real SQL/browser sync/conflicts NOT VERIFIED in this workflow; Batch2 synthetic historical acceptance preserved.
-- R8–R12 DESIGN READY / AWAITING CONTRACT REVIEW: `TRACKER_PHOTO_RECOVERY_CONTRACT.md` proposes account IDB2/photo protocol2/private manifests/recovery envelope1/detached restore/import ledger. No migration/code/retention change for these items yet; approval is explicitly required by the user prompt.
+- R8–R12 IN PROGRESS / LOCAL CONTRACT APPROVED: `TRACKER_PHOTO_RECOVERY_CONTRACT.md` account IDB2/photo protocol2/private manifests/recovery envelope1/detached restore/import ledger approved for local code/tests. No hosted migration/Storage policy applied; no retention change.
 - R13 PARTIAL:48-file local-only frontend artifact passes; public config partially prepared. Hosting/account/delivery/deploy remain pending.
 - R14 PARTIAL: new identity UI browser smoke on owned8840; desktop and320/360/390 fit, logout seals ID, empty console errors/warnings. Actual Supabase/iPhone NOT VERIFIED.
 - R15 NOT VERIFIED: no SW/PWA; cold-open offline not proven. Retained queues do not prove offline shell.
@@ -20,7 +42,7 @@ The user approved local technical implementation and asked to prioritize actual 
 
 ## Decisions/gates
 
-Pending: hosting/HTTPS URLs/account/delivery; Auth/test accounts/SMTP changes; remote preflight/install/roles/provisioning; actual Auth requests; synthetic writes/upload; photo/recovery/import contract. Public provider values are now supplied and confirmed. See `TRACKER_PREVIEW_EXECUTION_GUIDE.md` for concrete commands/actions/rollback. Async approval questions are pending for read-only preflight, hosting choice and local photo/recovery contract. Time passing is not approval. Paid costs, personal data, production and GitHub push remain separate.
+Approved: read-only preflight, local photo/recovery/import contract implementation. Hosting decision: only local preparation for now. Dashboard sign-in is currently needed to inspect catalog/Auth administration; no password/OTP requested in chat. Pending: hosting/HTTPS URLs/account/delivery; Auth/test accounts/SMTP changes; hosted install/roles/provisioning; actual Auth login; synthetic writes/upload. Public provider values confirmed. Paid costs, personal data, production and GitHub push remain separate.
 
 ## Execution approach
 

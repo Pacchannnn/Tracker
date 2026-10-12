@@ -1,6 +1,7 @@
 import { emptyData, parseBackup } from './data.js?v=41';
 import { validateSessionIdentity } from './session-identity.js?v=41';
 import { validatePlanningDraft } from './planning-draft.js?v=41';
+import { validateWirePhoto } from './cloud-photo.js?v=44';
 
 const fields = { plan: 'plans', exercise: 'customExercises', food: 'foods', meal_entry: 'entries', saved_meal: 'savedMeals', recipe: 'recipes', journal: 'journalEntries', checkin: 'checkins', cardio: 'cardioEntries', knee: 'kneeEntries' };
 export const recordKey = record => JSON.stringify([record.kind, record.recordId]);
@@ -91,7 +92,8 @@ export function projectionFromRecords(records, deviceId, selectedLiveId = null) 
       if (payload?.session?.id !== payload?.sourceSessionId || payload.session.historyEditBase == null || !r.deviceId) throw Error('invalid_history_candidate');
       const isolated = emptyData(); isolated.draft = payload.session; validateAccountData(isolated);
       if (r.deviceId === deviceId && (selectedLiveId === r.recordId || selectedLiveId === payload.sourceSessionId)) data.draft = payload.session;
-    } else throw Error('unsupported_kind');
+    } else if (r.kind === 'photo') { if (payload.id !== r.recordId) throw Error('photo_id_mismatch'); validateWirePhoto(payload); }
+    else throw Error('unsupported_kind');
   }
   validateAccountData(data); return data;
 }
