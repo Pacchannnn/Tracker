@@ -1,21 +1,22 @@
 # Tracker — Supabase hosted migration runbook (001 → 002 → 003)
 
-Ngày rà soát: 13/10/2026. Target: **preview**, Supabase Free Singapore, project ref `wwcfzotkxpqtelfvvhpd`.
+Ngày rà soát local:13/10/2026; SELECT preflight thật cập nhật14/10/2026. Target: **preview**, Supabase Free Singapore, project ref `wwcfzotkxpqtelfvvhpd`.
 
 ## 1. Kết luận và ranh giới
 
-**CÒN BLOCKER — chưa đủ bằng chứng để duyệt chạy cả ba migration trên project thật.**
+**CÒN BLOCKER cho cả bộ001→002→003:** bucket private chưa tồn tại và ngoại lệ thay CHECK constraint chưa được duyệt. **Preflight quyền chỉ đọc đã PASS**;001/002 có đủ bằng chứng quyền để trình duyệt cài đặt riêng. DDL chưa được thực thi/xác minh.
 
-Bản sửa và các packet SQL đã được kiểm thử local. Chưa chạy SQL trên Supabase, chưa tạo role/bucket/policy thật, chưa deploy hoặc upload. Không đụng dữ liệu Tracker, origin `8765`, schema payload 8 hoặc định dạng backup. Không push GitHub.
+Bản sửa và các packet SQL đã được kiểm thử local. Ngày14/10 user duyệt và Codex đã chạy **SELECT catalog/quyền** qua SQL Editor đúng preview project. Chưa chạy migration/DDL, chưa tạo role/bucket/policy thật, chưa deploy hoặc upload. Không đụng dữ liệu Tracker, origin `8765`, schema payload 8 hoặc định dạng backup. Không push GitHub.
 
 Preflight do bạn cung cấp: `current_user=postgres`; chưa có `tracker_sync`, `tracker_sync_owner`, `tracker_gateway`; `auth.uid()` thuộc `supabase_auth_admin`; `storage.objects` thuộc `supabase_storage_admin`; postgres không MEMBER của hai role này. Đây là bằng chứng về owner/membership, **chưa chứng minh các quyền riêng lẻ hoặc quyền policy được provider ủy quyền**.
 
-Cần bổ sung:
+Cập nhật bằng chứng và gates:
 
-1. Quyền `CREATEROLE`, CREATE schema/database, USAGE Auth, REFERENCES `auth.users`, EXECUTE `auth.uid()`, USAGE Storage và SELECT buckets của postgres.
-2. Quyền tạo **đầy đủ cả 7 policies**, gồm 5 restrictive policies, trong execution context SQL Editor của project. Không suy ra PASS chỉ từ membership hoặc cấu hình Supautils.
+1. **Đã xác minh thật:** PostgreSQL17.11/postgres, `CREATEROLE=true`; CREATE schema/database, USAGE Auth, REFERENCES `auth.users`, EXECUTE `auth.uid()`, USAGE Storage và SELECT buckets đều TRUE. Schema/roles Tracker chưa tồn tại. Default ACL của postgres chỉ có public/storage, không có global recipient bất ngờ.
+2. **Đã quan sát cấu hình provider:** `session_preload_libraries=supautils`, GUC đã đăng ký, `supautils.policy_grants` liệt kê postgres→storage.objects. Thiết kế Dashboard policy tương thích cơ chế được provider mô tả. **Chưa chạy CREATE POLICY**: thành công của đủ7 policies, gồm5 restrictive, vẫn là gate DDL sau phê duyệt; không tự tạo policy thử rồi DROP.
 3. Phê duyệt riêng trước mọi thao tác ghi bên dưới. **Runbook này không phải phê duyệt.**
 4. 003 hiện có sẵn `ALTER TABLE tracker_sync.sync_records DROP CONSTRAINT sync_records_kind_check`, rồi ADD CHECK mở rộng kind cho ảnh trong cùng transaction. Không DROP bảng/schema/dữ liệu, nhưng đây vẫn là DROP CONSTRAINT. Với yêu cầu “không DROP” hiện tại, **chặn chạy 003** đến khi bạn duyệt rõ ngoại lệ thay CHECK constraint hoặc yêu cầu phương án migration khác. Phiên này không thực hiện thao tác đó trên Supabase.
+5. SELECT đúng bucket `tracker-preview-photos` trả0 rows: cần duyệt tạo bucket private ở bước B trước003, không tự tạo bằng SQL. Kết quả chi tiết: `SUPABASE_PREFLIGHT_READONLY_REPORT.md`.
 
 ## 2. Lỗi có thể gặp và bản sửa tối thiểu
 
@@ -30,7 +31,7 @@ Cần bổ sung:
 
 Supabase mô tả postgres là role không có đầy đủ quyền superuser: [roles and superuser](https://supabase.com/docs/guides/database/postgres/roles-superuser). Điều kiện chuẩn khi [ALTER FUNCTION OWNER](https://www.postgresql.org/docs/current/sql-alterfunction.html), [GRANT](https://www.postgresql.org/docs/current/sql-grant.html) và [CREATE POLICY](https://www.postgresql.org/docs/current/sql-createpolicy.html) vẫn phải được xem xét cùng quyền provider.
 
-Supautils có cơ chế ủy quyền quản lý policy trên bảng không sở hữu: [tài liệu maintainer — policy grants](https://github.com/supabase/supautils). Đây là khả năng của extension, **không xác nhận project của bạn đã được ủy quyền**. Không tự SET cấu hình Supautils hay cấp `supabase_storage_admin`/`supabase_auth_admin`.
+Supautils có cơ chế ủy quyền quản lý policy trên bảng không sở hữu: [tài liệu maintainer — policy grants](https://github.com/supabase/supautils). Preflight14/10 đã thấy cấu hình ủy quyền đúng postgres/storage.objects và session preload; đây là bằng chứng phù hợp thiết kế, **chưa phải kết quả chạy policy DDL**. Không tự SET cấu hình Supautils hay cấp `supabase_storage_admin`/`supabase_auth_admin`.
 
 ### Cầu nối UID — ngoại lệ owner được ghi rõ
 
@@ -41,6 +42,8 @@ Supautils có cơ chế ủy quyền quản lý policy trên bảng không sở 
 Packet 001/002 rollback nếu ACL hàm private còn grantee ngoài owner/gateway sau cleanup runtime. 003 dựng lại ACL hàm trong hai schema ứng dụng từ caller allowlist, kể cả quyền mặc định qua role trung gian; không chỉnh global default ACL hoặc hàm của Auth/Storage. Nếu packet chặn default ACL lạ, giữ nguyên database và review quyền tối thiểu trước khi thử lại.
 
 ## 3. Dashboard preflight — chỉ đọc
+
+**Đã thực hiện14/10 sau approval riêng:** các quyền cần thiết TRUE, managed owners/membership/RLS xác minh, Tracker catalog trống, Supautils preload/delegation xác minh, bucket chưa có. Bước đọc dưới đây dành cho lần đối chiếu trước khi áp dụng hoặc nếu project có thay đổi; không cần chạy lại chỉ để lặp bằng chứng hiện tại. Không suy ra thành công DDL từ PASS chỉ đọc.
 
 Mở đúng project Singapore trong Supabase Dashboard. Kiểm tra project ref `wwcfzotkxpqtelfvvhpd` trong URL/project settings. Vào **SQL Editor → New query**, chọn execution role postgres nếu giao diện có lựa chọn. Không paste file migration ở bước này.
 
@@ -190,8 +193,8 @@ Kiểm thử quyền dùng PostgreSQL WASM/PGlite: non-superuser postgres, manag
 
 Các tests mới kiểm tra: packet không kết nối; đúng 7 policies; thiếu/public bucket rollback; bridge và photo helpers không lọt EXECUTE qua global default ACL; 001/002 rollback khi ACL hàm private còn grantee bất ngờ; helper có role kế thừa bất ngờ bị chặn. Existing SQL assertions và regression được chạy lại; số kết quả cuối cùng ghi trong `TRACKER_EXECUTION_VERIFICATION.md`.
 
-**Thao tác bạn có thể làm trước:** xem đúng project, chạy read-only preflight, gửi kết quả quyền/catalog không chứa password/key/OTP. Local generation ở mục 4 không ghi lên Supabase.
+**Đã làm:** xem đúng project và chạy read-only preflight sau duyệt; không cần gửi lại quyền đã xác minh. Local generation ở mục4 không ghi lên Supabase. Chỉ đối chiếu lại preflight nếu project thay đổi hoặc trước actual install sau approval.
 
 **Thao tác còn cần phê duyệt rõ ràng:** A cài 001/002/roles; B tạo bucket private; C cài 003 DB/UID bridge/ACL và ngoại lệ thay CHECK constraint; D cài 7 policies; rồi một approval khác cho LOGIN/provision/synthetic Auth+RLS+Storage tests. Deploy, writes, dữ liệu cá nhân và GitHub push vẫn chưa được phép.
 
-**Không đủ căn cứ báo “ĐÃ SẴN SÀNG CHẠY MIGRATION” cho toàn bộ project cho tới khi quyền còn thiếu và đường cài policy được xác nhận.** Free/Singapore không tự đảm bảo quyền SQL hay compatibility. Bản chuẩn bị local đã sẵn sàng để review; hosted acceptance chưa đạt.
+**001/002: đủ điều kiện preflight để trình duyệt chạy riêng. Toàn bộ001→002→003: CÒN BLOCKER** cho tới khi có bucket private và duyệt ngoại lệ CHECK constraint, cùng approval ghi tương ứng. Đường policy được cấu hình đúng nhưng DDL/hosted RLS acceptance chưa chạy. Không coi Free/Singapore hay PASS SELECT là deployment/release PASS.

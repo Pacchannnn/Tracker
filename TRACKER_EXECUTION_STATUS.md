@@ -1,6 +1,10 @@
 # Tracker — execution status
 
-## Current status —13/10/2026
+## Current status —14/10/2026
+
+User approved real preview SELECT-only preflight and completed Dashboard login. Actual Singapore PostgreSQL17.11/postgres: CREATEROLE and six required creation/Auth/reference/Storage privileges TRUE; Tracker schema/roles absent. Supautils session preload and postgres→storage.objects policy delegation observed; managed ownership/RLS unchanged. **Read-only capability preflight PASS**, no DDL run. Full001→002→003 still **CÒN BLOCKER**: private bucket absent and003 CHECK-constraint exception unapproved.001/002, bucket,003 DB/ACL/bridge/constraint and policies need separate write approvals. Evidence: `SUPABASE_PREFLIGHT_READONLY_REPORT.md`; next actions: `SUPABASE_HOSTED_MIGRATION_RUNBOOK.md`. No app/user data change, deploy, upload, push or8765 interaction. Previous771tests/148syntax are historical, not rerun for this docs-only follow-up.
+
+## Latest local migration review —13/10/2026
 
 Hosted migrations reviewed locally from main `b8c6369`; user's real catalog preflight recorded. **771tests/148syntax/SQL45+121+60/public57/backend16 PASS**. Offline hosted003 now separates private DB from seven unchanged Storage policies, requires Dashboard private bucket and uses a narrow postgres-owned UID bridge without managed Auth grants. Default function ACL and helper-membership leaks guarded; source001/002,portable schema8,backup formats and runtime UI unchanged. README's preceding local-link edit and original untracked audit files preserved.
 

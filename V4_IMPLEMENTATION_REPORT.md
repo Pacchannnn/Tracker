@@ -1,4 +1,6 @@
-# Tracker — continuous release execution, 13/10/2026
+# Tracker — continuous release execution, 14/10/2026
+
+**Latest actual hosted SELECT preflight:** user approved read-only SQL and completed Dashboard login. Singapore PostgreSQL17.11/postgres: CREATEROLE and six required creation/Auth/reference/Storage privileges TRUE; Supautils preload and postgres/storage.objects delegation configured. **Read-only preflight PASS**, DDL never run. Full001→002→003 blocked by absent private bucket and unapproved003 CHECK-constraint exception; writes/deploy/upload remain unapproved. Docs-only update;771tests/148syntax remain previous local evidence, not rerun. See SUPABASE_PREFLIGHT_READONLY_REPORT.md and SUPABASE_HOSTED_MIGRATION_RUNBOOK.md. Older review below is historical.
 
 **Latest hosted SQL review:** local compatibility fixes/tests for001→002→003;771tests/148syntax/SQL45+121+60/public57/backend16 PASS.003 private DB/policy split, Dashboard bucket prerequisite, narrow UID bridge and default-ACL/membership guards. Hosted permission/policy evidence and explicit no-DROP constraint decision remain **BLOCKERS**. No real SQL/deploy/upload/push/data changes. See SUPABASE_HOSTED_MIGRATION_RUNBOOK.md and TRACKER_EXECUTION_VERIFICATION.md. Previous implementation milestone below is historical.
 
