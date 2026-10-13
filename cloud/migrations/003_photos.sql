@@ -1,5 +1,6 @@
 -- Approved additive local preparation only. Apply after 001/002 as migration
--- administrator. Private bucket setup is prepared here; this does not deploy.
+-- administrator. Hosted use requires the split operator packet and a preexisting
+-- private Dashboard/API bucket; see SUPABASE_HOSTED_MIGRATION_RUNBOOK.md.
 -- No service_role runtime credential, overwrite, physical delete, retention or GC.
 BEGIN;
 ALTER TABLE tracker_sync.sync_records DROP CONSTRAINT sync_records_kind_check;
@@ -263,20 +264,23 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$ BEGIN
   RETURN tracker_sync.bootstrap_v2(p_uid,p_env,p_project,p_head,p_cursor,p_limit);
 END $$;
 
--- The bucket is private even when other application buckets are public. Reject
--- a preexisting incompatible bucket rather than silently changing its contract.
+-- Managed Storage metadata is read-only here. Create the bucket through the
+-- Dashboard/API first; never silently create/change a managed bucket in SQL.
 DO $$ BEGIN
-  IF EXISTS(SELECT 1 FROM storage.buckets WHERE id='tracker-preview-photos' AND public IS DISTINCT FROM false) THEN RAISE EXCEPTION 'photo_bucket_must_be_private'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM storage.buckets WHERE id='tracker-preview-photos' AND public=false) THEN RAISE EXCEPTION 'photo_private_bucket_required'; END IF;
 END $$;
-INSERT INTO storage.buckets(id,name,public) VALUES('tracker-preview-photos','tracker-preview-photos',false) ON CONFLICT(id) DO NOTHING;
 CREATE SCHEMA tracker_photo_policy;
 REVOKE ALL ON SCHEMA tracker_photo_policy FROM PUBLIC;
 GRANT USAGE ON SCHEMA tracker_photo_policy TO authenticated,anon,tracker_sync_owner;
-GRANT USAGE ON SCHEMA auth TO tracker_sync_owner;
-GRANT EXECUTE ON FUNCTION auth.uid() TO tracker_sync_owner;
+-- This no-argument bridge is intentionally owned by the migration operator.
+-- It can only read Supabase's request UID, not tables or a caller-supplied UID.
+-- The restricted definer does not need grants on the managed Auth schema.
+CREATE FUNCTION tracker_photo_policy.request_uid() RETURNS uuid
+LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT auth.uid() $$;
+REVOKE ALL ON FUNCTION tracker_photo_policy.request_uid() FROM PUBLIC;
 CREATE FUNCTION tracker_photo_policy.allowed(p_name text,p_write boolean) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$ DECLARE uid uuid;parts text[];allowed boolean; BEGIN
-  uid:=auth.uid();parts:=pg_catalog.string_to_array(p_name,'/');
+  uid:=tracker_photo_policy.request_uid();parts:=pg_catalog.string_to_array(p_name,'/');
   IF uid IS NULL OR pg_catalog.array_length(parts,1) IS DISTINCT FROM 5 OR parts[1]!~'^[a-z0-9-]{1,128}$' OR parts[2] NOT IN ('test','preview','production')
     OR parts[3] IS DISTINCT FROM uid::text OR parts[4]!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' OR parts[5] NOT IN ('original.jpg','thumbnail.jpg') THEN RETURN false; END IF;
   PERFORM tracker_sync.set_scope(uid,parts[2],parts[1]);
@@ -291,16 +295,27 @@ END $$;
 GRANT CREATE ON SCHEMA tracker_sync,tracker_photo_policy TO tracker_sync_owner;
 DO $$ DECLARE f record;r text; BEGIN
   FOR f IN SELECT p.oid::pg_catalog.regprocedure AS signature FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
-    WHERE n.nspname IN ('tracker_sync','tracker_photo_policy') LOOP EXECUTE pg_catalog.format('ALTER FUNCTION %s OWNER TO tracker_sync_owner',f.signature); END LOOP;
+    WHERE n.nspname IN ('tracker_sync','tracker_photo_policy') AND p.oid<>'tracker_photo_policy.request_uid()'::pg_catalog.regprocedure LOOP EXECUTE pg_catalog.format('ALTER FUNCTION %s OWNER TO tracker_sync_owner',f.signature); END LOOP;
   FOREACH r IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP
     IF EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=r) THEN
       EXECUTE pg_catalog.format('REVOKE ALL ON tracker_sync.photo_manifests,tracker_sync.photo_assets FROM %I',r);
-      EXECUTE pg_catalog.format('REVOKE ALL ON ALL FUNCTIONS IN SCHEMA tracker_sync FROM %I',r);
     END IF;
   END LOOP;
 END $$;
 REVOKE CREATE ON SCHEMA tracker_sync,tracker_photo_policy FROM tracker_sync_owner;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA tracker_photo_policy FROM PUBLIC;
+-- Rebuild private function ACLs from the explicit caller list below. Named-role
+-- revokes alone miss global default grants inherited through other roles.
+DO $$ DECLARE recipient record; BEGIN
+  FOR recipient IN SELECT DISTINCT p.oid::pg_catalog.regprocedure AS signature,a.grantee
+    FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace,
+    LATERAL pg_catalog.aclexplode(p.proacl) a
+    WHERE n.nspname IN ('tracker_sync','tracker_photo_policy')
+    AND a.grantee<>0 AND a.grantee<>p.proowner LOOP
+    EXECUTE pg_catalog.format('REVOKE ALL ON FUNCTION %s FROM %I',recipient.signature,pg_catalog.pg_get_userbyid(recipient.grantee));
+  END LOOP;
+END $$;
+GRANT EXECUTE ON FUNCTION tracker_photo_policy.request_uid() TO tracker_sync_owner;
 GRANT EXECUTE ON FUNCTION tracker_photo_policy.allowed(text,boolean) TO authenticated;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA tracker_sync FROM PUBLIC,tracker_gateway;
 GRANT EXECUTE ON FUNCTION tracker_sync.register_account_device(uuid,text,text,uuid),tracker_sync.read_state(uuid,text,text),tracker_sync.lookup_receipt(uuid,text,text,uuid),
@@ -308,6 +323,8 @@ GRANT EXECUTE ON FUNCTION tracker_sync.register_account_device(uuid,text,text,uu
   tracker_sync.pull(uuid,text,text,text,integer),tracker_sync.bootstrap(uuid,text,text,text,jsonb,integer),tracker_sync.pull_v2(uuid,text,text,text,integer),tracker_sync.bootstrap_v2(uuid,text,text,text,jsonb,integer),
   tracker_sync.photo_prepare(uuid,text,text,jsonb,text),tracker_sync.photo_manifest(uuid,text,text,uuid,uuid),tracker_sync.photo_verify(uuid,text,text,uuid,uuid,jsonb),
   tracker_sync.photo_finalize(uuid,text,text,uuid,uuid),tracker_sync.photo_abandon(uuid,text,text,uuid,uuid),tracker_sync.photo_asset(uuid,text,text,uuid,uuid) TO tracker_gateway;
+-- STORAGE POLICY INSTALLATION: hosted operator extracts this block for the
+-- provider-supported Dashboard execution context. No managed ownership change.
 CREATE POLICY tracker_photo_read ON storage.objects FOR SELECT TO authenticated USING(bucket_id='tracker-preview-photos' AND tracker_photo_policy.allowed(name,false));
 CREATE POLICY tracker_photo_insert ON storage.objects FOR INSERT TO authenticated WITH CHECK(bucket_id='tracker-preview-photos' AND tracker_photo_policy.allowed(name,true));
 CREATE POLICY tracker_photo_read_guard ON storage.objects AS RESTRICTIVE FOR SELECT TO authenticated USING(bucket_id<>'tracker-preview-photos' OR tracker_photo_policy.allowed(name,false));

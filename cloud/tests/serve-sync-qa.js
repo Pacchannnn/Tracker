@@ -19,6 +19,8 @@ async function close() {
 }
 try {
   await db.exec("CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY); CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS; CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$SELECT pg_catalog.current_setting('request.jwt.claim.sub',true)::uuid$$; CREATE SCHEMA storage; CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean); CREATE TABLE storage.objects(id uuid DEFAULT gen_random_uuid(),bucket_id text,name text,metadata jsonb DEFAULT '{}',PRIMARY KEY(bucket_id,name)); ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;");
+  // Synthetic stand-in for a private bucket created by the Dashboard/Storage API.
+  await db.exec("INSERT INTO storage.buckets VALUES('tracker-preview-photos','tracker-preview-photos',false)");
   for (const name of ['001_foundation.sql', '002_sync_counts.sql', '003_photos.sql']) await db.exec(await readFile(new URL('../migrations/' + name, import.meta.url), 'utf8'));
   for (const uid of Object.values(accounts)) {
     await db.query('INSERT INTO auth.users(id) VALUES($1::uuid)', [uid]);

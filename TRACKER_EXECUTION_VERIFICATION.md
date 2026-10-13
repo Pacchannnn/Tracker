@@ -73,3 +73,20 @@ Supersedes the earlier contract-pending/counts/accountDB1 statements for current
 - Actual read-only Supabase `/auth/v1/settings`200: email enabled/public signup not disabled; REST without JWT401; Dashboard sign-in blocked catalog. No configuration/Auth-login/migration/upload occurred; detailed sanitized evidence in SUPABASE_PREFLIGHT_READONLY_REPORT.md.
 
 Photo conflict UI retains comparison and recovery, without automatic resolution. Full legacy/photo importer remains partial. No personal release claim, no8765 access, no deploy/push/real writes/physical GC. Full capabilities, limitations, exact manual actions and rollback: TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md. Current R1–R16 state: TRACKER_EXECUTION_STATUS.md.
+
+## Hosted SQL compatibility review —13/10/2026
+
+Baseline main `b8c6369`,765 tests/147syntax in prior report; README local-link edit and two original untracked audit/prompt files preserved. Supplied real catalog results (postgres, absent Tracker schema/roles, managed Auth/Storage owners, no admin memberships) came from the user. This session made no Supabase SQL/network request or changes to Tracker data.
+
+- Local hosted solution: existing001→002 transaction wrapper plus new offline `prepare-hosted-photos`;003 DB and all seven unchanged Storage policies split. No managed Auth GRANT or bucket INSERT. Dashboard private bucket prerequisite, postgres-owned fixed UID bridge, helper-owned predicates/FORCE RLS preserved. Bridge and private function ACLs rebuilt narrowly; foundation rejects unexpected function ACL recipients and003 rejects helper outbound membership.
+- Tests reproduced global-default EXECUTE leakage and unexpected helper membership before correction (RED→GREEN). Final focused operator suites **23/23 PASS**; six new hosted characterization tests. Ordinary nonowner Storage policy installation fails atomically; provider Supautils delegation is not simulated or proved.
+- Fresh `npm test`: **771/771 PASS**,0fail/skip/cancel/todo,48.2s; ignored evidence `.local/hosted-migration-regression.log`.
+- Standalone `node --check` via `rg --files -g '*.js'`: **148/148 PASS**.
+- Fresh local SQL runners: **45 Batch1 +121 Batch2 +60 photo assertions PASS**. Native/provider execution, concurrency, TLS and actual Storage policies **NOT VERIFIED**.
+- Public build/check **57files/878367bytes**, gateway build/check **16files**, imports/privacy/hash PASS. Runtime artifacts unchanged; no operator/migration/report/test/private file published. No dependency/schema/backup/runtime UI changes.
+- `git diff --check` and staged `git diff --cached --check` PASS, including the new runbook/test. Local checkpoint excludes the preceding README edit and two original untracked audit files; no push.
+- Executed the runbook's PowerShell preparation block locally: generated001/002 SQL,003 private SQL,003 policy SQL and source-hash packet JSON under ignored `.local`; no connection or --execute. Source001/002 unchanged;003 hash `13b5761529645065c01c30148800d871364ade1a625df3f8a19dd12e9a4b6d93`.
+- Independent scoped reviewer reproduced and rechecked ACL leaks; final additional in-memory inherited-USAGE/EXECUTE case denies browser calls while gateway/helper rights remain. User explicitly skipped cross-model review. Not a provider security certification.
+- Verdict **CÒN BLOCKER**: actual role creation/Auth/reference/Storage read capabilities and provider policy DDL authority need evidence. Existing003 DROP CHECK constraint also requires explicit resolution of the user's no-DROP boundary. No remote SQL, migration, bucket, policy, deploy, personal/synthetic upload, push or origin8765 access occurred. New browser QA is not relevant to this operator-only change and was not run.
+
+Use **SUPABASE_HOSTED_MIGRATION_RUNBOOK.md** for exact local commands, Dashboard preflight/postchecks, staged approvals, failure handling and the no-DROP constraint gate. Old combined photo packet/bucket creation guidance is superseded by this hosted runbook; do not paste old packets into hosted SQL Editor. Hosted migration/release acceptance remains pending.

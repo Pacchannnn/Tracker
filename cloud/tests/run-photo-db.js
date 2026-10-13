@@ -31,6 +31,7 @@ try {
   await db.exec(`CREATE SCHEMA auth;CREATE TABLE auth.users(id uuid PRIMARY KEY);CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role BYPASSRLS;
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$SELECT pg_catalog.current_setting('request.jwt.claim.sub',true)::uuid$$;
     CREATE SCHEMA storage;CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean);CREATE TABLE storage.objects(id uuid DEFAULT gen_random_uuid(),bucket_id text,name text,metadata jsonb DEFAULT '{}',PRIMARY KEY(bucket_id,name));
+    INSERT INTO storage.buckets VALUES('tracker-preview-photos','tracker-preview-photos',false);
     ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;GRANT USAGE ON SCHEMA storage TO authenticated,anon;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated,anon;`);
   for(const name of ['001_foundation.sql','002_sync_counts.sql'])await db.exec(await readFile(new URL('../migrations/'+name,import.meta.url),'utf8'));
   const migration=await readFile(new URL('../migrations/003_photos.sql',import.meta.url),'utf8').catch(()=>null);assert.ok(migration,'photo SQL migration is implemented');

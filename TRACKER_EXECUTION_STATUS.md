@@ -1,6 +1,12 @@
 # Tracker — execution status
 
-## Current status —12/10/2026
+## Current status —13/10/2026
+
+Hosted migrations reviewed locally from main `b8c6369`; user's real catalog preflight recorded. **771tests/148syntax/SQL45+121+60/public57/backend16 PASS**. Offline hosted003 now separates private DB from seven unchanged Storage policies, requires Dashboard private bucket and uses a narrow postgres-owned UID bridge without managed Auth grants. Default function ACL and helper-membership leaks guarded; source001/002,portable schema8,backup formats and runtime UI unchanged. README's preceding local-link edit and original untracked audit files preserved.
+
+**Hosted verdict: CÒN BLOCKER.** Actual creation/reference/read privileges and provider policy execution authority need confirmation;003's existing DROP CHECK constraint requires an explicit decision under the no-DROP instruction. No hosted SQL/deploy/upload/push/data changes or8765 access. Next action is read-only evidence, then separate approvals per **SUPABASE_HOSTED_MIGRATION_RUNBOOK.md**. New operator packets supersede old combined hosted photo instructions. All other R1–R16 limitations below remain.
+
+## Historical local implementation status —12/10/2026
 
 Continues main a546334 (669tests/120syntax), same R1–R16 workflow. Contract approved and implemented locally. Fresh **765/765 tests,147 syntax,SQL45+121+60,public57/backend16 artifacts** pass. No hosted apply/deploy/upload/push or8765 access.
 

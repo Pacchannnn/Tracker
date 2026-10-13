@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { preparePhotos, runOperator } from '../cloud/operator.js';
 import { PGlite } from '../cloud/node_modules/@electric-sql/pglite/dist/index.js';
 const review={environment:'preview',projectUrl:'https://abcdefghijklmnopqrst.supabase.co',registrations:[]};
-const fixture=`CREATE SCHEMA storage;CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean);CREATE TABLE storage.objects(id uuid,bucket_id text,name text);ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS 'SELECT NULL::uuid';CREATE ROLE anon;CREATE ROLE authenticated;`;
+const fixture=`CREATE SCHEMA storage;CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean);INSERT INTO storage.buckets VALUES('tracker-preview-photos','tracker-preview-photos',false);CREATE TABLE storage.objects(id uuid,bucket_id text,name text);ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS 'SELECT NULL::uuid';CREATE ROLE anon;CREATE ROLE authenticated;`;
 
 test('photo preparation preserves migration body/hash and cannot execute or connect',async()=>{
  const source=await readFile(new URL('../cloud/migrations/003_photos.sql',import.meta.url),'utf8');

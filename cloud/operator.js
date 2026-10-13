@@ -39,6 +39,10 @@ BEGIN;
 DO $$ BEGIN
   IF current_user <> 'postgres' THEN RAISE EXCEPTION 'postgres_operator_required'; END IF;
   IF pg_catalog.to_regnamespace('tracker_sync') IS NOT NULL THEN RAISE EXCEPTION 'existing_tracker_schema'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=current_user AND (rolcreaterole OR rolsuper))
+    OR NOT pg_catalog.has_database_privilege(current_user,pg_catalog.current_database(),'CREATE') THEN RAISE EXCEPTION 'tracker_role_schema_creation_required'; END IF;
+  IF NOT pg_catalog.has_schema_privilege(current_user,'auth','USAGE')
+    OR NOT pg_catalog.has_table_privilege(current_user,'auth.users','REFERENCES') THEN RAISE EXCEPTION 'tracker_auth_reference_required'; END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='tracker_sync_owner') THEN
     CREATE ROLE tracker_sync_owner NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
   END IF;
@@ -85,6 +89,13 @@ DO $$ BEGIN
     REVOKE ADMIN OPTION FOR tracker_gateway FROM ${runtimeRole};
   END IF;
 END $$;
+DO $$ BEGIN
+  IF EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace,
+    LATERAL pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a
+    WHERE n.nspname='tracker_sync' AND a.grantee NOT IN (p.proowner,pg_catalog.to_regrole('tracker_gateway'))) THEN
+    RAISE EXCEPTION 'unexpected_tracker_function_acl';
+  END IF;
+END $$;
 DO $$ DECLARE prior jsonb := pg_catalog.current_setting('tracker.operator_owner_membership')::jsonb; BEGIN
   IF prior='null'::jsonb THEN
     REVOKE tracker_sync_owner FROM postgres GRANTED BY CURRENT_USER;
@@ -103,12 +114,18 @@ COMMIT;
 }
 
 // Generates a packet only: hosted ownership must pass the SQL preflight at installation.
-export async function preparePhotos(input) {
+export async function preparePhotos(input, {hosted=false}={}) {
   const review = validateReview(input);
   const file = '003_photos.sql';
   const source = await readFile(new URL(`./migrations/${file}`, import.meta.url), 'utf8');
   if ((source.match(/^BEGIN;\r?$/gm) || []).length !== 1 || !/COMMIT;\s*$/.test(source)) throw Error('unexpected_migration_transaction');
-  const body = source.replace(/^BEGIN;\r?$/m, '').replace(/COMMIT;\s*$/, '');
+  let body = source.replace(/^BEGIN;\r?$/m, '').replace(/COMMIT;\s*$/, '');
+  const marker='-- STORAGE POLICY INSTALLATION:';
+  const boundary=body.indexOf(marker);
+  if(boundary<0 || body.indexOf(marker,boundary+marker.length)>=0)throw Error('unexpected_photo_policy_boundary');
+  const policyBody=body.slice(boundary);
+  if((policyBody.match(/^CREATE POLICY /gm)||[]).length!==7)throw Error('unexpected_photo_policy_count');
+  if(hosted)body=body.slice(0,boundary);
   const sql = `-- OFFLINE PHOTO PACKET: reviewed preview project ${review.projectId}.
 -- Not rerunnable. Hosted storage ownership/adminability is not established locally.
 BEGIN;
@@ -122,16 +139,19 @@ DO $$ DECLARE target record; BEGIN
     OR EXISTS(SELECT 1 FROM pg_catalog.pg_policy WHERE polrelid=pg_catalog.to_regclass('storage.objects') AND polname LIKE 'tracker_photo_%') THEN RAISE EXCEPTION 'existing_photo_installation'; END IF;
   IF pg_catalog.to_regclass('storage.objects') IS NULL OR pg_catalog.to_regclass('storage.buckets') IS NULL
     OR pg_catalog.to_regprocedure('auth.uid()') IS NULL THEN RAISE EXCEPTION 'missing_hosted_photo_dependencies'; END IF;
-  -- CREATE POLICY requires table ownership, not ordinary DML grants.
+  -- The combined local packet requires ownership. Hosted policies are a separate
+  -- Dashboard step: provider policy delegation is not proved by membership.
   FOR target IN SELECT c.relowner AS owner FROM pg_catalog.pg_class c
-    WHERE c.oid IN (pg_catalog.to_regclass('storage.objects'),pg_catalog.to_regclass('tracker_sync.sync_records'))
-    UNION SELECT n.nspowner FROM pg_catalog.pg_namespace n WHERE n.nspname IN ('auth','tracker_sync') LOOP
+    WHERE c.oid IN (${hosted?'':"pg_catalog.to_regclass('storage.objects'),"}pg_catalog.to_regclass('tracker_sync.sync_records'))
+    UNION SELECT n.nspowner FROM pg_catalog.pg_namespace n WHERE n.nspname='tracker_sync' LOOP
     IF NOT pg_catalog.pg_has_role(current_user,target.owner,'USAGE') THEN RAISE EXCEPTION 'photo_operator_ownership_required'; END IF;
   END LOOP;
-  IF NOT pg_catalog.has_table_privilege(current_user,'storage.buckets','SELECT') OR NOT pg_catalog.has_table_privilege(current_user,'storage.buckets','INSERT') THEN RAISE EXCEPTION 'photo_bucket_privileges_required'; END IF;
+  IF NOT pg_catalog.has_schema_privilege(current_user,'storage','USAGE') OR NOT pg_catalog.has_table_privilege(current_user,'storage.buckets','SELECT') THEN RAISE EXCEPTION 'photo_bucket_privileges_required'; END IF;
+  IF NOT pg_catalog.has_schema_privilege(current_user,'auth','USAGE') OR NOT pg_catalog.has_function_privilege(current_user,'auth.uid()','EXECUTE') THEN RAISE EXCEPTION 'photo_operator_uid_read_required'; END IF;
   IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='tracker_sync_owner')
     OR EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='tracker_sync_owner' AND (rolcanlogin OR rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)) THEN RAISE EXCEPTION 'unsafe_tracker_role'; END IF;
-  IF EXISTS(SELECT 1 FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.oid=m.member
+  IF EXISTS(SELECT 1 FROM pg_catalog.pg_auth_members WHERE member=pg_catalog.to_regrole('tracker_sync_owner'))
+    OR EXISTS(SELECT 1 FROM pg_catalog.pg_auth_members m JOIN pg_catalog.pg_roles r ON r.oid=m.member
     WHERE m.roleid=pg_catalog.to_regrole('tracker_sync_owner') AND r.rolname<>'postgres') THEN RAISE EXCEPTION 'unsafe_tracker_membership'; END IF;
   PERFORM pg_catalog.set_config('tracker.photo_owner_membership',COALESCE((SELECT pg_catalog.to_jsonb(m)::text FROM pg_catalog.pg_auth_members m
     WHERE m.roleid=pg_catalog.to_regrole('tracker_sync_owner') AND m.member=pg_catalog.to_regrole('postgres') AND m.grantor=m.member),'null'),true);
@@ -148,9 +168,21 @@ DO $$ DECLARE prior jsonb:=pg_catalog.current_setting('tracker.photo_owner_membe
 END $$;
 COMMIT;
 `;
+  const storagePolicySql=hosted?`-- PROVIDER DASHBOARD POLICY STEP ONLY. Separately approved; no ownership/role changes.
+BEGIN;
+DO $$ BEGIN
+  IF current_user<>'postgres' THEN RAISE EXCEPTION 'postgres_operator_required'; END IF;
+  IF pg_catalog.to_regprocedure('tracker_photo_policy.allowed(text,boolean)') IS NULL THEN RAISE EXCEPTION 'missing_photo_foundation'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM storage.buckets WHERE id='tracker-preview-photos' AND public=false) THEN RAISE EXCEPTION 'photo_private_bucket_required'; END IF;
+  IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_class WHERE oid='storage.objects'::pg_catalog.regclass AND relrowsecurity) THEN RAISE EXCEPTION 'storage_rls_required'; END IF;
+END $$;
+${policyBody}
+COMMIT;
+`:null;
   return { environment:'preview',projectId:review.projectId,offlineOnly:true,rerunnable:false,
     migrations:[{file,sha256:createHash('sha256').update(source).digest('hex')}],sql,
-    acceptance:'local_packet_only_hosted_storage_ownership_policy_and_auth_validation_required' };
+    ...(hosted?{storagePolicySql,acceptance:'private_db_packet_only_dashboard_policy_capability_and_final_catalog_verification_required'}:
+      {acceptance:'local_packet_only_hosted_storage_ownership_policy_and_auth_validation_required'}) };
 }
 
 function executionConnection(command, review, env) {
@@ -233,11 +265,11 @@ async function connectDatabase(connectionString) {
 }
 
 export async function runOperator(command, input, { execute = false, env = process.env, connect = connectDatabase } = {}) {
-  if (!['prepare', 'prepare-photos', 'inspect', 'provision'].includes(command)) throw Error('invalid_operator_command');
+  if (!['prepare', 'prepare-photos', 'prepare-hosted-photos', 'inspect', 'provision'].includes(command)) throw Error('invalid_operator_command');
   const review = validateReview(input);
-  if (command === 'prepare-photos') {
+  if (command === 'prepare-photos'||command==='prepare-hosted-photos') {
     if (execute) throw Error('prepare_is_offline_only');
-    return preparePhotos(input);
+    return preparePhotos(input,{hosted:command==='prepare-hosted-photos'});
   }
   if (command === 'prepare') {
     if (execute) throw Error('prepare_is_offline_only');

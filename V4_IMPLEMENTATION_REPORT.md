@@ -1,4 +1,6 @@
-# Tracker — continuous release execution, 12/10/2026
+# Tracker — continuous release execution, 13/10/2026
+
+**Latest hosted SQL review:** local compatibility fixes/tests for001→002→003;771tests/148syntax/SQL45+121+60/public57/backend16 PASS.003 private DB/policy split, Dashboard bucket prerequisite, narrow UID bridge and default-ACL/membership guards. Hosted permission/policy evidence and explicit no-DROP constraint decision remain **BLOCKERS**. No real SQL/deploy/upload/push/data changes. See SUPABASE_HOSTED_MIGRATION_RUNBOOK.md and TRACKER_EXECUTION_VERIFICATION.md. Previous implementation milestone below is historical.
 
 **Latest local milestone:** approved account IDB2/photo protocol2/SQL003/private photo pipeline, full three-file recovery/detached restore and reviewed schema8 import ledger implemented. Fresh765 tests/147syntax/SQL45+121+60; public57/backend16 artifacts pass. Actual synthetic image ACK/cross-device download byte comparison/paired restore/import ACK+device2/compound journal deletion verified. Portable schema8, anonymous photoDB1, photo1, migrations001/002 and MASTER_PLAN unchanged. Full legacy/photo mapper is PARTIAL. Hosted/native/iPhone/cold-offline not verified. Latest exact320/360/390 measurements did not match override, so no new mobile PASS. No8765 access/deploy/push. See TRACKER_PHOTO_RECOVERY_IMPLEMENTATION.md, TRACKER_EXECUTION_STATUS.md and TRACKER_EXECUTION_VERIFICATION.md.
 
