@@ -33,6 +33,19 @@ function runtime(overrides={}) {
 test('shared HTTP handler is reusable without listening or creating a server',()=>{
   assert.equal(typeof server.createHttpHandler,'function');
 });
+test('canonical preview origin comes only from an exact trusted Vercel preview hostname',()=>{
+  assert.equal(typeof adapter.previewOrigin,'function');
+  assert.equal(adapter.previewOrigin({VERCEL_ENV:'preview',VERCEL_URL:'tracker-preview-abc123.vercel.app'}),'https://tracker-preview-abc123.vercel.app');
+  for(const VERCEL_URL of ['', 'https://tracker-preview.vercel.app','tracker-preview.vercel.app/path','tracker-preview.vercel.app:443','evil.example.com','TRACKER.vercel.app','*.vercel.app','user@tracker.vercel.app','tracker.vercel.app.evil.invalid','tracker..vercel.app','-tracker.vercel.app'])assert.throws(()=>adapter.previewOrigin({VERCEL_ENV:'preview',VERCEL_URL}));
+  assert.throws(()=>adapter.previewOrigin({VERCEL_ENV:'production',VERCEL_URL:'tracker.vercel.app'}));
+});
+test('runtime falls back to its canonical preview origin and derives the write policy from that origin',async()=>{
+  const canonical='https://tracker-preview-abc123.vercel.app';
+  const config={TRACKER_ALLOWED_ORIGIN:'',VERCEL_URL:canonical.slice(8),TRACKER_ENABLE_PREVIEW_WRITES:'true',TRACKER_WRITE_PROJECT_REF:'syntheticpreview',TRACKER_WRITE_USER_IDS:uid};
+  const {handler}=runtime({env:config});const health=await send(handler,{url:'/health',method:'GET',extraHeaders:{origin:canonical}});assert.equal(health.code,200);assert.equal(health.body.writesEnabled,true);assert.equal(health.headers['Access-Control-Allow-Origin'],canonical);
+  assert.equal((await send(handler,{url:'/health',method:'GET'})).code,403);
+  const explicit=runtime({env:{VERCEL_URL:'invalid.host'}});assert.equal((await send(explicit.handler,{url:'/health',method:'GET'})).code,200);
+});
 test('Vercel raw body is parsed exactly once without touching the platform parsed getter',async()=>{
   assert.equal(typeof adapter.readVercelBody,'function');
   const expected={synthetic:'é'},text=JSON.stringify(expected);

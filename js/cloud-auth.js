@@ -6,7 +6,7 @@ const safeError = () => new Error('Không thể xác thực. Kiểm tra thông t
 
 // Tokens are held in this adapter's private closure, never in its issued identity.
 // REST contracts: github.com/supabase/auth/blob/master/openapi.yaml.
-export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now } = {}) {
+export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, pageOrigin = globalThis.location?.origin || '' } = {}) {
   const enabled = config?.enabled === true;
   let origin = '', projectId = '';
   const environment = config?.environment;
@@ -95,7 +95,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
       const deadline = new AbortController(), abort = () => deadline.abort();
       signal?.addEventListener('abort', abort, { once:true }); const timer = setTimeout(abort,15000);
       try {
-        const response = await fetchImpl(gatewayOrigin + '/' + route, { method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${credential.accessToken}`}, body:JSON.stringify(body), signal:deadline.signal, credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer' });
+        const response = await fetchImpl(gatewayOrigin + '/' + route, { method:'POST', headers:{'Content-Type':'application/json',Authorization:`Bearer ${credential.accessToken}`}, body:JSON.stringify(body), signal:deadline.signal, credentials:gatewayOrigin === pageOrigin ? 'same-origin' : 'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer' });
         if (deadline.signal.aborted || response.status===401 || response.status>=500) throw safeError();
         const result = await response.json();
         if (deadline.signal.aborted || !result || typeof result!=='object') throw safeError();

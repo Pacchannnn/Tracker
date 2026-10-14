@@ -1,9 +1,10 @@
 import { lstatSync, readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, join, posix } from 'node:path';
 import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 
 // Public runtime allowlist. Adding a file requires review; never copy whole folders.
-const ASSETS = [
+export const ASSETS = [
   'js/cloud-import-ledger.js','js/cloud-importer.js','js/cloud-import-ui.js',
   'js/cloud-photo.js', 'js/cloud-photo-sync.js', 'js/cloud-storage-transport.js', 'js/cloud-recovery.js', 'js/cloud-recovery-source.js', 'js/cloud-recovery-ui.js',
   'index.html', 'css/style.css', 'assets/fonts/PatrickHand-Regular.ttf', 'assets/fonts/OFL.txt',
@@ -23,7 +24,7 @@ const root = resolve(process.cwd());
 const output = join(root, 'dist');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 
-function noLinks(base, path = '') {
+export function noLinks(base, path = '') {
   let current = base;
   if (lstatSync(current).isSymbolicLink()) throw new Error('Symlink input/output root refused.');
   for (const part of path.split('/').filter(Boolean)) {
@@ -32,14 +33,14 @@ function noLinks(base, path = '') {
     if (info?.isSymbolicLink() || (info?.isFile() && info.nlink > 1)) throw new Error(`Linked file/path refused: ${path}`);
   }
 }
-function readAssets(base) {
+export function readAssets(base) {
   return new Map(ASSETS.map(path => {
     noLinks(base, path);
     if (!lstatSync(join(base, path)).isFile()) throw new Error(`Runtime file required: ${path}`);
     return [path, readFileSync(join(base, path))];
   }));
 }
-function checkOutputNames(base) {
+export function checkOutputNames(base) {
   noLinks(base);
   function visit(path = '') {
     for (const item of readdirSync(join(base, path), { withFileTypes: true })) {
@@ -60,16 +61,16 @@ function reference(from, specifier) {
   if (url.origin !== 'https://artifact.invalid' || !allowed.has(path)) throw new Error(`Unapproved resource in ${from}`);
   return path;
 }
-function publicConfig() {
+export function publicConfig(env = process.env) {
   const names=['TRACKER_PUBLIC_CLOUD_ENABLED','TRACKER_PUBLIC_ENVIRONMENT','TRACKER_PUBLIC_SUPABASE_URL','TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY','TRACKER_PUBLIC_GATEWAY_URL'];
-  const values=names.map(name=>process.env[name] || '');
+  const values=names.map(name=>env[name] || '');
   if(values.every(value=>!value)) return null;
   const [enabled,environment,projectUrl,publishableKey,gatewayUrl]=values;
   if(enabled!=='true' || environment!=='preview' || !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(projectUrl) || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(publishableKey) || !/^https:\/\/[a-z0-9]+(?:[.-][a-z0-9]+)*(?::\d{1,5})?$/i.test(gatewayUrl)) throw new Error('Invalid or incomplete public preview configuration; values redacted.');
   if(new URL(gatewayUrl).origin!==gatewayUrl) throw new Error('Invalid gateway origin; value redacted.');
   return Buffer.from('export const CLOUD_AUTH_CONFIG = Object.freeze('+JSON.stringify({enabled:true,environment,projectUrl,publishableKey,gatewayUrl})+');\n');
 }
-function audit(assets, generatedConfig = null) {
+export function audit(assets, generatedConfig = null) {
   const graph = new Map();
   const secrets = /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:sk(?:-proj)?[-_]|sb_secret_|ghp_|github_pat_)[A-Za-z0-9_-]{20,}|\beyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{15,}/;
   for (const [path, bytes] of assets) {
@@ -125,7 +126,7 @@ function checkConfig() {
   }
 }
 
-try {
+if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) try {
   const args = process.argv.slice(2);
   if (args.length > 1 || args.some(arg => !['--check', '--inventory'].includes(arg))) throw new Error('Usage: node scripts/static-package.js [--check|--inventory]');
   checkConfig();

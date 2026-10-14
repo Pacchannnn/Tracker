@@ -6,6 +6,10 @@ import {createPhotoSqlStore} from './photo-gateway.js';
 import {createPhotoStorage} from './photo-storage.js';
 
 const MAX_REQUEST_BYTES=2097152;
+export function previewOrigin(env=process.env) {
+  if(env.VERCEL_ENV!=='preview' || typeof env.VERCEL_URL!=='string' || !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.vercel\.app$/.test(env.VERCEL_URL))throw Error('invalid_preview_deployment_origin');
+  return 'https://'+env.VERCEL_URL;
+}
 // NODEJS_HELPERS=0 must be set at build time to retain the raw wire body.
 // Never consult request.body: a parsed getter loses wire size and JSON type.
 export async function readVercelBody(request) {
@@ -36,7 +40,8 @@ export async function writeVercelResponse(response,code,headers,body) {
 export function createVercelHandler({env=process.env,loadPg=()=>import('pg'),fetchImpl=fetch}={}) {
   let initialized;
   async function initialize() {
-    const hosting=hostingConfig(env),writes=previewWritePolicy(env);
+    const hostedEnv={...env,TRACKER_ALLOWED_ORIGIN:env.TRACKER_ALLOWED_ORIGIN || previewOrigin(env)};
+    const hosting=hostingConfig(hostedEnv),writes=previewWritePolicy(hostedEnv);
     const {SUPABASE_PROJECT_URL:projectUrl,SUPABASE_PUBLISHABLE_KEY:publishableKey,DATABASE_URL:connectionString}=env;
     if(env.VERCEL_ENV!=='preview' || env.TRACKER_ENVIRONMENT!=='preview' || !hosting.allowedOrigin || !connectionString || !projectUrl || !publishableKey)throw Error('missing_preview_config');
     const verifiedConnection=requireDatabaseTls(connectionString);

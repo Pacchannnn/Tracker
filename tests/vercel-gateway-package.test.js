@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,copyFileSync,readFileSync,writeFileSync,readdirSync,existsSync,rmSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,copyFileSync,readFileSync,writeFileSync,readdirSync,existsSync,rmSync,globSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -13,6 +13,25 @@ function fixture(t) {
 }
 const output=root=>join(root,'.local/vercel-gateway');
 const run=(root,...args)=>spawnSync(process.execPath,[cli,...args],{cwd:root,encoding:'utf8'});
+const backend=['cloud/server.js','cloud/vercel.js','cloud/gateway.js','cloud/photo-gateway.js','cloud/photo-storage.js','js/data.js','js/custom-workout.js','js/program.js','js/session-identity.js','js/planning-draft.js','js/planner.js','js/cloud-records.js','js/cloud-photo.js','js/photo-store.js'].sort();
+
+test('includeFiles expands to exactly the reviewed backend graph and the isolated Lambda imports and returns sanitized 503',t=>{
+  const root=fixture(t);assert.equal(run(root).status,0);const packaged=output(root);
+  const config=JSON.parse(readFileSync(join(packaged,'vercel.json'))),pattern=config.functions['api/gateway.js'].includeFiles;
+  assert.equal(typeof pattern,'string');assert.ok(pattern.length<=256);assert.ok(!/[?*]/.test(pattern));
+  const included=globSync(pattern,{cwd:packaged}).map(path=>path.replaceAll('\\','/')).sort();assert.deepEqual(included,backend);
+  const lambda=join(root,'isolated-lambda');mkdirSync(lambda);
+  for(const path of [...included,'api/gateway.js','package.json']){mkdirSync(join(lambda,path,'..'),{recursive:true});copyFileSync(join(packaged,path),join(lambda,path));}
+  const invoke=`import handler from './api/gateway.js'; import {Readable,Writable} from 'node:stream';
+    const chunks=[],req=Readable.from([]);Object.assign(req,{method:'GET',url:'/health',headers:{}});
+    const res=new Writable({write(chunk,encoding,callback){chunks.push(Buffer.from(chunk));callback();}});res.writeHead=code=>{res.code=code;};
+    await handler(req,res);const body=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+    if(res.code!==503 || JSON.stringify(body)!==JSON.stringify({status:'error',code:'gateway_unavailable'}))throw Error('unsanitized missing config');
+    console.log('ISOLATED_LAMBDA_503_PASS');`;
+  const env={...process.env,VERCEL_ENV:'preview',VERCEL_URL:'synthetic-preview.vercel.app',TRACKER_ENVIRONMENT:'preview',TRACKER_ALLOWED_ORIGIN:'',TRACKER_ENABLE_PREVIEW_WRITES:'false',SUPABASE_PROJECT_URL:'',SUPABASE_PUBLISHABLE_KEY:'',DATABASE_URL:''};
+  const result=spawnSync(process.execPath,['--input-type=module','-e',invoke],{cwd:lambda,encoding:'utf8',env});assert.equal(result.status,0,result.stderr);assert.equal(result.stdout.trim(),'ISOLATED_LAMBDA_503_PASS');
+  rmSync(join(lambda,'js/custom-workout.js'));const missing=spawnSync(process.execPath,['--input-type=module','-e',invoke],{cwd:lambda,encoding:'utf8',env});assert.notEqual(missing.status,0);assert.ok(missing.stderr.includes('ERR_MODULE_NOT_FOUND'));
+});
 test('Vercel package is a deployable single Node function with production pg only and no source/private files served',t=>{
   assert.ok(existsSync(cli),'Vercel packaging script missing');const root=fixture(t);
   for(const path of ['.env','MASTER_PLAN.md','tracker-backup-private.json','private-photo.jpg'])writeFileSync(join(root,path),'SYNTHETIC_PRIVATE');
