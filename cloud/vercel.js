@@ -1,6 +1,6 @@
 import {Readable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
-import {createHttpHandler,createRuntimeGateway,hostingConfig,previewWritePolicy,requireDatabaseTls,assertGatewayConnection} from './server.js';
+import {createHttpHandler,createRuntimeGateway,hostingConfig,previewWritePolicy,databaseConfig,assertGatewayConnection} from './server.js';
 import {createIdentityVerifier,createSqlStore} from './gateway.js';
 import {createPhotoSqlStore} from './photo-gateway.js';
 import {createPhotoStorage} from './photo-storage.js';
@@ -44,11 +44,11 @@ export function createVercelHandler({env=process.env,loadPg=()=>import('pg'),fet
     const hosting=hostingConfig(hostedEnv),writes=previewWritePolicy(hostedEnv);
     const {SUPABASE_PROJECT_URL:projectUrl,SUPABASE_PUBLISHABLE_KEY:publishableKey,DATABASE_URL:connectionString}=env;
     if(env.VERCEL_ENV!=='preview' || env.TRACKER_ENVIRONMENT!=='preview' || !hosting.allowedOrigin || !connectionString || !projectUrl || !publishableKey)throw Error('missing_preview_config');
-    const verifiedConnection=requireDatabaseTls(connectionString);
+    const connection=databaseConfig(connectionString,env);
     const verifyIdentity=createIdentityVerifier({projectUrl,publishableKey,fetchImpl});
     const storage=createPhotoStorage({projectUrl,publishableKey,fetchImpl});
     const {Pool}=await loadPg();
-    const pool=new Pool({connectionString:verifiedConnection,max:2,connectionTimeoutMillis:10000,statement_timeout:15000,idleTimeoutMillis:10000,allowExitOnIdle:true});
+    const pool=new Pool({...connection,max:2,connectionTimeoutMillis:10000,statement_timeout:15000,idleTimeoutMillis:10000,allowExitOnIdle:true});
     pool.on('error',()=>{}); // No credentials, SQL, provider bodies or payload logs.
     try {
       await assertGatewayConnection((sql,params)=>pool.query(sql,params));

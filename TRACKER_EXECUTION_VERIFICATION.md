@@ -2,6 +2,14 @@
 
 ## Current hosted execution —14/10/2026
 
+### Latest user-directed deployment without further QA
+
+User stopped additional checks/tests. New server CA configuration and deployment below have no new regression/syntax/E2E acceptance run; previous817/158/SQL evidence is historical. Operator/runtime native connection already completed before the stop, with TLS authorized:true, restricted runtime LOGIN and approved function privileges. DB secret is Windows-DPAPI stored locally and Vercel preview Secret remotely; postgres credential is not hosted.
+
+Preview `https://tracker-preview-fe3lsoph4-ppap7.vercel.app/` (`dpl_whuL1hX7LnNc9sGGSVjUCv21BNF7`) built/deployed with server CA PEM plus verified pg TLS, exact A/B synthetic write allowlist and source/frontend public configuration separation. Existing packaging/build security checks are part of deployment, not a new functional QA run. A/B synthetic accounts and visible UI device `fe2f984e-972f-4824-b68e-7c25a7dfdd87` registered transactionally through existing operator workflow; previous device retained. Login/workspace setup performed to obtain required metadata only; no synthetic record/photo logging, manual sync, HTTP health or backup/recovery tests after the user stop. Positive cross-device sync/photos/conflict/recovery acceptance remains NOT VERIFIED. No claim of complete tested release.
+
+Final setup handoff incidentally showed normal automatic synchronization completing B's empty workspace: UI **Đã đồng bộ**,0pending JSON/photo operations. Saved `preview-connected-setup.png`. This supports actual deployed connection/empty-scope synchronization only; it does not prove data/photo transfer or two-device correctness. No additional QA scenario was run.
+
 ### Latest HTTPS continuation
 
 Protected combined Preview deployed: `https://tracker-preview-5jdrv7imh-ppap7.vercel.app/` (`dpl_tsv1xySopXpijMNMkqX4ihkhA5Er`, READY, productionUrl:null). Dry inventory77files/1047659bytes; exact frontend57 plus reviewed backend/build graph. Preview public environment variables configured, source local-only unchanged, writes OFF, no DATABASE_URL. Vercel Auth protection remains enabled. Official CLI curl generated a provider protection-bypass credential for operator requests only; no credential appears in frontend or artifact.

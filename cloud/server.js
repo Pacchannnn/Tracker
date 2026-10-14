@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { X509Certificate } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { createGateway, createIdentityVerifier, createSqlStore } from './gateway.js';
 import { createPhotoGateway, createPhotoSqlStore } from './photo-gateway.js';
@@ -15,6 +16,26 @@ export function requireDatabaseTls(connectionString) {
   const url = new URL(connectionString);
   if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.searchParams.getAll('sslmode').length !== 1 || url.searchParams.get('sslmode') !== 'verify-full' || process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') throw Error('verified_database_tls_required');
   return connectionString;
+}
+
+// A URL sslmode would overwrite pg's explicit SSL object. Validate it first,
+// then remove only that option when supplying the approved server-only CA.
+export function databaseConfig(connectionString, env = process.env) {
+  const verified = requireDatabaseTls(connectionString);
+  if (env.NODE_TLS_REJECT_UNAUTHORIZED === '0') throw Error('verified_database_tls_required');
+  const pem = env.TRACKER_DATABASE_CA;
+  if (pem === undefined || pem === '') return { connectionString: verified };
+  const url = new URL(verified);
+  if ([...url.searchParams.keys()].some(key => key !== 'sslmode' && (/^ssl/i.test(key) || key === 'uselibpqcompat'))) throw Error('conflicting_database_tls_config');
+  if (typeof pem !== 'string' || Buffer.byteLength(pem, 'utf8') > 65536) throw Error('invalid_database_ca');
+  const ca = pem.trim();
+  try {
+    if (!/^-----BEGIN CERTIFICATE-----\r?\n(?:[A-Za-z0-9+/=]+\r?\n)+-----END CERTIFICATE-----$/.test(ca)) throw Error();
+    const certificate = new X509Certificate(ca), now = Date.now();
+    if (!certificate.ca || Date.parse(certificate.validFrom) > now || Date.parse(certificate.validTo) <= now) throw Error();
+  } catch { throw Error('invalid_database_ca'); }
+  url.searchParams.delete('sslmode');
+  return { connectionString: url.toString(), ssl: { ca, rejectUnauthorized: true } };
 }
 
 export async function assertGatewayConnection(query) {
@@ -112,7 +133,7 @@ async function start() {
   if (!connectionString || !projectUrl || !publishableKey || !['test', 'preview', 'production'].includes(environment)) throw Error('missing_server_config');
   const verifyIdentity = createIdentityVerifier({ projectUrl, publishableKey });
   const { Pool } = await import('pg');
-  const pool = new Pool({ connectionString: requireDatabaseTls(connectionString), max: 4, connectionTimeoutMillis: 10000, statement_timeout: 15000 });
+  const pool = new Pool({ ...databaseConfig(connectionString), max: 4, connectionTimeoutMillis: 10000, statement_timeout: 15000 });
   pool.on('error', () => { /* No credentials/query/payload logging. Requests return sanitized failures. */ });
   try { await assertGatewayConnection((sql, params) => pool.query(sql, params)); } catch (error) { await pool.end(); throw error; }
   const query=(sql,params)=>pool.query(sql,params);

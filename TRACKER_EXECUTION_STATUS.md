@@ -2,6 +2,18 @@
 
 ## Current execution —14/10/2026
 
+### Latest instruction: deploy without further tests
+
+User explicitly stopped additional checks/tests and requested immediate completion. No new regression, syntax, HTTP health, cross-device, conflict, photo or recovery acceptance tests are run after this instruction. Earlier817/158/SQL results below are historical and do not cover the new CA change.
+
+Operator credential is now saved with Windows DPAPI outside OneDrive. The local collection callback issue was fixed by explicitly loading the Windows PowerShell security module. Actual native operator/runtime connection completed with Dashboard-supplied Supabase CA, verified TLS and restricted `tracker_preview_runtime`; LOGIN provisioned, push/photo_prepare EXECUTE available. No bypass-RLS/admin credential is hosted.
+
+Server-only CA support added to gateway: verified sslmode required first, bounded valid CA PEM supplied as explicit pg SSL configuration with rejectUnauthorized:true and default hostname verification. DATABASE_URL is stored as a Vercel preview Secret; CA and exact project/A-B synthetic allowlist stored in preview configuration; synthetic writes enabled only for those two UIDs. Frontend receives only public URL/publishable key.
+
+Latest Preview deployed: `https://tracker-preview-fe3lsoph4-ppap7.vercel.app/`, deployment `dpl_whuL1hX7LnNc9sGGSVjUCv21BNF7`. This is deployment completion, not a claim of new acceptance PASS. Packaging/build retained the existing mandatory allowlist/privacy validation; no standalone QA suite was run. A/B preview accounts activated using existing transactional restricted-role provisioning; actual new-origin device `fe2f984e-972f-4824-b68e-7c25a7dfdd87` obtained from visible setup UI and registered for both. Prior known origin device retained; no removal/reset. A/B login/workspace opening performed only to obtain registration metadata, no fixture logging or manual sync/health/backup tests. Two-device Gym/Nutrition/Journal/photo sync and full recovery remain unverified at the user's instruction; private data/origin8765/GitHub/production unchanged.
+
+During the final setup handoff, the app's normal automatic synchronization changed B's empty workspace to **Đã đồng bộ**, outbox0/photos0. This is an observed live connection/empty-workspace synchronization result, not a deliberately executed data-transfer acceptance test. Screenshot `preview-connected-setup.png`; no new records/photos were created. Positive Gym/Nutrition/Journal/photo transfer remains unverified.
+
 The user has explicitly approved the whole non-destructive PREVIEW deployment and synthetic acceptance workflow for `wwcfzotkxpqtelfvvhpd`, including the exact CHECK-constraint replacement in003. This supersedes the approval-pending historical entries below. No further A–D approval is needed. Production, fees, personal data upload, destructive reset and GitHub push remain outside scope.
 
 **Actually completed on hosted Supabase:** wrapped001+002 transaction; Dashboard private `tracker-preview-photos` bucket (JPEG,20971520-byte limit); wrapped003 private database transaction; exact seven Storage policies in a separate transaction. Do not rerun these install packets. Actual catalog postcheck: eight private tables all ENABLE/FORCE RLS; no unsafe role flags; runtime not an owner member; helper UID bridge allowed only to helper; browser/anon/runtime bridge access denied; private schema unavailable to authenticated Data API.
