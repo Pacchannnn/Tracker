@@ -25,8 +25,8 @@ import { createMonthMemoriesUI } from './month-memories-ui.js?v=41';
 import { readLifeData, resolveLifeSource } from './life-review-source.js?v=41';
 import { listPhotoMetadata, getPhotoThumbnail as getAnonymousThumbnail } from './photo-store.js?v=41';
 import { CLOUD_AUTH_CONFIG } from './cloud-config.js?v=41';
-import { createSupabaseAuthAdapter, createCloudAuth } from './cloud-auth.js?v=44';
-import { createCloudAuthUI } from './cloud-auth-ui.js?v=41';
+import { createSupabaseAuthAdapter, createCloudAuth } from './cloud-auth.js?v=45';
+import { createCloudAuthUI } from './cloud-auth-ui.js?v=42';
 import { createCloudWorkspace } from './cloud-workspace.js?v=44';
 import { createCloudWorkspaceUI } from './cloud-workspace-ui.js?v=44';
 import { createRecoveryUI } from './cloud-recovery-ui.js?v=44';
@@ -236,6 +236,7 @@ function resetWorkspaceView() {
   try { data = readData(); } catch { data = emptyData(); }
   drafts.reset(); sessionStore.reset(); sessionUI.reset(); gymBuilder.reset(); plannerView.reset();
   nutritionBatch.reset(); cookbook.reset(); journalRetrieval.reset(); myDay.setDate(localDate());
+  cloudAuthUI.clearSensitiveInput();
   main.replaceChildren(); view = 'settings'; updateNavigation(); render();
 }
 cloudWorkspace.subscribe(state=>{
@@ -462,6 +463,7 @@ function render() {
   lifeReview.invalidate(); monthMemories.invalidate(); ++lifeSourceGeneration;
   photoUrls.forEach(url => URL.revokeObjectURL(url));
   photoUrls = [];
+  cloudAuthUI.clearSensitiveInput();
   main.replaceChildren();
   if(['sealed','opening'].includes(cloudWorkspace.read().mode)){main.append(cloudAuthUI.mount(),cloudWorkspaceUI.mount(),p('Không gian tài khoản đang khóa; phần đã lưu và outbox vẫn được giữ.','hint'));return;}
   if (lifeSourceContext) main.append(div('my-day-return', button(lifeReturnContext?.mode === 'month' ? '← Quay lại Ký ức tháng' : '← Quay lại Tuần đã ghi', returnLifeReview)));

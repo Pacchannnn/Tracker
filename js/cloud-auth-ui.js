@@ -11,15 +11,27 @@ const LABELS = {
 export function createCloudAuthUI({ auth, helpers, workspaceAvailable = false }) {
   const { node, button, field, panel, div, p, h2 } = helpers;
   let host = null, email = '', otp = '', changingAccount = false, warning = null, uiNotice = '';
+  let passwordMode = false, passwordInput = null;
+  const passwordAction = action => ['loginPassword', 'switchAccountPassword'].includes(action);
+  function clearPassword() { if (passwordInput) passwordInput.value = ''; passwordInput = null; }
+  function passwordField(busy = false) {
+    const control = field('Mật khẩu tài khoản · Preview', 'cloudPassword', '', { type: 'password', required: true });
+    passwordInput = control.querySelector('input'); passwordInput.setAttribute('autocomplete', 'current-password'); passwordInput.setAttribute('maxlength', '4096'); passwordInput.disabled = busy;
+    return control;
+  }
   async function act(action, value, confirmation) {
+    const password = passwordAction(action) ? passwordInput?.value : undefined;
+    clearPassword();
+    if (passwordAction(action) && !password) { uiNotice = 'Nhập lại mật khẩu để tiếp tục.'; if (host?.isConnected) render(); return; }
     try {
-      const result = value === undefined ? await auth[action](confirmation) : await auth[action](value, confirmation);
+      const result = passwordAction(action) ? await auth[action](value, password, confirmation) : value === undefined ? await auth[action](confirmation) : await auth[action](value, confirmation);
       warning = result.warning ? { action, value, confirmation: result.confirmation } : null;
       uiNotice = '';
     } catch { uiNotice = 'Không thể xác thực. Thử lại sau.'; warning = null; }
     if (host?.isConnected) render();
   }
   function render() {
+    clearPassword();
     const state = auth.read();
     const signedIn = state.status === 'authenticated';
     if (signedIn && !changingAccount) { email = ''; otp = ''; }
@@ -30,14 +42,20 @@ export function createCloudAuthUI({ auth, helpers, workspaceAvailable = false })
     else host.append(p('Chọn rõ Mở dữ liệu tài khoản trong mục Không gian dữ liệu để dùng kho riêng; dữ liệu cục bộ không tự chuyển sang đó.', 'hint'));
     if (!state.enabled) { host.append(p('Supabase chưa được cấu hình hoặc phê duyệt. Bạn tiếp tục dùng Tracker cục bộ.', 'hint')); return; }
     host.append(p('Phiên đăng nhập chỉ giữ trong bộ nhớ; tải lại trang sẽ đăng xuất. Chỉ tài khoản đã được chuẩn bị trong dự án được duyệt mới nhận mã.', 'hint'));
+    if (state.passwordLoginEnabled) host.append(p('Preview cho phép dùng email và mật khẩu của tài khoản đã được chuẩn bị. Mật khẩu chỉ dùng cho lần đăng nhập này.', 'hint'));
     if (state.notice || uiNotice) { const error = p(state.notice || uiNotice, 'warning'); error.setAttribute('role', 'alert'); host.append(error); }
     if (warning) {
       const current = warning;
       host.append(p(workspaceAvailable
         ? 'Có phần chưa lưu hoặc đang chờ đồng bộ. Dữ liệu đã lưu và outbox được giữ trong kho riêng; khi đổi không gian, các ô chưa lưu sẽ đóng. Hủy để lưu trước, hoặc tiếp tục?'
-        : 'Có phần chưa lưu hoặc đang soạn. Chuyển phiên xác thực vẫn giữ phần nhập và dữ liệu cục bộ. Tiếp tục?', 'warning'), div('actions',
-        button('Hủy chuyển', () => { auth.cancelWarning(); warning = null; render(); }),
-        button('Tiếp tục', () => act(current.action, current.value, current.confirmation))));
+        : 'Có phần chưa lưu hoặc đang soạn. Chuyển phiên xác thực vẫn giữ phần nhập và dữ liệu cục bộ. Tiếp tục?', 'warning'));
+      const cancel = button('Hủy chuyển', () => { auth.cancelWarning(); warning = null; render(); });
+      if (passwordAction(current.action)) {
+        const confirmationForm = node('form', { class: 'form-grid' });
+        confirmationForm.append(p('Nhập lại mật khẩu để xác nhận tiếp tục.', 'hint'), passwordField(), div('actions', cancel, node('button', { type: 'submit', class: 'secondary', text: 'Tiếp tục' })));
+        confirmationForm.addEventListener('submit', event => { event.preventDefault(); void act(current.action, current.value, current.confirmation); });
+        host.append(confirmationForm);
+      } else host.append(div('actions', cancel, button('Tiếp tục', () => act(current.action, current.value, current.confirmation))));
       return;
     }
     const busy = ['requesting', 'verifying', 'refreshing'].includes(state.step);
@@ -48,22 +66,27 @@ export function createCloudAuthUI({ auth, helpers, workspaceAvailable = false })
       emailInput.setAttribute('autocomplete', 'email'); emailInput.disabled = busy;
       emailInput.addEventListener('input', () => { email = emailInput.value; });
       form.append(emailField);
-      const send = button('Gửi mã OTP', () => act(changingAccount || signedIn ? 'switchAccount' : 'sendOtp', email.trim())); send.disabled = busy; form.append(send);
-      if (state.step === 'awaiting-code') {
+      const loginAction = passwordMode ? changingAccount || signedIn ? 'switchAccountPassword' : 'loginPassword' : changingAccount || signedIn ? 'switchAccount' : 'sendOtp';
+      if (passwordMode && state.passwordLoginEnabled) form.append(passwordField(busy));
+      const send = passwordMode ? node('button', { type: 'submit', class: 'secondary', text: 'Xác nhận mật khẩu' }) : button('Gửi mã OTP', () => act(loginAction, email.trim())); send.disabled = busy; form.append(send);
+      if (!passwordMode && state.step === 'awaiting-code') {
         const codeField = field('Mã OTP gồm 6 chữ số', 'cloudOtp', otp, { type: 'text', required: true });
         const code = codeField.querySelector('input');
         code.setAttribute('inputmode', 'numeric'); code.setAttribute('autocomplete', 'one-time-code'); code.setAttribute('pattern', '[0-9]{6}'); code.setAttribute('maxlength', '6');
         code.addEventListener('input', () => { otp = code.value; }); form.append(codeField, button('Xác nhận mã OTP', () => act('verifyOtp', otp)));
       }
-      form.addEventListener('submit', event => { event.preventDefault(); if (!busy) void act(state.step === 'awaiting-code' ? 'verifyOtp' : changingAccount || signedIn ? 'switchAccount' : 'sendOtp', state.step === 'awaiting-code' ? otp : email.trim()); });
+      form.addEventListener('submit', event => { event.preventDefault(); if (!busy) void act(!passwordMode && state.step === 'awaiting-code' ? 'verifyOtp' : loginAction, !passwordMode && state.step === 'awaiting-code' ? otp : email.trim()); });
       host.append(form);
-      if (state.step === 'awaiting-code') host.append(p('Đã yêu cầu gửi mã. Thông báo này chưa xác nhận email đã được gửi hoặc địa chỉ có tài khoản.', 'hint'));
+      if (!passwordMode && state.step === 'awaiting-code') host.append(p('Đã yêu cầu gửi mã. Thông báo này chưa xác nhận email đã được gửi hoặc địa chỉ có tài khoản.', 'hint'));
+      if (state.passwordLoginEnabled) host.append(button(passwordMode ? 'Dùng mã OTP' : 'Đăng nhập bằng mật khẩu · Preview', () => {
+        clearPassword(); passwordMode = !passwordMode; otp = ''; warning = null; uiNotice = ''; auth.cancelWarning(); auth.cancelLogin(); render();
+      }));
     }
     const actions = div('actions');
     if (signedIn && !changingAccount) actions.append(button('Đổi tài khoản', () => { changingAccount = true; email = ''; otp = ''; render(); }));
     if (signedIn || ['authenticating', 'switching', 'expired', 'error'].includes(state.status)) actions.append(button('Đăng xuất', () => { changingAccount = false; void act('logout'); }));
     actions.append(button('Tiếp tục cục bộ', () => { changingAccount = false; void act('localOnly'); })); host.append(actions);
   }
-  auth.subscribe(state => { warning = null; if (state.status === 'authenticated') changingAccount = false; if (host?.isConnected) render(); });
-  return Object.freeze({ mount() { host = panel(); host.setAttribute('data-cloud-auth', ''); render(); return host; } });
+  auth.subscribe(state => { clearPassword(); warning = null; if (state.status === 'authenticated') changingAccount = false; if (host?.isConnected) render(); });
+  return Object.freeze({ clearSensitiveInput: clearPassword, mount() { host = panel(); host.setAttribute('data-cloud-auth', ''); render(); return host; } });
 }

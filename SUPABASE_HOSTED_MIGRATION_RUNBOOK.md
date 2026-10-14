@@ -2,7 +2,13 @@
 
 Ngày rà soát local:13/10/2026; SELECT preflight thật cập nhật14/10/2026. Target: **preview**, Supabase Free Singapore, project ref `wwcfzotkxpqtelfvvhpd`.
 
-## 1. Kết luận và ranh giới
+## Đã thực thi trên preview —14/10/2026
+
+User đã duyệt toàn bộ workflow preview, bao gồm ngoại lệ thay CHECK constraint trong003. Wrapped001/002, bucket private qua Dashboard, wrapped003 DB và đúng7 Storage policies đã chạy thành công trên `wwcfzotkxpqtelfvvhpd`. Postcheck thật:8 private tables ENABLE/FORCE RLS; bridge ACL/helper membership/runtime restrictions đúng. **Không chạy lại các packet cài đặt đã commit.** Các đoạn yêu cầu phê duyệt riêng bên dưới là lịch sử trước authorization mới, không phải blocker hiện tại.
+
+Synthetic Auth A/B đã đăng nhập và được provider xác minh; Storage từ chối INSERT thiếu manifest cho cả hai; private schema không exposed qua REST. Gateway/runtime TLS, provisioning, HTTPS hosting và đồng bộ end-to-end còn chờ credential/database connection và đăng nhập hosting thật; xem `TRACKER_EXECUTION_STATUS.md`. Không dùng dữ liệu cá nhân hoặc origin8765; không push/production/paid service.
+
+## 1. Kết luận và ranh giới — lịch sử trước thực thi
 
 **CÒN BLOCKER cho cả bộ001→002→003:** bucket private chưa tồn tại và ngoại lệ thay CHECK constraint chưa được duyệt. **Preflight quyền chỉ đọc đã PASS**;001/002 có đủ bằng chứng quyền để trình duyệt cài đặt riêng. DDL chưa được thực thi/xác minh.
 

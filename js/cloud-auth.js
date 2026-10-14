@@ -1,6 +1,7 @@
 import {callPrivateStorage} from './cloud-storage-transport.js?v=44';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailAddress = value => typeof value === 'string' && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const passwordValue = value => typeof value === 'string' && value.length > 0 && value.length <= 4096;
 const safeError = () => new Error('Không thể xác thực. Kiểm tra thông tin hoặc thử lại sau.');
 
 // Tokens are held in this adapter's private closure, never in its issued identity.
@@ -9,6 +10,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
   const enabled = config?.enabled === true;
   let origin = '', projectId = '';
   const environment = config?.environment;
+  const passwordLoginEnabled = enabled && environment === 'preview';
   const publicKey = config?.publishableKey;
   const gatewayOrigin = config?.gatewayUrl || '';
   if (enabled) {
@@ -54,7 +56,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
     return identity;
   }
   return Object.freeze({
-    kind: 'supabase', enabled, environment, projectId,
+    kind: 'supabase', enabled, environment, projectId, passwordLoginEnabled,
     isIdentity: identity => credentials.has(identity),
     seal: identity => credentials.delete(identity),
     async beginLogin(email, { signal } = {}) {
@@ -65,6 +67,12 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
       if (!emailAddress(email) || !/^\d{6}$/.test(token || '')) throw safeError();
       const startedAt = now();
       const session = await request('/verify', { body: { email, token, type: 'email' }, signal });
+      return verifySession(session, { email, signal, startedAt });
+    },
+    async loginPassword(email, password, { signal } = {}) {
+      if (!passwordLoginEnabled || !emailAddress(email) || !passwordValue(password)) throw safeError();
+      const startedAt = now();
+      const session = await request('/token?grant_type=password', { body: { email, password }, signal });
       return verifySession(session, { email, signal, startedAt });
     },
     async refresh(identity, { signal } = {}) {
@@ -102,6 +110,7 @@ export function createSupabaseAuthAdapter({ config, fetchImpl = (...args) => glo
 // Owns only authentication. Tracker keeps using its separate anonymous workspace.
 export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout, clearTimer = clearTimeout, getPendingWork = () => null } = {}) {
   if (!adapter || adapter.kind !== 'supabase') throw safeError();
+  const passwordLoginEnabled = adapter.enabled && adapter.environment === 'preview' && adapter.passwordLoginEnabled === true;
   let status = adapter.enabled ? 'signed-out' : 'local-only', step = null, notice = '', epoch = 0;
   let identity = null, challengeEmail = null, warning = null, refreshTimer = null, expiryTimer = null;
   let controller = new AbortController();
@@ -119,7 +128,7 @@ export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout
     checkExpiry();
     const authenticated = status === 'authenticated' && identity;
     return {
-      status, step, epoch, enabled: adapter.enabled, environment: adapter.environment, projectId: adapter.projectId,
+      status, step, epoch, enabled: adapter.enabled, environment: adapter.environment, projectId: adapter.projectId, passwordLoginEnabled,
       verifiedAccountId: authenticated ? identity.uid : null,
       account: authenticated ? { uid: identity.uid, environment: identity.environment, projectId: identity.projectId, assurance: 'verified' } : null,
       activeWorkspace: 'anonymous-local', accountEditingEnabled: false, pendingWork: Boolean(pending()), notice
@@ -159,16 +168,18 @@ export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout
     identity = next; status = 'authenticated'; step = null; challengeEmail = null; notice = '';
     schedule(); publish(); return { applied: true };
   }
-  async function begin(email, confirmation, switching = false) {
+  async function begin(email, confirmation, switching = false, passwordLogin = false, password) {
     if (!adapter.enabled) return { applied: false };
-    if (!emailAddress(email) || (!switching && identity)) { notice = 'Kiểm tra email hoặc dùng Đổi tài khoản.'; publish(); return { applied: false }; }
-    const gate = approve(switching ? 'switch' : 'login', email, confirmation); if (gate) return gate;
+    if (passwordLogin && !passwordLoginEnabled) return { applied: false };
+    if (!emailAddress(email) || (passwordLogin && !passwordValue(password)) || (!switching && identity)) { notice = passwordLogin ? 'Kiểm tra thông tin đăng nhập hoặc dùng Đổi tài khoản.' : 'Kiểm tra email hoặc dùng Đổi tài khoản.'; publish(); return { applied: false }; }
+    const gate = approve(passwordLogin ? switching ? 'switch-password' : 'login-password' : switching ? 'switch' : 'login', email, confirmation); if (gate) return gate;
     const previous = identity;
     // Start revocation while the previous credential still exists; sealing is immediate.
     if (previous) void adapter.logout(previous).catch(() => {});
-    invalidate(); status = switching ? 'switching' : 'authenticating'; step = 'requesting'; notice = ''; challengeEmail = email;
+    invalidate(); status = switching ? 'switching' : 'authenticating'; step = passwordLogin ? 'verifying' : 'requesting'; notice = ''; if (!passwordLogin) challengeEmail = email;
     const capturedEpoch = epoch, signal = controller.signal; publish();
     try {
+      if (passwordLogin) return accept(await adapter.loginPassword(email, password, { signal }), capturedEpoch);
       await adapter.beginLogin(email, { signal });
       if (capturedEpoch !== epoch) return { applied: false };
       step = 'awaiting-code'; publish(); return { applied: true };
@@ -210,8 +221,15 @@ export function createCloudAuth({ adapter, now = Date.now, setTimer = setTimeout
     read, subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     sendOtp: (email, confirmation) => begin(email, confirmation), verifyOtp, refresh, expire,
     switchAccount: (email, confirmation) => begin(email, confirmation, true),
+    loginPassword: (email, password, confirmation) => begin(email, confirmation, false, true, password),
+    switchAccountPassword: (email, password, confirmation) => begin(email, confirmation, true, true, password),
     logout: confirmation => leave('signed-out', confirmation), localOnly: confirmation => leave('local-only', confirmation),
     cancelWarning() { warning = null; },
+    cancelLogin() {
+      warning = null;
+      if (identity) return { applied: false };
+      invalidate(); status = adapter.enabled ? 'signed-out' : 'local-only'; step = null; notice = ''; publish(); return { applied: true };
+    },
     capture() {
       checkExpiry(); if (status !== 'authenticated' || !identity) throw safeError();
       const lease = Object.freeze({ epoch, signal: controller.signal }); leases.add(lease); return lease;

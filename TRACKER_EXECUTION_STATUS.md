@@ -1,6 +1,20 @@
 # Tracker — execution status
 
-## Current status —14/10/2026
+## Current execution —14/10/2026
+
+The user has explicitly approved the whole non-destructive PREVIEW deployment and synthetic acceptance workflow for `wwcfzotkxpqtelfvvhpd`, including the exact CHECK-constraint replacement in003. This supersedes the approval-pending historical entries below. No further A–D approval is needed. Production, fees, personal data upload, destructive reset and GitHub push remain outside scope.
+
+**Actually completed on hosted Supabase:** wrapped001+002 transaction; Dashboard private `tracker-preview-photos` bucket (JPEG,20971520-byte limit); wrapped003 private database transaction; exact seven Storage policies in a separate transaction. Do not rerun these install packets. Actual catalog postcheck: eight private tables all ENABLE/FORCE RLS; no unsafe role flags; runtime not an owner member; helper UID bridge allowed only to helper; browser/anon/runtime bridge access denied; private schema unavailable to authenticated Data API.
+
+**Actual Auth/security checks:** synthetic confirmed A/B accounts created; both password logins and independent `/auth/v1/user` verification PASS; invalid JWT403. Actual Storage unprepared INSERT denied403 for each account, visible objects0, private schema API denied406/PGRST106. Public signup was switched OFF and saved; anonymous login/manual linking remain OFF, confirm email ON. Email OTP length changed from8 to the requested6 digits and saved; delivery/SMTP not tested. These checks do not prove successful cross-device sync or cross-account object isolation after a valid upload.
+
+**Current access blockers:** the encrypted operator database password is not available; the secure input window was reopened after the earlier process closed without saving. Runtime remains NOLOGIN; gateway TLS/role connection and provisioning not executed. Vercel CLI sign-in reached email verification but has no verified authenticated CLI session; a fresh login tab is marked for handoff. No HTTPS Tracker URL or deployment exists yet. Need existing DB password through secure local input and completion of hosting sign-in; no credentials/OTP in chat. No service_role fallback.
+
+**Local progress:** preview-only password Auth, sensitive-field lifecycle cleanup, shared HTTP handler and an allowlisted Vercel gateway adapter implemented/reviewed. Fresh807/807 Node tests,154 JS syntax checks,SQL45+121+60 and public57files/882551bytes pass. Vercel gateway package18files checked. Live helpers-disabled routing/streaming, real sync writes, conflict/retry/recovery and independent-browser acceptance remain NOT VERIFIED. Anonymous schema8/photoDB1 and backup formats unchanged; source cloud config remains local-only. No8765 interaction or personal data upload.
+
+Evidence retained in ignored `.local/hosted-execution-2026-10-14/` (catalog/policy/bucket screenshots and token-free `auth-native.json`). Test credentials are DPAPI-encrypted outside OneDrive under LOCALAPPDATA, not committed or in public artifacts.
+
+## Historical SELECT-only status —14/10/2026
 
 User approved real preview SELECT-only preflight and completed Dashboard login. Actual Singapore PostgreSQL17.11/postgres: CREATEROLE and six required creation/Auth/reference/Storage privileges TRUE; Tracker schema/roles absent. Supautils session preload and postgres→storage.objects policy delegation observed; managed ownership/RLS unchanged. **Read-only capability preflight PASS**, no DDL run. Full001→002→003 still **CÒN BLOCKER**: private bucket absent and003 CHECK-constraint exception unapproved.001/002, bucket,003 DB/ACL/bridge/constraint and policies need separate write approvals. Evidence: `SUPABASE_PREFLIGHT_READONLY_REPORT.md`; next actions: `SUPABASE_HOSTED_MIGRATION_RUNBOOK.md`. No app/user data change, deploy, upload, push or8765 interaction. Previous771tests/148syntax are historical, not rerun for this docs-only follow-up.
 

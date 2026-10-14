@@ -42,30 +42,40 @@ export function previewWritePolicy(env = process.env) {
   return {enabled:true,allowedUids};
 }
 
-// This Node entry point is NOT a Vercel function or a deployed gateway.
-export function createHttpServer(gateway, { allowedOrigin = null, writesEnabled = false, requestLimit = 120, now = Date.now } = {}) {
-  if(typeof writesEnabled!=='boolean' || !Number.isInteger(requestLimit) || requestLimit<1 || requestLimit>10000 || typeof now!=='function') throw Error('invalid_http_limits');
+// Both the local server and hosting adapters retain this HTTP trust boundary.
+export function createHttpHandler(gateway, { allowedOrigin = null, writesEnabled = false, requestLimit = 120, now = Date.now, readBody = null, writeResponse = (response,code,headers,body) => { response.writeHead(code,headers); response.end(JSON.stringify(body)); } } = {}) {
+  if(typeof writesEnabled!=='boolean' || !Number.isInteger(requestLimit) || requestLimit<1 || requestLimit>10000 || typeof now!=='function' || readBody!==null&&typeof readBody!=='function' || typeof writeResponse!=='function') throw Error('invalid_http_limits');
   let windowStart=now(),requests=0;
-  return http.createServer(async (request, response) => {
+  return async (request, response) => {
     const headers = { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Vary': 'Origin' };
     const origin = request.headers.origin;
-    const reply = (code, body) => { response.writeHead(code, headers); response.end(JSON.stringify(body)); };
-    if (origin && origin !== allowedOrigin) { reply(403, { status: 'error', code: 'origin_denied' }); return; }
+    const reply = (code, body) => writeResponse(response,code,headers,body);
+    if (origin && origin !== allowedOrigin) return reply(403, { status: 'error', code: 'origin_denied' });
     if (origin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
-    if(request.method==='GET' && request.url==='/health') { reply(200,{status:'ok',writesEnabled}); return; }
+    if(request.method==='GET' && request.url==='/health') return reply(200,{status:'ok',writesEnabled});
     if (request.method === 'OPTIONS' && origin) {
       headers['Access-Control-Allow-Methods'] = 'POST'; headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type';
-      reply(204, null); return;
+      return reply(204, null);
     }
-    if (request.method !== 'POST' || !['/push', '/pull', '/bootstrap', '/receipt', '/pull-v2', '/bootstrap-v2', '/photo-prepare', '/photo-finalize', '/photo-abandon', '/photo-download'].includes(request.url)) { reply(404, { status: 'error', code: 'unknown_route' }); return; }
-    if (!/^application\/json(?:;|$)/i.test(request.headers['content-type'] || '')) { reply(415, { status: 'error', code: 'json_required' }); return; }
+    if (request.method !== 'POST' || !['/push', '/pull', '/bootstrap', '/receipt', '/pull-v2', '/bootstrap-v2', '/photo-prepare', '/photo-finalize', '/photo-abandon', '/photo-download'].includes(request.url)) return reply(404, { status: 'error', code: 'unknown_route' });
+    if (!/^application\/json(?:;|$)/i.test(request.headers['content-type'] || '')) return reply(415, { status: 'error', code: 'json_required' });
     const timestamp=now();
     if(timestamp-windowStart>=60000 || timestamp<windowStart){windowStart=timestamp;requests=0;}
-    if(++requests>requestLimit){headers['Retry-After']=String(Math.max(1,Math.ceil((60000-timestamp+windowStart)/1000)));reply(429,{status:'error',code:'rate_limited'});return;}
+    if(++requests>requestLimit){headers['Retry-After']=String(Math.max(1,Math.ceil((60000-timestamp+windowStart)/1000)));return reply(429,{status:'error',code:'rate_limited'});}
     const lifecycle=new AbortController();
-    request.once('aborted',()=>lifecycle.abort());
+    const cancel=()=>{lifecycle.abort();if(!response.writableFinished)response.destroy();};
+    request.once('aborted',cancel);request.once('error',cancel);
     response.once('close',()=>{if(!response.writableFinished)lifecycle.abort();});
     try {
+      let body;
+      if(readBody) {
+        try { body=await readBody(request); }
+        catch(error) {
+          if(lifecycle.signal.aborted)return;
+          if(error.message==='payload_too_large'){headers.Connection='close';response.once('finish',()=>request.destroy());}
+          return reply(error.message==='payload_too_large'?413:400,{status:'error',code:error.message==='payload_too_large'?'payload_too_large':'invalid_json'});
+        }
+      } else {
       const chunks = await new Promise((resolve, reject) => {
         let size = 0; const received = [];
         const data = chunk => {
@@ -73,19 +83,25 @@ export function createHttpServer(gateway, { allowedOrigin = null, writesEnabled 
           if (size > 2097152) { request.removeListener('data', data); request.pause(); resolve(null); }
           else received.push(chunk);
         };
-        request.on('data', data); request.once('end', () => resolve(received)); request.once('error', reject);
+        request.on('data', data); request.once('end', () => resolve(received)); request.once('error', reject);request.once('aborted',()=>reject(Error('request_aborted')));
       });
       if (chunks === null) {
         headers.Connection = 'close'; response.once('finish', () => request.destroy());
-        reply(413, { status: 'error', code: 'payload_too_large' }); return;
+        return reply(413, { status: 'error', code: 'payload_too_large' });
       }
-      let body; try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { reply(400, { status: 'error', code: 'invalid_json' }); return; }
+      try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return reply(400, { status: 'error', code: 'invalid_json' }); }
+      }
       if(lifecycle.signal.aborted)return;
       const result = await gateway.handle({ route: request.url.slice(1), authorization: request.headers.authorization, body, signal:lifecycle.signal });
       if(lifecycle.signal.aborted)return;
-      reply(result.code === 'unauthorized' ? 401 : result.status === 'error' || result.status === 'rejected' ? 400 : result.status === 'conflict' ? 409 : 200, result);
-    } catch { if (!response.headersSent) reply(500, { status: 'error', code: 'request_failed' }); }
-  });
+      return reply(result.code === 'unauthorized' ? 401 : result.status === 'error' || result.status === 'rejected' ? 400 : result.status === 'conflict' ? 409 : 200, result);
+    } catch { if (!response.headersSent && !response.destroyed && !lifecycle.signal.aborted) return reply(500, { status: 'error', code: 'request_failed' }); }
+  };
+}
+
+// This Node entry point does not listen when imported by a hosting adapter.
+export function createHttpServer(gateway, options) {
+  return http.createServer(createHttpHandler(gateway,options));
 }
 
 async function start() {

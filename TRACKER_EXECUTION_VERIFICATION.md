@@ -1,6 +1,16 @@
 # Tracker — execution evidence, 11/10/2026
 
-## Scope and baseline
+## Current hosted execution —14/10/2026
+
+Hosted001/002 and003 DB packets committed on approved preview project; private bucket created through Dashboard; exact2 permissive+5 restrictive Storage policies committed. Actual postcheck8/8 private tables FORCE+ENABLE RLS and narrow bridge/role ACLs passed. Screenshots retained ignored in `.local/hosted-execution-2026-10-14/`. No source migrations rerun or managed Auth/Storage owner changed.
+
+Native HTTPS requests using only encrypted synthetic A/B credentials: successful password token issuance, independent provider user/UID verification, confirmed/non-anonymous authenticated claims; invalid JWT403. Unprepared Storage INSERT denied403 for each account; lists empty; `tracker_sync` REST exposure denied406/PGRST106. No tokens persisted in evidence. Auth public signup disabled through Dashboard. This is limited actual provider evidence, not completed cloud sync or successful image upload evidence.
+
+Fresh local verification:807/807 Node regression;154 standalone JS syntax checks;SQL45+121+60 PostgreSQL WASM assertions; frontend build/check57files882551bytes; Vercel gateway build/check18allowlistedfiles. Scoped reviewer findings fixed, including retry initialization/raw byte cap/cancellation and password Enter/logout/navigation cleanup. Test harness updated to assert sensitive inputs clear before workspace DOM replacement.
+
+Vercel gateway requires `NODEJS_HELPERS=0` at build and runtime, `VERCEL_ENV=preview`, exact HTTPS CORS origin and verified restricted role. Current encrypted operator credential absent and CLI hosting login not verified; no runtime LOGIN/DB TLS/provisioning/deploy/write activation has run. Actual HTTPS app, Gym/Nutrition/Journal/photo two-device sync, conflicts/offline/backup acceptance remain NOT VERIFIED. Existing source local-only config/schema8/backup formats preserved. No8765 interaction/personal data/GitHub push.
+
+## Historical scope and baseline
 
 Continuous execution from main549b1a1. Original untracked audit/prompt files preserved. Fresh baseline:639/639 Node tests,112 standalone JS checks,SQL45/121,48 public files/766401 bytes; schema8, anonymous photoDB1, accountDB1, JSON8/photo1. Local implementation authorized; real provider/deployment/writes and material format changes require separate user review.
 
