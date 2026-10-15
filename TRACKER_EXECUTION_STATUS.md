@@ -1,5 +1,11 @@
 # Tracker — execution status
 
+## Handoff —15/10/2026
+
+User refuses creating another account and requests closure without further tests. Existing preview A/B accounts are reused; no signup/personal account created. `MO_TRACKER.cmd` opens `scripts/open-tracker.ps1`: private Windows-only credential card reads existing DPAPI accountA credentials, masks password and offers user-triggered copy/open buttons. No credential is committed or embedded in public frontend. README now leads with the latest preview URL and simple login steps; old Batch2/current wording corrected to historical. Local origin8765 remains the existing private-data location and is not accessed or modified.
+
+This hands over the existing local app and configured synthetic preview. It does not turn omitted cross-device/photo/recovery acceptance into PASS or authorize personal uploads. Vercel protection remains enabled; no production release, new account, migration, reset, push or extra tests. This final convenience launcher was not executed as a test under the user's no-test instruction.
+
 ## Current execution —14/10/2026
 
 ### Latest instruction: deploy without further tests

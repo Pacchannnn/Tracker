@@ -1,6 +1,31 @@
 # Tracker
 
-**Hiện tại: schema8 · Cloud Batch2 LOCAL SYNTHETIC ACCEPTANCE PASS (11/10/2026).**
+## Bắt đầu ở đây — bản bàn giao 15/10/2026
+
+**Website preview hiện tại: [Mở Tracker](https://tracker-preview-fe3lsoph4-ppap7.vercel.app/).**
+
+Trên máy này, nhấp đúp **`MO_TRACKER.cmd`** để mở bảng đăng nhập. Bảng có nút **OPEN TRACKER**, **Copy email** và **Copy password** cho tài khoản preview đã có; không phải tạo tài khoản mới. Mật khẩu được đọc từ kho Windows mã hóa, không nằm trong repository hoặc frontend.
+
+Trong website: **Cài đặt & sao lưu → Đăng nhập bằng mật khẩu · Preview → nhập email/mật khẩu → Mở dữ liệu tài khoản**. Nếu Vercel hỏi đăng nhập, dùng tài khoản Vercel hiện có. Website vẫn được giữ riêng tư theo phạm vi triển khai đã duyệt.
+
+Bạn cũng có thể dùng đầy đủ chế độ local ở link bên dưới mà không cần tài khoản. Hai đường mở dùng kho dữ liệu riêng: lịch sử local không tự chuyển lên preview.
+
+**Phạm vi đã bàn giao:** app local và hạ tầng cloud preview; migrations001–003, bucket private,7policies, Auth, gateway TLS và hai tài khoản synthetic đã cấu hình. Workspace preview rỗng đã tự đồng bộ. Không chạy thêm test theo yêu cầu của người dùng; chưa xác minh chuyển bản ghi/ảnh giữa hai thiết bị hoặc nghiệm thu recovery trên Supabase thật. Không gọi đây là bản cloud cá nhân đã nghiệm thu; chưa nhập dữ liệu sức khỏe thật. Tình trạng hiện tại ở [TRACKER_EXECUTION_STATUS.md](TRACKER_EXECUTION_STATUS.md); các mục Batch/phases bên dưới là lịch sử kỹ thuật.
+
+## Mở web local
+
+**Link chạy trên máy của bạn: [Mở Tracker — http://127.0.0.1:8765/](http://127.0.0.1:8765/)**
+
+Nếu link chưa mở được, mở PowerShell rồi chạy:
+
+```powershell
+cd "C:\Users\Dell G15\OneDrive\Documents\ChatGPT\Gym"
+python -m http.server 8765 --bind 127.0.0.1
+```
+
+Giữ cửa sổ PowerShell đó mở trong lúc dùng web. Nếu server đã chạy thì chỉ cần bấm link, không chạy thêm server. Dùng đúng địa chỉ `127.0.0.1:8765` và browser/profile cũ để thấy dữ liệu đã lưu. Nhấn **Ctrl+C** trong PowerShell để dừng server.
+
+**Mốc lịch sử 11/10/2026: schema8 · Cloud Batch2 LOCAL SYNTHETIC ACCEPTANCE PASS.**
 Account IndexedDB/outbox, sync hai chiều, offline/cache, conflict review và import
 preview đã có; Supabase mặc định tắt, server thường vẫn không cho ghi cloud.
 634/634 tests · 112/112 syntax · SQL45/121 · artifact48 files. Workout qua ACK,
