@@ -1,5 +1,9 @@
 # Tracker — execution evidence, 11/10/2026
 
+## Direct domain delivery —15/10/2026
+
+User corrected handoff to require a domain opening the app directly. Assigned **tracker-ppap7.vercel.app** to deployment `dpl_69mUp4zVUXCQb6Zd1zp1rFP1itK4`; official alias API exception exposes only this domain, preserving project protection for other previews. Stable URL is both generated public gateway origin and server exact CORS origin. Anonymous native HTTPS request without cookies:200/no Location redirect. Actual browser opens Tracker home directly; no Vercel login/Windows helper required for local browser use. This confirms the specific delivery fix only. No additional regression, E2E, cloud data/photo transfer or recovery tests were run. Supabase Auth/RLS/private bucket/write allowlist unchanged; no user records or old-origin browser storage accessed.
+
 ## Current hosted execution —14/10/2026
 
 ### Latest user-directed deployment without further QA

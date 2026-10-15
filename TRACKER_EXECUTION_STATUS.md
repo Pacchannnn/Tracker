@@ -1,5 +1,13 @@
 # Tracker — execution status
 
+## Direct website correction —15/10/2026
+
+User explicitly requires typing a domain to open the website, rejecting the protected-preview/Windows-launcher delivery. Stable public app address is now **https://tracker-ppap7.vercel.app/**. This latest request authorizes public access to the app shell for this domain; personal records/credentials/private bucket remain protected and no personal data is uploaded. Existing Vercel project/deployment protection stays enabled; only the named alias has an alias-protection-override exception through the official API. No project-wide authentication removal or production promotion.
+
+New Preview deployment `dpl_69mUp4zVUXCQb6Zd1zp1rFP1itK4` (`tracker-preview-kk6xacejf-ppap7.vercel.app`) is assigned to that stable alias. Build public gateway origin and server exact CORS origin both use the stable HTTPS domain, avoiding calls back to a protected generated URL. Source public config remains disabled locally; database credentials remain server-only; existing A/B synthetic write restriction and Supabase Auth/RLS remain. README and optional Windows credential helper now use the stable domain; the helper is not required to open/use local browser mode.
+
+Opened stable domain directly in browser, Tracker home visibly loaded; anonymous HTTP request without cookies returned200 without redirect. These are delivery observations for the reported access issue, not another functional/regression QA run. No new tests, logging fixtures, photo upload, schema changes, data migration/reset, GitHub push or origin8765 interaction. New-origin device enrollment and two-device/record/photo transfer acceptance remain unverified. Previously saved data on other origins is not silently moved.
+
 ## Handoff —15/10/2026
 
 User refuses creating another account and requests closure without further tests. Existing preview A/B accounts are reused; no signup/personal account created. `MO_TRACKER.cmd` opens `scripts/open-tracker.ps1`: private Windows-only credential card reads existing DPAPI accountA credentials, masks password and offers user-triggered copy/open buttons. No credential is committed or embedded in public frontend. README now leads with the latest preview URL and simple login steps; old Batch2/current wording corrected to historical. Local origin8765 remains the existing private-data location and is not accessed or modified.

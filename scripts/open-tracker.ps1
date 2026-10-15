@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSHOME 'Modules/Microsoft.PowerShell.Security/Microsoft.PowerShell.Security.psd1') -ErrorAction Stop
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-$taskUrl = 'https://tracker-preview-fe3lsoph4-ppap7.vercel.app/'
+$taskUrl = 'https://tracker-ppap7.vercel.app/'
 $taskCredentialFile = Join-Path $env:LOCALAPPDATA 'TrackerPreview/wwcfzotkxpqtelfvvhpd/synthetic-accounts.dpapi'
 $taskAccount = $null
 if ([IO.File]::Exists($taskCredentialFile)) {
@@ -21,7 +21,7 @@ $taskForm.TopMost = $true
 $taskDescription = New-Object System.Windows.Forms.Label
 $taskDescription.Location = New-Object System.Drawing.Point(20,18)
 $taskDescription.Size = New-Object System.Drawing.Size(600,78)
-$taskDescription.Text = "Existing PREVIEW account - no sign-up required.`r`nOpen website > Cai dat & sao luu > Dang nhap bang mat khau - Preview.`r`nSign in, then choose Mo du lieu tai khoan. Local history stays separate.`r`nVercel protection may require your existing Vercel login first."
+$taskDescription.Text = "Website: tracker-ppap7.vercel.app - opens directly without Vercel login.`r`nThis panel is optional, only for the existing cloud preview account.`r`nWebsite > Cai dat & sao luu > Dang nhap bang mat khau - Preview.`r`nSign in, then choose Mo du lieu tai khoan. Local history stays separate."
 $taskForm.Controls.Add($taskDescription)
 $taskEmailLabel = New-Object System.Windows.Forms.Label
 $taskEmailLabel.Text = 'Email'

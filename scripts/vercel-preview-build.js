@@ -12,7 +12,8 @@ try {
   if(!['true','false'].includes(flag))throw Error('invalid_public_cloud_flag');
   let generated=null;
   if(flag==='true') {
-    const gatewayUrl=previewOrigin(env);
+    const canonicalOrigin=previewOrigin(env);
+    const gatewayUrl=env.TRACKER_ALLOWED_ORIGIN || canonicalOrigin;
     if(env.TRACKER_PUBLIC_ENVIRONMENT && env.TRACKER_PUBLIC_ENVIRONMENT!=='preview' || env.TRACKER_PUBLIC_GATEWAY_URL && env.TRACKER_PUBLIC_GATEWAY_URL!==gatewayUrl)throw Error('invalid_public_preview_config');
     generated=publicConfig({TRACKER_PUBLIC_CLOUD_ENABLED:'true',TRACKER_PUBLIC_ENVIRONMENT:'preview',TRACKER_PUBLIC_SUPABASE_URL:env.TRACKER_PUBLIC_SUPABASE_URL,TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY:env.TRACKER_PUBLIC_SUPABASE_PUBLISHABLE_KEY,TRACKER_PUBLIC_GATEWAY_URL:gatewayUrl});
   }

@@ -2,11 +2,11 @@
 
 ## Bắt đầu ở đây — bản bàn giao 15/10/2026
 
-**Website preview hiện tại: [Mở Tracker](https://tracker-preview-fe3lsoph4-ppap7.vercel.app/).**
+**Gõ địa chỉ này vào trình duyệt để mở Tracker: [tracker-ppap7.vercel.app](https://tracker-ppap7.vercel.app/). Không cần cài phần mềm, chạy server hay đăng nhập Vercel để mở trang.**
 
-Trên máy này, nhấp đúp **`MO_TRACKER.cmd`** để mở bảng đăng nhập. Bảng có nút **OPEN TRACKER**, **Copy email** và **Copy password** cho tài khoản preview đã có; không phải tạo tài khoản mới. Mật khẩu được đọc từ kho Windows mã hóa, không nằm trong repository hoặc frontend.
+Chỉ khi cần thông tin đăng nhập cloud đã chuẩn bị: trên máy này, nhấp đúp **`MO_TRACKER.cmd`** để mở bảng có **Copy email** và **Copy password** cho tài khoản preview đã có; không phải tạo tài khoản mới. Mật khẩu được đọc từ kho Windows mã hóa, không nằm trong repository hoặc frontend. Bảng này là tiện ích tùy chọn; không phải cách bắt buộc để mở website.
 
-Trong website: **Cài đặt & sao lưu → Đăng nhập bằng mật khẩu · Preview → nhập email/mật khẩu → Mở dữ liệu tài khoản**. Nếu Vercel hỏi đăng nhập, dùng tài khoản Vercel hiện có. Website vẫn được giữ riêng tư theo phạm vi triển khai đã duyệt.
+Trang mở trực tiếp ở chế độ trên thiết bị, không bắt đăng nhập. Để dùng cloud preview: **Cài đặt & sao lưu → Đăng nhập bằng mật khẩu · Preview → nhập email/mật khẩu → Mở dữ liệu tài khoản**. Dữ liệu cloud vẫn yêu cầu xác thực trong app; chỉ tên miền cố định được mở công khai theo yêu cầu ngày15/10/2026. Các URL preview khác vẫn được bảo vệ bởi Vercel.
 
 Bạn cũng có thể dùng đầy đủ chế độ local ở link bên dưới mà không cần tài khoản. Hai đường mở dùng kho dữ liệu riêng: lịch sử local không tự chuyển lên preview.
 
