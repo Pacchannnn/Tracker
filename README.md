@@ -4,12 +4,6 @@
 
 Ứng dụng cá nhân để ghi tập luyện, dinh dưỡng, nhật ký, ảnh và xem lại tiến độ. HTML, CSS và Vanilla JavaScript; mở website không cần cài phần mềm hoặc đăng nhập Vercel.
 
-## Đọc trước
-
-1. [Sản phẩm & ý tưởng](01_SAN_PHAM_VA_Y_TUONG.md): mục tiêu, chức năng, nguyên tắc và backlog.
-2. [Kiến trúc & dữ liệu](02_KIEN_TRUC_VA_DU_LIEU.md): lưu trữ, sync, bảo mật và backup.
-3. [Trạng thái & bàn giao](03_TRANG_THAI_VA_BAN_GIAO.md): phần đã triển khai và phần chưa xác minh.
-
 Chế độ trên thiết bị dùng localStorage/IndexedDB, không cần tài khoản. Cloud dùng kho tài khoản riêng, hiện cấu hình môi trường preview với tài khoản synthetic; chưa nghiệm thu chuyển bản ghi/ảnh giữa hai thiết bị trên domain mới. Đăng nhập không tự chuyển lịch sử local lên cloud.
 
 ## Chạy local
@@ -32,8 +26,6 @@ cloud/                 Gateway, SQL migrations, operator và công cụ SQL/QA
 scripts/               Đóng gói frontend/gateway/Vercel
 tests/, dev/auth/      Regression tests, fixtures và mock Auth harness
 docs/                  Hợp đồng dữ liệu, ảnh, sync và runbook cần bảo trì
-01_*.md, 02_*.md,
-03_*.md                Ba tài liệu tóm tắt hiện tại
 ```
 
 `MASTER_PLAN.md` là nguồn fitness riêng tư, được giữ local và ignore; ứng dụng chạy từ định nghĩa chương trình trong `js/program.js`. Không cần file plan riêng để clone/build/chạy website.
