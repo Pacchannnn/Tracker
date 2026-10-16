@@ -2,9 +2,7 @@
 
 **Website: [tracker-ppap7.vercel.app](https://tracker-ppap7.vercel.app/)**
 
-Ứng dụng cá nhân để ghi tập luyện, dinh dưỡng, nhật ký, ảnh và xem lại tiến độ. HTML, CSS và Vanilla JavaScript; mở website không cần cài phần mềm hoặc đăng nhập Vercel.
-
-Chế độ trên thiết bị dùng localStorage/IndexedDB, không cần tài khoản. Cloud dùng kho tài khoản riêng, hiện cấu hình môi trường preview với tài khoản synthetic; chưa nghiệm thu chuyển bản ghi/ảnh giữa hai thiết bị trên domain mới. Đăng nhập không tự chuyển lịch sử local lên cloud.
+Ứng dụng cá nhân ghi tập luyện, dinh dưỡng, nhật ký, ảnh và tiến độ. HTML, CSS và Vanilla JavaScript; dữ liệu trên thiết bị dùng localStorage/IndexedDB.
 
 ## Chạy local
 
@@ -15,58 +13,43 @@ cd "C:\Users\Dell G15\OneDrive\Documents\ChatGPT\Gym"
 python -m http.server 8765 --bind 127.0.0.1
 ```
 
-Mở **[http://127.0.0.1:8765/](http://127.0.0.1:8765/)** và giữ cửa sổ server mở. Nếu server đang chạy, chỉ mở link. Dùng đúng địa chỉ và browser/profile cũ để thấy dữ liệu đã lưu; domain mới có kho khác. Không mở trực tiếp `index.html` bằng `file://`.
+Mở **[http://127.0.0.1:8765/](http://127.0.0.1:8765/)**. Giữ cửa sổ server mở; nếu server đã chạy thì chỉ mở link. Dùng đúng browser/profile và địa chỉ cũ để thấy dữ liệu đã lưu. Không mở bằng `file://`.
 
-## Cấu trúc repository
+## Các file cần giữ
 
-```text
-index.html, css/, js/   Frontend và logic ứng dụng
-assets/fonts/          Font tiếng Việt và license OFL
-cloud/                 Gateway, SQL migrations, operator và công cụ SQL/QA
-scripts/               Đóng gói frontend/gateway/Vercel
-tests/, dev/auth/      Regression tests, fixtures và mock Auth harness
-docs/                  Hợp đồng dữ liệu, ảnh, sync và runbook cần bảo trì
-```
+- `index.html`, `css/`, `js/`: giao diện và chức năng ứng dụng.
+- `assets/fonts/`: font và giấy phép đi kèm.
+- `cloud/`: gateway, dependency PostgreSQL và SQL migrations định nghĩa database.
+- `scripts/`: đóng gói frontend và gateway cho Vercel.
+- `package.json`, `package-lock.json`, `vercel.json`: cấu hình và dependency cho build/deploy.
 
-`MASTER_PLAN.md` là nguồn fitness riêng tư, được giữ local và ignore; ứng dụng chạy từ định nghĩa chương trình trong `js/program.js`. Không cần file plan riêng để clone/build/chạy website.
+## Build frontend
 
-## Phát triển và đóng gói
-
-Dùng Node.js24.x; Python3 chỉ cần cho cách chạy local ở trên. Cài lại dependencies khi cần phát triển:
-
-```powershell
-npm ci
-npm --prefix cloud ci
-```
-
-Frontend static, mặc định local-only:
+Dùng Node.js 24.x:
 
 ```powershell
 npm run build
 npm run check:artifact
 ```
 
-Output là `dist/`, chỉ chứa runtime trong allowlist. **Chỉ deploy artifact, không publish nguyên repository.**
+Output: `dist/`. Mặc định local-only; cấu hình cloud public được inject từ environment lúc build, không ghi secret vào frontend.
 
-Đóng gói frontend + gateway cho Vercel preview:
+## Đóng gói frontend và gateway Vercel
 
 ```powershell
 node scripts/vercel-preview-package.js
 node scripts/vercel-preview-package.js --stage
 ```
 
-Artifact sạch: `.local/vercel-preview-artifact/`; upload stage: `.local/vercel-preview-upload/`. Dùng project Vercel `tracker-preview` hiện có và environment preview. Public config inject lúc build; database URL/CA chỉ ở server. Giữ gateway URL và exact CORS origin cùng `https://tracker-ppap7.vercel.app`; domain alias trỏ deployment không tự đổi khi push GitHub. Root `vercel.json` là cấu hình frontend static, không thay thế bundle cloud kết hợp.
+Artifact: `.local/vercel-preview-artifact/`; thư mục upload: `.local/vercel-preview-upload/`. Chỉ deploy artifact. Gateway dùng `pg` từ `cloud/package-lock.json`; cài cho server local bằng `npm --prefix cloud ci`.
 
-Các lệnh kiểm thử dành cho lần bảo trì được phép sau này: `npm test`, `npm --prefix cloud run test:db`, `npm --prefix cloud run test:sync`, `node cloud/tests/run-photo-db.js`. Đợt dọn thư mục này không chạy lại các bài test chức năng hoặc thao tác Supabase.
+Project hiện tại: `tracker-preview`, environment preview. Giữ gateway URL và CORS origin đúng `https://tracker-ppap7.vercel.app`. Database URL/CA chỉ cấu hình trên server. Root `vercel.json` dành cho frontend static; cloud dùng bundle kết hợp ở trên. Push GitHub không tự cập nhật domain alias hoặc database. Migrations 001–003 đã được áp dụng trên Supabase preview; không chạy lại khi deploy frontend.
 
-## Dữ liệu và cấu hình riêng tư
+## Dữ liệu và GitHub
 
-- Giữ `package-lock.json` ở root/cloud để cài lại dependencies. `node_modules`, outputs và staging không cần commit.
-- Không commit `.env`, credential, backup JSON/ảnh hoặc ghi chép cá nhân; `.gitignore` đã chặn các tên thường dùng.
-- Backup local cần2file: dữ liệu và ảnh. Account recovery cần3file; JSON projection không phải full account backup.
-- Migrations001–003 đã apply trên preview; không chạy lại để deploy frontend. Xem [runbook](docs/SUPABASE_HOSTED_MIGRATION_RUNBOOK.md).
-- Các báo cáo phase/research, file tạm, outputs và helper Windows cũ đã được lưu riêng ngoài repository trong `%LOCALAPPDATA%\TrackerProjectArchive\`. Không mất dữ liệu browser, không có cloud upload hoặc GitHub push trong đợt dọn này.
-
-## Đẩy thay đổi lên GitHub
-
-Làm việc trên `main`. Xem `git status` và `git diff --stat`, chỉ commit nội dung đã review; sau đó tự chạy `git push origin main`. Không cần đưa archive, dependencies cài sẵn hoặc artifacts vào Git. Việc push source không đồng nghĩa deploy lại Vercel hay thay database.
+- Mỗi origin/browser có kho local riêng. Đăng nhập không tự upload lịch sử local.
+- Cloud hiện giới hạn tài khoản synthetic preview; chưa nghiệm thu đầy đủ đồng bộ hai thiết bị trên domain mới.
+- Backup local gồm JSON và ảnh; account recovery gồm ba file. JSON projection không thay thế full account recovery.
+- Không commit `.env`, secrets, backup, `node_modules`, `dist` hoặc `.local`.
+- Tài liệu riêng, bộ test và công cụ QA được lưu ngoài repository tại `%LOCALAPPDATA%\TrackerProjectArchive\`.
+- Đẩy source sau khi xem `git status` và `git diff`: `git push origin main`.

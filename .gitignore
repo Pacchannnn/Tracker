@@ -34,3 +34,12 @@ CLIP_NOTES.md
 01_SAN_PHAM_VA_Y_TUONG.md
 02_KIEN_TRUC_VA_DU_LIEU.md
 03_TRANG_THAI_VA_BAN_GIAO.md
+
+# Development archives are kept outside this runtime repository.
+/tests/
+/dev/
+/docs/
+/cloud/tests/
+/cloud/operator.js
+/cloud/hosted-preflight.sql
+/scripts/gateway-package.js
