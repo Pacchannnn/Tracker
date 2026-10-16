@@ -1,5 +1,7 @@
 # Tracker V4 — Phase 7A Life Review contract
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 2026-10-06 · **CONTRACT DESIGNED — NOT IMPLEMENTED — awaiting user approval.**
 
 Design only. This document proposes future read-only Weekly Life Review and Monthly Memories. It does not authorize runtime changes, tests implementation, migrations or Phase8. Only this document and a status/link in V4_ROADMAP.md change in7A.

@@ -1,5 +1,7 @@
 # Cloud Batch2 — approved implementation contract
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 11/10/2026 · LOCAL SYNTHETIC ACCEPTANCE PASS; real provider/device gates NOT VERIFIED.
 Final browser gates and634/112/SQL45+121 evidence: CLOUD_BATCH2_IMPLEMENTATION.md.
 The implementation contract below remains active. The unavailable locked/opening

@@ -1,5 +1,7 @@
 # Ảnh cục bộ và sao lưu
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 ## Account photos —12/10/2026 (implemented local, provider unverified)
 
 Anonymous `tracker-photos` v1 remains unchanged. Account `tracker-sync` DB2 holds scoped original/thumbnail JPEG Blobs and atomic metadata+photo intents. Login never imports anonymous assets. SQL003/photo protocol2 prepares immutable private bucket paths, verifies actual raw bytes on the trusted gateway, then CAS-finalizes into the common feed. Browser upsert/UPDATE/DELETE of Storage bytes denied; logical tombstones retain bytes. Hosted install/policy/Storage uploads not authorized or executed.

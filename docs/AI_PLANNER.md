@@ -1,5 +1,7 @@
 # Planner contract và ranh giới AI
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 ## Đang chạy
 
 `js/planner.js` không gọi mạng. `createPlannerRequest` chuẩn hóa preferences; `suggestWorkout` lọc thư viện, giữ bài yêu cầu, kiểm tra bài loại trừ/dụng cụ/nhóm cơ, tránh ID trùng và báo điều kiện xung đột. Tham số bài tập là cấu hình người dùng, không được tự tối ưu như đơn tập y khoa.

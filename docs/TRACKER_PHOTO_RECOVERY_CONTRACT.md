@@ -1,5 +1,7 @@
 # Tracker — photo / full recovery / import contract for review
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 11/10/2026 · **APPROVED FOR LOCAL IMPLEMENTATION AND TESTS.** User approved this contract in the current thread. R8–R12 remain part of the same workflow. Hosted SQL/Storage apply, uploads, deployment, retention/GC and personal import remain separately gated; no remote migration occurred.
 
 ## Invariants

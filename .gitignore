@@ -1,12 +1,29 @@
 node_modules/
 dist/
 gateway-dist/
-vshape-backup-*.json
-tracker-backup-*.json
-tracker-photos-*.json
 .local/
+.vercel/
+
+# Provider credentials and machine configuration.
 .env
 .env.*
+*.dpapi
+*.pfx
+*.key
+
+# Personal exports, recovery packs and backups.
+vshape-backup-*.json
+tracker-*.json
+backups/
+
+# Disposable logs, editor/OS files and Python caches.
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+
 # Private source plan and personal notes stay on this computer.
 MASTER_PLAN.md
 TONG_KET_DU_AN.md

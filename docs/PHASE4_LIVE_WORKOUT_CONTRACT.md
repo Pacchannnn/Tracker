@@ -1,5 +1,7 @@
 # Tracker — Phase 4A: Flexible Live Workout Contract
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 06/10/2026 · **CONTRACT APPROVED. 4B-1/2/3/4 IMPLEMENTED / TESTED. Phase4 IMPLEMENTED / TESTED; STOP before Phase5.**
 
 ### Implementation evidence — 4B-4 release (05–06/10/2026)

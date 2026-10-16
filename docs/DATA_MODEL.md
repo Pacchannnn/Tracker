@@ -1,5 +1,7 @@
 # Local data model (schemaVersion 8)
 
+> Tài liệu kỹ thuật được giữ lại sau dọn dẹp16/10/2026. Các phần có ngày cũ là lịch sử; trạng thái mới xem [bàn giao](../03_TRANG_THAI_VA_BAN_GIAO.md). Báo cáo/research được dẫn nhưng không còn trong repo nằm trong archive riêng ngoài repository.
+
 ## Current account additions —12/10/2026
 
 Portable JSON remains8; anonymous tracker-photos DB/photo backup remain1. Account `tracker-sync` upgrades1→2 additively: workspaces/metadata retained, photoAssets/photoJobs/recoveryWorkspaces/importLedgers added. Workspaces still have row version1/schema8. All stores use exact UID/project/environment ownership; atomic photo persistence includes metadata candidate, two JPEG Blobs and durable job with workspace. Assets use independent UUIDs/hashes, never base64 localStorage.
